@@ -1,5 +1,5 @@
 import React from 'react';
-import { Shield, Loader2, ExternalLink } from 'lucide-react';
+import { Hexagon, Loader2, ExternalLink, AlertTriangle } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 interface LoginProps {
@@ -10,72 +10,87 @@ interface LoginProps {
 
 export default function Login({ onLogin, isAuthenticating, error }: LoginProps) {
   return (
-    <div className="min-h-screen bg-[#0B0B0C] flex flex-col items-center justify-center relative overflow-hidden p-4">
-      {/* Dynamic Background Elements */}
-      <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1614729939124-032f0b56c9ce?q=80&w=2000&auto=format&fit=crop')] bg-cover bg-center opacity-10 mix-blend-screen" />
-      <div className="absolute inset-0 bg-gradient-to-t from-[#0B0B0C] via-[#0B0B0C]/80 to-transparent" />
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-white/5 rounded-full blur-[100px] pointer-events-none" />
-
-      <motion.div 
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8, ease: "easeOut" }}
-        className="z-10 w-full max-w-md bg-[#141417]/80 backdrop-blur-xl border border-white/10 p-8 shadow-2xl relative"
-      >
-        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-white/40 to-transparent" />
-        
-        <div className="flex justify-center mb-8">
-          <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center border border-white/10 shadow-[0_0_30px_rgba(255,255,255,0.1)]">
-            <Shield className="w-8 h-8 text-white/80" strokeWidth={1.5} />
+    <div className="min-h-screen bg-[#050507] text-gray-200 flex flex-col items-center justify-center p-6 relative overflow-hidden">
+      {/* Atmospheric background */}
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,_rgba(40,40,60,0.4)_0%,_rgba(5,5,7,1)_100%)] z-0" />
+      <div className="absolute top-0 left-0 w-full h-1/2 bg-gradient-to-b from-indigo-900/10 to-transparent blur-3xl z-0" />
+      
+      <div className="max-w-md w-full space-y-12 text-center z-10">
+        <div className="space-y-8 relative">
+          <div className="w-32 h-32 mx-auto relative flex items-center justify-center">
+             {/* Animated rotating borders */}
+            <div className="absolute inset-0 border border-white/20 rotate-45 animate-[spin_15s_linear_infinite]" />
+            <div className="absolute inset-2 border border-white/10 -rotate-12 animate-[spin_20s_linear_infinite_reverse]" />
+            <div className="absolute inset-4 border border-indigo-500/20 rotate-180 animate-[spin_10s_linear_infinite]" />
+            
+            <motion.div
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ duration: 1, ease: "easeOut" }}
+            >
+              <Hexagon className="w-16 h-16 text-white shadow-[0_0_40px_rgba(255,255,255,0.3)]" strokeWidth={1} />
+            </motion.div>
           </div>
-        </div>
-
-        <div className="text-center mb-10">
-          <h1 className="text-3xl font-display font-semibold tracking-[0.2em] text-white mb-2 text-shadow-glow">
-            LOADOUT MANAGER
-          </h1>
-          <p className="text-sm text-gray-400 tracking-wider">
-            Authenticate with Bungie.net to manage your gear.
-          </p>
+          
+          <motion.div
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.3, duration: 0.8 }}
+          >
+            <h1 className="text-4xl font-light tracking-[0.4em] text-white uppercase text-shadow-glow">Forge</h1>
+            <p className="text-[10px] text-[#E5C76B] font-mono tracking-[0.3em] mt-4 uppercase opacity-70">Schnittstelle_Initialisierung</p>
+          </motion.div>
         </div>
 
         {error && (
           <motion.div 
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            className="mb-6 p-4 bg-red-500/10 border border-red-500/30 text-red-400 text-sm tracking-wide flex items-center gap-3 rounded-sm"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-red-950/40 border border-red-500/20 text-red-400 p-5 flex items-start space-x-4 text-left backdrop-blur-md destiny-clip-sm"
           >
-            <div className="w-1 h-full bg-red-500 rounded-full" />
-            {error}
+            <AlertTriangle className="w-5 h-5 flex-shrink-0 mt-0.5 text-red-500" />
+            <div className="text-xs tracking-widest leading-relaxed uppercase">
+              <strong className="text-red-300 block mb-1">Authentifizierungs-Fehler</strong>
+              {error}
+            </div>
           </motion.div>
         )}
 
-        <button
-          onClick={onLogin}
-          disabled={isAuthenticating}
-          className="w-full group relative flex items-center justify-center px-6 py-4 bg-white hover:bg-gray-200 text-black transition-all duration-300 disabled:opacity-70 disabled:cursor-not-allowed overflow-hidden font-display"
+        <motion.div 
+          initial={{ y: 20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.6, duration: 0.8 }}
+          className="relative group"
         >
-          <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/50 to-transparent -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]" />
-          
-          {isAuthenticating ? (
-            <div className="flex items-center space-x-3">
-              <Loader2 className="w-5 h-5 animate-spin" />
-              <span className="tracking-[0.15em] font-bold text-sm">AUTHENTICATING...</span>
-            </div>
-          ) : (
-            <div className="flex items-center space-x-3">
-              <span className="tracking-[0.2em] font-bold text-sm">LOGIN WITH BUNGIE</span>
-              <ExternalLink className="w-4 h-4 opacity-70" />
-            </div>
-          )}
-        </button>
+          <div className="absolute -inset-1 bg-gradient-to-r from-indigo-500 to-[#E5C76B] rounded-lg blur opacity-10 group-hover:opacity-30 transition duration-1000" />
+          <button 
+            onClick={onLogin}
+            disabled={isAuthenticating}
+            className="relative w-full bg-[#0A0A0B]/60 border border-white/10 hover:border-white/40 p-6 flex items-center justify-center transition-all duration-500 backdrop-blur-xl destiny-clip group-hover:-translate-y-1"
+          >
+            {isAuthenticating ? (
+              <span className="flex items-center space-x-4 text-[11px] tracking-[0.3em] text-[#E5C76B]">
+                <Loader2 className="w-5 h-5 animate-spin" />
+                <span>VERBINDE...</span>
+              </span>
+            ) : (
+              <span className="flex items-center space-x-4 text-[11px] tracking-[0.3em] text-white font-bold">
+                <span>LOGIN VIA BUNGIE.NET</span>
+                <ExternalLink className="w-4 h-4 opacity-40 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
+              </span>
+            )}
+          </button>
+        </motion.div>
         
-        <div className="mt-8 text-center border-t border-white/5 pt-6">
-           <p className="text-[10px] text-gray-600 uppercase tracking-widest">
-             Not affiliated with Bungie, Inc.
-           </p>
-        </div>
-      </motion.div>
+        <motion.p 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 0.4 }}
+          transition={{ delay: 1, duration: 1 }}
+          className="text-[9px] uppercase tracking-[0.3em] text-gray-500"
+        >
+          Nicht mit Bungie, Inc. verbunden
+        </motion.p>
+      </div>
     </div>
   );
 }

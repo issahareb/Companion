@@ -1,82 +1,54 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Rajdhani:wght@400;500;600;700&display=swap');
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   :root {
-    --background: 240 5% 4%;
-    --foreground: 0 0% 100%;
-    
-    --card: 240 5% 8%;
-    --card-foreground: 0 0% 100%;
-    
-    --popover: 240 5% 8%;
-    --popover-foreground: 0 0% 100%;
-    
-    --primary: 0 0% 100%;
-    --primary-foreground: 240 5% 4%;
-    
-    --secondary: 240 5% 12%;
-    --secondary-foreground: 0 0% 100%;
-    
-    --muted: 240 5% 15%;
-    --muted-foreground: 240 5% 65%;
-    
-    --accent: 240 5% 15%;
-    --accent-foreground: 0 0% 100%;
-    
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 100%;
-
-    --border: 240 5% 15%;
-    --input: 240 5% 15%;
-    --ring: 240 5% 35%;
-
-    --radius: 0.25rem;
-
-    --font-sans: 'Inter', sans-serif;
-    --font-display: 'Rajdhani', sans-serif;
-  }
-  
-  body {
-    @apply bg-background text-foreground antialiased selection:bg-white/20;
-    font-family: var(--font-sans);
-    background-image: 
-      radial-gradient(circle at 50% 0%, rgba(255,255,255,0.03) 0%, transparent 50%),
-      radial-gradient(circle at 100% 100%, rgba(255,255,255,0.02) 0%, transparent 50%);
-    background-attachment: fixed;
-  }
-
-  h1, h2, h3, h4, h5, h6, .font-display {
-    font-family: var(--font-display);
-    @apply tracking-wide uppercase;
+    --background: 240 10% 3.9%;
+    --foreground: 0 0% 98%;
+    --card: 240 10% 3.9%;
+    --card-foreground: 0 0% 98%;
+    --popover: 240 10% 3.9%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 0 0% 98%;
+    --primary-foreground: 240 5.9% 10%;
+    --secondary: 240 3.7% 15.9%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 240 3.7% 15.9%;
+    --muted-foreground: 240 5% 64.9%;
+    --accent: 240 3.7% 15.9%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 3.7% 15.9%;
+    --input: 240 3.7% 15.9%;
+    --ring: 240 4.9% 83.9%;
+    --radius: 0.5rem;
   }
 }
 
 @layer utilities {
+  .destiny-clip {
+    clip-path: polygon(10% 0, 100% 0, 100% 70%, 90% 100%, 0 100%, 0 30%);
+  }
+  .destiny-clip-sm {
+    clip-path: polygon(5% 0, 100% 0, 100% 85%, 95% 100%, 0 100%, 0 15%);
+  }
   .text-shadow-glow {
     text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
   }
-  
-  .border-gradient {
-    border-image: linear-gradient(to bottom right, rgba(255,255,255,0.2), rgba(255,255,255,0.05)) 1;
-  }
-  
-  /* Custom scrollbar for inventory grid */
-  ::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
-  }
-  ::-webkit-scrollbar-track {
-    background: rgba(0, 0, 0, 0.2); 
-  }
-  ::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.1); 
-    border-radius: 3px;
-  }
-  ::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 255, 255, 0.2); 
-  }
+}
+
+body {
+  @apply bg-[#050507] text-gray-300 antialiased;
+}
+
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
