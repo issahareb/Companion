@@ -4,7 +4,8 @@ import {
   Zap, Flame, Hexagon, Shield, Check, Archive,
   Sparkles, Activity, Loader2, AlertTriangle, RefreshCw,
   Users, ArrowRightLeft, Trash2, X, Package, Mail,
-  ChevronDown, ChevronUp, Filter, SlidersHorizontal, Coins
+  ChevronDown, ChevronUp, Filter, SlidersHorizontal, Coins,
+  Plus, Sword, ShieldHalf, Orbit, Eye
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -19,28 +20,30 @@ import { SaveLoadoutModal } from '@/components/SaveLoadoutModal';
 import { useToast } from '@/hooks/use-toast';
 
 const ITEM_SLOTS: SlotInfo[] = [
-  { id: 'kinetic', label: 'Kinetik', icon: Crosshair },
+  { id: 'kinetic', label: 'Primär', icon: Crosshair },
   { id: 'energy', label: 'Energie', icon: Zap },
-  { id: 'power', label: 'Power', icon: Flame },
-  { id: 'helmet', label: 'Helm', icon: Shield },
+  { id: 'power', label: 'Schwer', icon: Flame },
+  { id: 'helmet', label: 'Kopf', icon: Shield },
   { id: 'arms', label: 'Arme', icon: Shield },
   { id: 'chest', label: 'Brust', icon: Shield },
   { id: 'legs', label: 'Beine', icon: Shield },
   { id: 'class', label: 'Klasse', icon: Hexagon },
+  { id: 'subclass', label: 'Subklasse', icon: Orbit },
 ];
 
 type TabType = 'characters' | 'vault' | 'loadouts' | 'postmaster';
 
 const SLOT_FILTERS = [
   { id: 'all', label: 'Alle' },
-  { id: 'kinetic', label: 'Kinetik' },
+  { id: 'kinetic', label: 'Primär' },
   { id: 'energy', label: 'Energie' },
-  { id: 'power', label: 'Power' },
-  { id: 'helmet', label: 'Helm' },
+  { id: 'power', label: 'Schwer' },
+  { id: 'helmet', label: 'Kopf' },
   { id: 'arms', label: 'Arme' },
   { id: 'chest', label: 'Brust' },
   { id: 'legs', label: 'Beine' },
   { id: 'class', label: 'Klasse' },
+  { id: 'subclass', label: 'Subklasse' },
 ];
 
 const RARITY_FILTERS = [
@@ -109,9 +112,8 @@ export default function Dashboard() {
   const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
   const [showMobileLoadout, setShowMobileLoadout] = useState(false);
   const [selectedCharacterId, setSelectedCharacterId] = useState<string | null>(null);
-  const [showFilters, setShowFilters] = useState(false);
   const [vaultFilters, setVaultFilters] = useState<FilterState>({ search: '', slot: 'all', rarity: 'all', minPower: '', maxPower: '' });
-  const [charFilters, setCharFilters] = useState<FilterState>({ search: '', slot: 'all', rarity: 'all', minPower: '', maxPower: '' });
+  const [slotPickerSlot, setSlotPickerSlot] = useState<string | null>(null);
 
   const characters = profileState?.characters || [];
   const vaultItems = profileState?.vaultItems || [];
@@ -138,7 +140,6 @@ export default function Dashboard() {
   }, []);
 
   const filteredVaultItems = useItemFilter(vaultItems, vaultFilters);
-  const filteredCharInventory = useItemFilter(selectedCharacter?.inventory || [], charFilters);
 
   const addToLoadout = (item: Item) => {
     setLoadout(prev => {
@@ -378,57 +379,90 @@ export default function Dashboard() {
                         </div>
                       )}
 
-                      {/* Equipped items */}
+                      {/* WAFFEN Section */}
                       <div className="px-4 md:px-6 pb-4">
                         <h4 className="text-[10px] text-gray-500 uppercase tracking-[0.3em] mb-3 font-display font-bold flex items-center gap-2">
-                          <Shield className="w-3.5 h-3.5" /> Angelegte Ausrüstung
+                          <Crosshair className="w-3.5 h-3.5" /> Waffen
                         </h4>
-                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                          {selectedCharacter.equippedItems.map(item => (
-                            <EquipmentMiniCard
-                              key={item.id}
-                              item={item}
-                              onTransferToVault={() => handleTransfer(item, true, selectedCharacter.characterId)}
-                              onAddToLoadout={() => addToLoadout(toItem(item))}
-                            />
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* Character inventory with filters */}
-                      <div className="px-4 md:px-6 pb-4">
-                        <div className="flex items-center justify-between mb-3">
-                          <h4 className="text-[10px] text-gray-500 uppercase tracking-[0.3em] font-display font-bold flex items-center gap-2">
-                            <Package className="w-3.5 h-3.5" /> Inventar ({filteredCharInventory.length})
-                          </h4>
-                          <button onClick={() => setShowFilters(!showFilters)} className="flex items-center gap-1.5 text-[10px] text-gray-500 hover:text-white uppercase tracking-widest transition-colors" data-testid="button-toggle-char-filters">
-                            <SlidersHorizontal className="w-3 h-3" /> Filter
-                          </button>
-                        </div>
-
-                        <AnimatePresence>
-                          {showFilters && (
-                            <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden mb-3">
-                              <FilterBar filters={charFilters} onChange={setCharFilters} />
-                            </motion.div>
-                          )}
-                        </AnimatePresence>
-
-                        {filteredCharInventory.length === 0 ? (
-                          <p className="text-xs text-gray-600 text-center py-8">Keine Gegenstände im Inventar dieses Hüters.</p>
-                        ) : (
-                          <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-8 gap-2">
-                            {filteredCharInventory.map(item => (
-                              <ItemCard
-                                key={item.id}
-                                item={toItem(item)}
-                                isEquipped={loadout[item.slot]?.id === item.id}
-                                onClick={() => addToLoadout(toItem(item))}
+                        <div className="space-y-2">
+                          {(['kinetic', 'energy', 'power'] as const).map(slotId => {
+                            const equipped = selectedCharacter.equippedItems.find(i => i.slot === slotId);
+                            const slotLabel = slotId === 'kinetic' ? 'Primär' : slotId === 'energy' ? 'Energie' : 'Schwer';
+                            const SlotIcon = slotId === 'kinetic' ? Crosshair : slotId === 'energy' ? Zap : Flame;
+                            return (
+                              <EquippedSlotRow
+                                key={slotId}
+                                slotId={slotId}
+                                slotLabel={slotLabel}
+                                SlotIcon={SlotIcon}
+                                item={equipped || null}
+                                onOpenPicker={() => setSlotPickerSlot(slotId)}
+                                onAddToLoadout={equipped ? () => addToLoadout(toItem(equipped)) : undefined}
                               />
-                            ))}
-                          </div>
-                        )}
+                            );
+                          })}
+                        </div>
                       </div>
+
+                      {/* RÜSTUNG Section */}
+                      <div className="px-4 md:px-6 pb-4">
+                        <h4 className="text-[10px] text-gray-500 uppercase tracking-[0.3em] mb-3 font-display font-bold flex items-center gap-2">
+                          <Shield className="w-3.5 h-3.5" /> Rüstung
+                        </h4>
+                        <div className="space-y-2">
+                          {(['helmet', 'arms', 'chest', 'legs', 'class'] as const).map(slotId => {
+                            const equipped = selectedCharacter.equippedItems.find(i => i.slot === slotId);
+                            const slotLabels: Record<string, string> = { helmet: 'Kopf', arms: 'Arme', chest: 'Brust', legs: 'Beine', class: 'Klasse' };
+                            return (
+                              <EquippedSlotRow
+                                key={slotId}
+                                slotId={slotId}
+                                slotLabel={slotLabels[slotId]}
+                                SlotIcon={slotId === 'class' ? Hexagon : Shield}
+                                item={equipped || null}
+                                onOpenPicker={() => setSlotPickerSlot(slotId)}
+                                onAddToLoadout={equipped ? () => addToLoadout(toItem(equipped)) : undefined}
+                              />
+                            );
+                          })}
+                        </div>
+                      </div>
+
+                      {/* SUBKLASSE Section */}
+                      <div className="px-4 md:px-6 pb-4">
+                        <h4 className="text-[10px] text-gray-500 uppercase tracking-[0.3em] mb-3 font-display font-bold flex items-center gap-2">
+                          <Orbit className="w-3.5 h-3.5" /> Subklasse
+                        </h4>
+                        {(() => {
+                          const subclass = selectedCharacter.equippedItems.find(i => i.slot === 'subclass');
+                          return (
+                            <EquippedSlotRow
+                              slotId="subclass"
+                              slotLabel="Super"
+                              SlotIcon={Orbit}
+                              item={subclass || null}
+                              onOpenPicker={() => setSlotPickerSlot('subclass')}
+                            />
+                          );
+                        })()}
+                      </div>
+
+                      {/* Slot Picker Modal */}
+                      <AnimatePresence>
+                        {slotPickerSlot && selectedCharacter && (
+                          <SlotPickerModal
+                            slotId={slotPickerSlot}
+                            character={selectedCharacter}
+                            vaultItems={vaultItems}
+                            onClose={() => setSlotPickerSlot(null)}
+                            onEquip={(item) => {
+                              handleEquip(item, selectedCharacter.characterId);
+                              setSlotPickerSlot(null);
+                            }}
+                            onAddToLoadout={(item) => addToLoadout(toItem(item))}
+                          />
+                        )}
+                      </AnimatePresence>
 
                       {/* Quests */}
                       {selectedCharacter.quests.length > 0 && (
@@ -716,37 +750,163 @@ function FilterBar({ filters, onChange }: { filters: FilterState; onChange: (f: 
   );
 }
 
-function EquipmentMiniCard({ item, onTransferToVault, onAddToLoadout }: {
-  item: InventoryItem;
-  onTransferToVault: () => void;
-  onAddToLoadout: () => void;
+function EquippedSlotRow({ slotId, slotLabel, SlotIcon, item, onOpenPicker, onAddToLoadout }: {
+  slotId: string;
+  slotLabel: string;
+  SlotIcon: React.ElementType;
+  item: InventoryItem | null;
+  onOpenPicker: () => void;
+  onAddToLoadout?: () => void;
 }) {
-  const isExotic = item.rarity === 'exotic';
-  const isEquipped = item.location === 'equipped';
+  const isExotic = item?.rarity === 'exotic';
+  const rarityColor = isExotic ? '#E5C76B' : '#7D5C96';
   return (
-    <div className="group flex items-center gap-2 bg-black/40 border border-white/5 p-2 hover:border-white/20 transition-all">
-      <div className="w-10 h-10 shrink-0 border border-white/10 overflow-hidden relative">
-        <div className="absolute top-0 left-0 w-full h-0.5" style={{ backgroundColor: isExotic ? '#E5C76B' : '#7D5C96' }} />
-        <img src={item.icon} alt={item.name} className="w-full h-full object-cover" />
+    <div className="group flex items-center gap-3 bg-black/30 border border-white/5 p-2.5 hover:border-white/15 transition-all" data-testid={`equipped-slot-${slotId}`}>
+      <div className="w-12 h-12 shrink-0 border border-white/10 overflow-hidden relative bg-black/50 flex items-center justify-center">
+        {item ? (
+          <>
+            <div className="absolute top-0 left-0 w-full h-0.5 z-10" style={{ backgroundColor: rarityColor }} />
+            <img src={item.icon} alt={item.name} className="w-full h-full object-cover" />
+          </>
+        ) : (
+          <SlotIcon className="w-5 h-5 text-white/10" strokeWidth={1} />
+        )}
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-[9px] font-bold truncate tracking-wider uppercase" style={{ color: isExotic ? '#E5C76B' : 'white' }}>{item.name}</p>
-        <p className="text-[8px] text-gray-500 flex items-center gap-1">
-          <Sparkles className="w-2.5 h-2.5 text-[#E5C76B] opacity-70" /> {item.power}
-          {isEquipped && <span className="text-indigo-400 ml-1">• Angelegt</span>}
-        </p>
+        <p className="text-[8px] text-gray-600 uppercase tracking-[0.2em] mb-0.5">{slotLabel}</p>
+        {item ? (
+          <>
+            <p className="text-[10px] font-bold truncate tracking-wider uppercase" style={{ color: isExotic ? '#E5C76B' : 'white' }}>{item.name}</p>
+            <p className="text-[8px] text-gray-500 flex items-center gap-1 mt-0.5">
+              {item.power > 0 && <><Sparkles className="w-2.5 h-2.5 text-[#E5C76B] opacity-70" /> {item.power}</>}
+              <span className="text-gray-600 ml-1">{item.type}</span>
+            </p>
+          </>
+        ) : (
+          <p className="text-[10px] text-gray-700 uppercase tracking-widest">Leer</p>
+        )}
       </div>
-      <div className="flex flex-col gap-0.5 opacity-0 group-hover:opacity-100 transition-all">
-        {!isEquipped && (
-          <button onClick={(e) => { e.stopPropagation(); onTransferToVault(); }} className="p-1 text-gray-600 hover:text-white hover:bg-white/10 rounded" title="In den Tresor">
-            <ArrowRightLeft className="w-3 h-3" />
+      <div className="flex items-center gap-1">
+        {onAddToLoadout && item && (
+          <button onClick={(e) => { e.stopPropagation(); onAddToLoadout(); }} className="p-1.5 text-gray-600 hover:text-[#E5C76B] hover:bg-white/5 rounded opacity-0 group-hover:opacity-100 transition-all" title="Zum Loadout" data-testid={`button-loadout-${slotId}`}>
+            <Sparkles className="w-3.5 h-3.5" />
           </button>
         )}
-        <button onClick={(e) => { e.stopPropagation(); onAddToLoadout(); }} className="p-1 text-gray-600 hover:text-[#E5C76B] hover:bg-white/10 rounded" title="Zum Loadout">
-          <Sparkles className="w-3 h-3" />
+        <button onClick={onOpenPicker} className="p-1.5 text-gray-500 hover:text-white hover:bg-indigo-500/20 rounded transition-all border border-transparent hover:border-indigo-500/30" title="Wechseln" data-testid={`button-swap-${slotId}`}>
+          <Plus className="w-4 h-4" />
         </button>
       </div>
     </div>
+  );
+}
+
+function SlotPickerModal({ slotId, character, vaultItems, onClose, onEquip, onAddToLoadout }: {
+  slotId: string;
+  character: CharacterData;
+  vaultItems: InventoryItem[];
+  onClose: () => void;
+  onEquip: (item: InventoryItem) => void;
+  onAddToLoadout: (item: InventoryItem) => void;
+}) {
+  const [searchText, setSearchText] = useState('');
+  const [showVault, setShowVault] = useState(false);
+
+  const slotLabels: Record<string, string> = {
+    kinetic: 'Primär', energy: 'Energie', power: 'Schwer',
+    helmet: 'Kopf', arms: 'Arme', chest: 'Brust', legs: 'Beine', class: 'Klasse',
+    subclass: 'Subklasse',
+  };
+
+  const filtered = useMemo(() => {
+    const charItems = character.inventory.filter(i => i.slot === slotId);
+    const vaultSlotItems = showVault ? vaultItems.filter(i => i.slot === slotId) : [];
+    const allItems = [...charItems, ...vaultSlotItems];
+    if (!searchText) return allItems;
+    const q = searchText.toLowerCase();
+    return allItems.filter(i => i.name.toLowerCase().includes(q) || i.type.toLowerCase().includes(q));
+  }, [character.inventory, vaultItems, slotId, showVault, searchText]);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm"
+      onClick={onClose}
+    >
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95, y: 20 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.95, y: 20 }}
+        transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+        className="bg-[#0A0A0C] border border-white/10 w-[90vw] max-w-lg max-h-[80vh] flex flex-col shadow-2xl shadow-black/80"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="p-4 border-b border-white/5 flex items-center justify-between shrink-0">
+          <div>
+            <h3 className="text-white font-display font-light tracking-[0.2em] text-sm uppercase">{slotLabels[slotId] || slotId} wechseln</h3>
+            <p className="text-[9px] text-gray-500 uppercase tracking-widest mt-1">{filtered.length} verfügbar</p>
+          </div>
+          <button onClick={onClose} className="p-2 text-gray-400 hover:text-white hover:bg-white/5 rounded transition-all" data-testid="button-close-picker">
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        <div className="p-3 border-b border-white/5 shrink-0 space-y-2">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-500" />
+            <input
+              type="text"
+              placeholder="Suchen..."
+              value={searchText}
+              onChange={(e) => setSearchText(e.target.value)}
+              className="w-full bg-white/5 border border-white/5 text-white pl-8 pr-3 py-2 text-xs focus:outline-none focus:border-indigo-500/50 transition-all tracking-wider"
+              data-testid="input-picker-search"
+              autoFocus
+            />
+          </div>
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input type="checkbox" checked={showVault} onChange={(e) => setShowVault(e.target.checked)} className="accent-indigo-500" data-testid="checkbox-show-vault" />
+            <span className="text-[10px] text-gray-400 uppercase tracking-widest">Tresor einbeziehen</span>
+          </label>
+        </div>
+
+        <div className="flex-1 overflow-y-auto p-3 space-y-1.5">
+          {filtered.length === 0 ? (
+            <p className="text-xs text-gray-600 text-center py-8">Keine Gegenstände für diesen Slot verfügbar.</p>
+          ) : (
+            filtered.sort((a, b) => b.power - a.power).map(item => {
+              const isExotic = item.rarity === 'exotic';
+              const fromVault = item.location === 'vault';
+              return (
+                <div key={item.id} className="group flex items-center gap-3 bg-black/40 border border-white/5 p-2 hover:border-white/20 hover:bg-white/[0.02] transition-all cursor-pointer" onClick={() => onEquip(item)} data-testid={`picker-item-${item.id}`}>
+                  <div className="w-10 h-10 shrink-0 border border-white/10 overflow-hidden relative bg-black">
+                    <div className="absolute top-0 left-0 w-full h-0.5" style={{ backgroundColor: isExotic ? '#E5C76B' : '#7D5C96' }} />
+                    <img src={item.icon} alt={item.name} className="w-full h-full object-cover" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[10px] font-bold truncate tracking-wider uppercase" style={{ color: isExotic ? '#E5C76B' : 'white' }}>{item.name}</p>
+                    <p className="text-[8px] text-gray-500 flex items-center gap-1 mt-0.5">
+                      {item.power > 0 && <><Sparkles className="w-2.5 h-2.5 text-[#E5C76B] opacity-70" /> {item.power}</>}
+                      <span className="text-gray-600 ml-1">{item.type}</span>
+                      {fromVault && <span className="text-indigo-400 ml-1">• Tresor</span>}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <button onClick={(e) => { e.stopPropagation(); onAddToLoadout(item); }} className="p-1.5 text-gray-600 hover:text-[#E5C76B] hover:bg-white/5 rounded opacity-0 group-hover:opacity-100 transition-all" title="Zum Loadout">
+                      <Sparkles className="w-3 h-3" />
+                    </button>
+                    <div className="p-1.5 text-indigo-400">
+                      <ArrowRightLeft className="w-3.5 h-3.5" />
+                    </div>
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </div>
+      </motion.div>
+    </motion.div>
   );
 }
 

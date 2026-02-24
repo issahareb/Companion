@@ -27,7 +27,7 @@ The project uses a three-directory monorepo layout:
 
 **Key pages:**
 - `/` — Home/Login: Handles Bungie OAuth flow, redirects to dashboard on auth
-- `/dashboard` — Main app with four tabs: Hüter (character overview with stats, equipped items, per-character inventory, quests), Tresor (vault items with advanced filters), Loadouts (saved loadouts with load/share/delete), Postmeister (postmaster items)
+- `/dashboard` — Main app with four tabs: Hüter (character overview with organized equipment sections: Waffen/Rüstung/Subklasse, per-slot swap picker popup, stats, quests), Tresor (vault items with advanced filters), Loadouts (saved loadouts with load/share/delete), Postmeister (postmaster items)
 - `/share/:shareCode` — Shared loadout view with adoption flow (best-match logic for missing items)
 
 ### Backend (server/)

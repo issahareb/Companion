@@ -14,6 +14,7 @@ const GEAR_BUCKET_TO_SLOT: Record<number, string> = {
   14239492: 'chest',
   20886954: 'legs',
   1585787867: 'class',
+  3284755031: 'subclass',
 };
 
 const VAULT_BUCKET = 138197802;
