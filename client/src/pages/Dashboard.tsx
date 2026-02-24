@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { 
   Settings, Share2, Search, Backpack, Crosshair, 
   Zap, Flame, Hexagon, Shield, Save, Copy, Check, Archive,
-  Sparkles, Activity
+  Sparkles, Activity, Loader2
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -294,7 +294,7 @@ export default function Dashboard() {
                         </div>
                         
                         <div className="grid grid-cols-8 gap-1.5 opacity-60 group-hover:opacity-100 transition-opacity">
-                          {Object.values(saved.items).map((item: any, i) => (
+                          {Object.values(saved.items as Record<string, Item>).map((item: any, i) => (
                             <div key={i} className="aspect-square border border-white/10 bg-black relative overflow-hidden destiny-clip-sm">
                               <img src={item.icon} alt={item.name} className="w-full h-full object-cover" />
                             </div>

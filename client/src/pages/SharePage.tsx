@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { api, buildUrl } from '@shared/routes';
 import { Loader2, ArrowLeft, Hexagon, Sparkles } from 'lucide-react';
 import { EquippedSlot, type Item } from '@/components/Inventory';
+import { SavedLoadout } from '@shared/schema';
 
 const ITEM_SLOTS = [
   { id: 'kinetic', label: 'Kinetik', icon: () => null },
@@ -21,7 +22,7 @@ export default function SharePage() {
   const [, setLocation] = useLocation();
   const shareCode = params?.shareCode;
 
-  const { data: loadout, isLoading, error } = useQuery({
+  const { data: loadout, isLoading, error } = useQuery<SavedLoadout>({
     queryKey: [buildUrl(api.loadouts.getByShareCode.path, { shareCode: shareCode! })],
     enabled: !!shareCode,
   });
