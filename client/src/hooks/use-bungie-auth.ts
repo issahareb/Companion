@@ -44,10 +44,9 @@ export function useBungieAuth() {
     if (authCode && !hasAttemptedAuth.current) {
       hasAttemptedAuth.current = true;
       setIsAuthenticating(true);
-      exchangeCodeForToken(authCode);
-      
-      // Clean up URL
+      // Clean up URL immediately to prevent multiple attempts on re-renders
       window.history.replaceState({}, document.title, window.location.pathname);
+      exchangeCodeForToken(authCode);
     }
   }, []);
 
@@ -98,6 +97,7 @@ export function useBungieAuth() {
       setIsAuthenticated(true);
     } finally {
       setIsAuthenticating(false);
+      setIsFetchingProfile(false); // Ensure both are reset
     }
   };
 

@@ -16,14 +16,14 @@ export default function Home() {
   const [, setLocation] = useLocation();
 
   useEffect(() => {
-    if (isAuthenticated && !isFetchingProfile) {
+    if (isAuthenticated && !isFetchingProfile && !isAuthenticating) {
       setLocation('/dashboard');
     }
-  }, [isAuthenticated, isFetchingProfile, setLocation]);
+  }, [isAuthenticated, isFetchingProfile, isAuthenticating, setLocation]);
 
   return (
     <AnimatePresence mode="wait">
-      {isFetchingProfile ? (
+      {(isFetchingProfile || isAuthenticating) ? (
         <motion.div 
           key="loading"
           initial={{ opacity: 0 }}
