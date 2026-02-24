@@ -14,17 +14,31 @@ interface EquipParams {
   membershipType: number;
 }
 
+interface SwapParams {
+  item: {
+    id: string;
+    itemHash: number;
+    location: string;
+    characterId?: string;
+  };
+  targetCharacterId: string;
+  membershipType: number;
+}
+
+function getAccessToken() {
+  return localStorage.getItem('bungie_access_token') || '';
+}
+
 export function useTransferItem() {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (params: TransferParams) => {
-      const accessToken = localStorage.getItem('bungie_access_token');
       const res = await fetch('/api/bungie/transfer', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${accessToken}`,
+          'Authorization': `Bearer ${getAccessToken()}`,
         },
         body: JSON.stringify(params),
       });
@@ -36,8 +50,7 @@ export function useTransferItem() {
       return res.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/bungie/inventory'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/bungie/characters'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/bungie/profile-state'] });
     },
   });
 }
@@ -47,12 +60,11 @@ export function useEquipItem() {
 
   return useMutation({
     mutationFn: async (params: EquipParams) => {
-      const accessToken = localStorage.getItem('bungie_access_token');
       const res = await fetch('/api/bungie/equip', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${accessToken}`,
+          'Authorization': `Bearer ${getAccessToken()}`,
         },
         body: JSON.stringify(params),
       });
@@ -64,8 +76,96 @@ export function useEquipItem() {
       return res.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/bungie/inventory'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/bungie/characters'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/bungie/profile-state'] });
+    },
+  });
+}
+
+export function useSwapItem() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (params: SwapParams) => {
+      const { item, targetCharacterId, membershipType } = params;
+      const headers = {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${getAccessToken()}`,
+      };
+
+      if (item.location === 'vault') {
+        await fetch('/api/bungie/transfer', {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({
+            itemReferenceHash: item.itemHash,
+            itemId: item.id,
+            characterId: targetCharacterId,
+            membershipType,
+            transferToVault: false,
+          }),
+        }).then(r => { if (!r.ok) throw new Error('Transfer from vault failed'); return r.json(); });
+
+        await fetch('/api/bungie/equip', {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({
+            itemId: item.id,
+            characterId: targetCharacterId,
+            membershipType,
+          }),
+        }).then(r => { if (!r.ok) throw new Error('Equip failed'); return r.json(); });
+
+      } else if (item.location === 'character' && item.characterId === targetCharacterId) {
+        await fetch('/api/bungie/equip', {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({
+            itemId: item.id,
+            characterId: targetCharacterId,
+            membershipType,
+          }),
+        }).then(r => { if (!r.ok) throw new Error('Equip failed'); return r.json(); });
+
+      } else if (item.location === 'character' && item.characterId !== targetCharacterId) {
+        await fetch('/api/bungie/transfer', {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({
+            itemReferenceHash: item.itemHash,
+            itemId: item.id,
+            characterId: item.characterId,
+            membershipType,
+            transferToVault: true,
+          }),
+        }).then(r => { if (!r.ok) throw new Error('Transfer to vault failed'); return r.json(); });
+
+        await fetch('/api/bungie/transfer', {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({
+            itemReferenceHash: item.itemHash,
+            itemId: item.id,
+            characterId: targetCharacterId,
+            membershipType,
+            transferToVault: false,
+          }),
+        }).then(r => { if (!r.ok) throw new Error('Transfer from vault failed'); return r.json(); });
+
+        await fetch('/api/bungie/equip', {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({
+            itemId: item.id,
+            characterId: targetCharacterId,
+            membershipType,
+          }),
+        }).then(r => { if (!r.ok) throw new Error('Equip failed'); return r.json(); });
+      }
+
+      return { success: true };
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/bungie/profile-state'] });
     },
   });
 }

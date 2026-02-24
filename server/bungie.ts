@@ -5,7 +5,7 @@ if (!BUNGIE_API_KEY) {
   console.warn('[bungie] BUNGIE_API_KEY not set - Bungie API calls will fail');
 }
 
-const BUCKET_TO_SLOT: Record<number, string> = {
+const GEAR_BUCKET_TO_SLOT: Record<number, string> = {
   1498876634: 'kinetic',
   2465295065: 'energy',
   953998645: 'power',
@@ -16,9 +16,27 @@ const BUCKET_TO_SLOT: Record<number, string> = {
   1585787867: 'class',
 };
 
-const TIER_TO_RARITY: Record<string, 'legendary' | 'exotic'> = {
-  Exotic: 'exotic',
+const VAULT_BUCKET = 138197802;
+const POSTMASTER_BUCKET = 215938771;
+const QUEST_BUCKET = 1345459588;
+const PURSUITS_BUCKET = 1345459588;
+
+const WEAPON_SLOTS = ['kinetic', 'energy', 'power'];
+const ARMOR_SLOTS = ['helmet', 'arms', 'chest', 'legs', 'class'];
+
+const TIER_TO_RARITY: Record<string, 'common' | 'uncommon' | 'rare' | 'legendary' | 'exotic'> = {
+  Common: 'common',
+  Uncommon: 'uncommon',
+  Rare: 'rare',
   Legendary: 'legendary',
+  Exotic: 'exotic',
+};
+
+const CURRENCY_HASHES: Record<number, string> = {
+  3159615086: 'Glimmer',
+  1022552290: 'Legendary Shards',
+  2817410917: 'Bright Dust',
+  3147280338: 'Silver',
 };
 
 interface ManifestCache {
@@ -35,6 +53,9 @@ interface ManifestItem {
   bucketHash: number;
   tierTypeName: string;
   itemType: number;
+  itemSubType: number;
+  classType: number;
+  description: string;
 }
 
 let manifestCache: ManifestCache | null = null;
@@ -79,7 +100,13 @@ async function fetchManifest(): Promise<Record<string, ManifestItem>> {
   for (const [hash, def] of Object.entries(itemDefs) as [string, any][]) {
     if (!def.displayProperties?.name) continue;
     const bucketHash = def.inventory?.bucketTypeHash;
-    if (!bucketHash || !BUCKET_TO_SLOT[bucketHash]) continue;
+    if (!bucketHash) continue;
+
+    const isGear = !!GEAR_BUCKET_TO_SLOT[bucketHash];
+    const isQuest = bucketHash === QUEST_BUCKET || bucketHash === PURSUITS_BUCKET;
+    const isCurrency = !!CURRENCY_HASHES[Number(hash)];
+
+    if (!isGear && !isQuest && !isCurrency && bucketHash !== POSTMASTER_BUCKET) continue;
 
     items[hash] = {
       name: def.displayProperties.name,
@@ -93,6 +120,9 @@ async function fetchManifest(): Promise<Record<string, ManifestItem>> {
       bucketHash,
       tierTypeName: def.inventory?.tierTypeName || 'Common',
       itemType: def.itemType || 0,
+      itemSubType: def.itemSubType || 0,
+      classType: def.classType ?? 3,
+      description: def.displayProperties.description || '',
     };
   }
 
@@ -173,7 +203,39 @@ const RACE_NAMES: Record<number, string> = {
   2: 'Exo',
 };
 
-export interface CharacterSummary {
+export interface InventoryItem {
+  id: string;
+  itemHash: number;
+  name: string;
+  type: string;
+  slot: string;
+  screenshot: string;
+  rarity: string;
+  power: number;
+  icon: string;
+  location: 'vault' | 'character' | 'equipped' | 'postmaster';
+  characterId?: string;
+  description?: string;
+  classType?: number;
+}
+
+export interface QuestItem {
+  id: string;
+  itemHash: number;
+  name: string;
+  icon: string;
+  description: string;
+  type: string;
+}
+
+export interface CurrencyInfo {
+  itemHash: number;
+  name: string;
+  icon: string;
+  quantity: number;
+}
+
+export interface CharacterData {
   characterId: string;
   classType: number;
   className: string;
@@ -182,96 +244,64 @@ export interface CharacterSummary {
   emblemPath: string;
   emblemBackgroundPath: string;
   dateLastPlayed: string;
+  stats: Record<string, number>;
   equippedItems: InventoryItem[];
+  inventory: InventoryItem[];
+  quests: QuestItem[];
 }
 
-export async function fetchCharacters(
+export interface ProfileState {
+  characters: CharacterData[];
+  vaultItems: InventoryItem[];
+  postmasterItems: InventoryItem[];
+  currencies: CurrencyInfo[];
+}
+
+function parseGearItem(
+  item: any,
+  manifest: Record<string, ManifestItem>,
+  instanceDetails: any,
+  location: 'vault' | 'character' | 'equipped' | 'postmaster',
+  characterId?: string
+): InventoryItem | null {
+  const hashStr = String(item.itemHash);
+  const manifestItem = manifest[hashStr];
+  if (!manifestItem) return null;
+
+  const slot = GEAR_BUCKET_TO_SLOT[manifestItem.bucketHash];
+  if (!slot) return null;
+
+  const rarity = TIER_TO_RARITY[manifestItem.tierTypeName];
+  if (!rarity) return null;
+
+  const instanceId = item.itemInstanceId || hashStr;
+  const instance = item.itemInstanceId ? instanceDetails[item.itemInstanceId] : null;
+
+  return {
+    id: instanceId,
+    itemHash: item.itemHash,
+    name: manifestItem.name,
+    type: manifestItem.type,
+    slot,
+    rarity,
+    power: instance?.primaryStat?.value || 0,
+    icon: manifestItem.icon,
+    screenshot: manifestItem.screenshot,
+    location,
+    characterId,
+    classType: manifestItem.classType,
+  };
+}
+
+export async function fetchProfileState(
   membershipType: string,
   membershipId: string,
   accessToken: string
-): Promise<CharacterSummary[]> {
+): Promise<ProfileState> {
   const [manifest, profileData] = await Promise.all([
     fetchManifest(),
     bungieGet(
-      `/Platform/Destiny2/${membershipType}/Profile/${membershipId}/?components=200,205,300`,
-      accessToken
-    ),
-  ]);
-
-  const response = profileData.Response;
-  if (!response?.characters?.data) {
-    throw new Error('No character data returned from Bungie');
-  }
-
-  const characters: CharacterSummary[] = [];
-  const instanceDetails = response.itemComponents?.instances?.data || {};
-  const characterEquipment = response.characterEquipment?.data || {};
-
-  for (const [charId, charData] of Object.entries(response.characters.data) as [string, any][]) {
-    const equipped: InventoryItem[] = [];
-    const charEquip = characterEquipment[charId];
-    if (charEquip?.items) {
-      for (const item of charEquip.items) {
-        const hashStr = String(item.itemHash);
-        const manifestItem = manifest[hashStr];
-        if (!manifestItem) continue;
-        const slot = BUCKET_TO_SLOT[manifestItem.bucketHash];
-        if (!slot) continue;
-        const rarity = TIER_TO_RARITY[manifestItem.tierTypeName];
-        if (!rarity) continue;
-        const instance = item.itemInstanceId ? instanceDetails[item.itemInstanceId] : null;
-        equipped.push({
-          id: item.itemInstanceId || hashStr,
-          itemHash: item.itemHash,
-          name: manifestItem.name,
-          type: manifestItem.type,
-          slot,
-          rarity,
-          power: instance?.primaryStat?.value || 0,
-          icon: manifestItem.icon,
-          screenshot: manifestItem.screenshot,
-        });
-      }
-    }
-
-    characters.push({
-      characterId: charId,
-      classType: charData.classType,
-      className: CLASS_NAMES[charData.classType] || 'Unknown',
-      raceName: RACE_NAMES[charData.raceType] || 'Unknown',
-      light: charData.light || 0,
-      emblemPath: charData.emblemPath ? `${BUNGIE_BASE}${charData.emblemPath}` : '',
-      emblemBackgroundPath: charData.emblemBackgroundPath ? `${BUNGIE_BASE}${charData.emblemBackgroundPath}` : '',
-      dateLastPlayed: charData.dateLastPlayed || '',
-      equippedItems: equipped,
-    });
-  }
-
-  characters.sort((a, b) => new Date(b.dateLastPlayed).getTime() - new Date(a.dateLastPlayed).getTime());
-  return characters;
-}
-
-export interface InventoryItem {
-  id: string;
-  itemHash: number;
-  name: string;
-  type: string;
-  slot: string;
-  screenshot: string;
-  rarity: 'legendary' | 'exotic';
-  power: number;
-  icon: string;
-}
-
-export async function fetchInventory(
-  membershipType: string,
-  membershipId: string,
-  accessToken: string
-): Promise<InventoryItem[]> {
-  const [manifest, profileData] = await Promise.all([
-    fetchManifest(),
-    bungieGet(
-      `/Platform/Destiny2/${membershipType}/Profile/${membershipId}/?components=102,200,201,205,300`,
+      `/Platform/Destiny2/${membershipType}/Profile/${membershipId}/?components=100,102,103,200,201,205,300`,
       accessToken
     ),
   ]);
@@ -283,68 +313,136 @@ export async function fetchInventory(
 
   const instanceDetails = response.itemComponents?.instances?.data || {};
 
-  const allItems: Array<{ itemHash: number; itemInstanceId?: string }> = [];
+  const currencies: CurrencyInfo[] = [];
+  const profileCurrencies = response.profileCurrencies?.data?.items;
+  if (profileCurrencies) {
+    for (const curr of profileCurrencies) {
+      const hashStr = String(curr.itemHash);
+      const currName = CURRENCY_HASHES[curr.itemHash];
+      const manifestItem = manifest[hashStr];
+      if (currName || manifestItem) {
+        currencies.push({
+          itemHash: curr.itemHash,
+          name: currName || manifestItem?.name || 'Unknown',
+          icon: manifestItem?.icon || '',
+          quantity: curr.quantity || 0,
+        });
+      }
+    }
+  }
+
+  const vaultItems: InventoryItem[] = [];
+  const postmasterItems: InventoryItem[] = [];
 
   const profileInventory = response.profileInventory?.data?.items;
   if (profileInventory) {
-    allItems.push(...profileInventory);
-  }
+    for (const item of profileInventory) {
+      const hashStr = String(item.itemHash);
+      const manifestItem = manifest[hashStr];
+      if (!manifestItem) continue;
 
-  const characterInventories = response.characterInventories?.data;
-  if (characterInventories) {
-    for (const charItems of Object.values(characterInventories) as any[]) {
-      if (charItems?.items) {
-        allItems.push(...charItems.items);
+      if (item.bucketHash === VAULT_BUCKET || manifestItem.bucketHash === VAULT_BUCKET) {
+        const parsed = parseGearItem(item, manifest, instanceDetails, 'vault');
+        if (parsed) vaultItems.push(parsed);
       }
     }
   }
 
-  const characterEquipment = response.characterEquipment?.data;
-  if (characterEquipment) {
-    for (const charEquip of Object.values(characterEquipment) as any[]) {
-      if (charEquip?.items) {
-        allItems.push(...charEquip.items);
+  const characters: CharacterData[] = [];
+  const characterData = response.characters?.data || {};
+  const characterInventories = response.characterInventories?.data || {};
+  const characterEquipment = response.characterEquipment?.data || {};
+
+  for (const [charId, charInfo] of Object.entries(characterData) as [string, any][]) {
+    const equipped: InventoryItem[] = [];
+    const charEquip = characterEquipment[charId];
+    if (charEquip?.items) {
+      for (const item of charEquip.items) {
+        const parsed = parseGearItem(item, manifest, instanceDetails, 'equipped', charId);
+        if (parsed) equipped.push(parsed);
       }
     }
-  }
 
-  const seenIds = new Set<string>();
-  const inventory: InventoryItem[] = [];
+    const charInventory: InventoryItem[] = [];
+    const charInv = characterInventories[charId];
+    if (charInv?.items) {
+      for (const item of charInv.items) {
+        const hashStr = String(item.itemHash);
+        const manifestItem = manifest[hashStr];
+        if (!manifestItem) continue;
 
-  for (const item of allItems) {
-    const hashStr = String(item.itemHash);
-    const manifestItem = manifest[hashStr];
-    if (!manifestItem) continue;
+        if (item.bucketHash === POSTMASTER_BUCKET) {
+          const parsed = parseGearItem(item, manifest, instanceDetails, 'postmaster', charId);
+          if (parsed) postmasterItems.push(parsed);
+          continue;
+        }
 
-    const slot = BUCKET_TO_SLOT[manifestItem.bucketHash];
-    if (!slot) continue;
+        if (manifestItem.bucketHash === QUEST_BUCKET) {
+          continue;
+        }
 
-    const rarity = TIER_TO_RARITY[manifestItem.tierTypeName];
-    if (!rarity) continue;
+        const parsed = parseGearItem(item, manifest, instanceDetails, 'character', charId);
+        if (parsed) charInventory.push(parsed);
+      }
+    }
 
-    const instanceId = item.itemInstanceId || hashStr;
-    if (seenIds.has(instanceId)) continue;
-    seenIds.add(instanceId);
+    const quests: QuestItem[] = [];
+    if (charInv?.items) {
+      for (const item of charInv.items) {
+        const hashStr = String(item.itemHash);
+        const manifestItem = manifest[hashStr];
+        if (!manifestItem) continue;
+        if (manifestItem.bucketHash === QUEST_BUCKET) {
+          quests.push({
+            id: item.itemInstanceId || hashStr,
+            itemHash: item.itemHash,
+            name: manifestItem.name,
+            icon: manifestItem.icon,
+            description: manifestItem.description,
+            type: manifestItem.type,
+          });
+        }
+      }
+    }
 
-    const instance = item.itemInstanceId ? instanceDetails[item.itemInstanceId] : null;
-    const power = instance?.primaryStat?.value || 0;
+    const charStats: Record<string, number> = {};
+    if (charInfo.stats) {
+      const statNames: Record<string, string> = {
+        '2996146975': 'Mobility',
+        '392767087': 'Resilience',
+        '1943323491': 'Recovery',
+        '1735777505': 'Discipline',
+        '144602215': 'Intellect',
+        '4244567218': 'Strength',
+      };
+      for (const [statHash, val] of Object.entries(charInfo.stats) as [string, any][]) {
+        const statName = statNames[statHash];
+        if (statName) {
+          charStats[statName] = val;
+        }
+      }
+    }
 
-    inventory.push({
-      id: instanceId,
-      itemHash: item.itemHash,
-      name: manifestItem.name,
-      type: manifestItem.type,
-      slot,
-      rarity,
-      power,
-      icon: manifestItem.icon,
-      screenshot: manifestItem.screenshot,
+    characters.push({
+      characterId: charId,
+      classType: charInfo.classType,
+      className: CLASS_NAMES[charInfo.classType] || 'Unknown',
+      raceName: RACE_NAMES[charInfo.raceType] || 'Unknown',
+      light: charInfo.light || 0,
+      emblemPath: charInfo.emblemPath ? `${BUNGIE_BASE}${charInfo.emblemPath}` : '',
+      emblemBackgroundPath: charInfo.emblemBackgroundPath ? `${BUNGIE_BASE}${charInfo.emblemBackgroundPath}` : '',
+      dateLastPlayed: charInfo.dateLastPlayed || '',
+      stats: charStats,
+      equippedItems: equipped,
+      inventory: charInventory.sort((a, b) => b.power - a.power),
+      quests,
     });
   }
 
-  inventory.sort((a, b) => b.power - a.power);
+  characters.sort((a, b) => new Date(b.dateLastPlayed).getTime() - new Date(a.dateLastPlayed).getTime());
+  vaultItems.sort((a, b) => b.power - a.power);
 
-  return inventory;
+  return { characters, vaultItems, postmasterItems, currencies };
 }
 
 export interface TransferRequest {
@@ -410,4 +508,8 @@ export async function equipItem(request: EquipRequest, accessToken: string): Pro
     throw new Error(data.Message || `Equip failed: ${data.ErrorStatus}`);
   }
   return data;
+}
+
+export async function fetchMembershipsRaw(accessToken: string) {
+  return bungieGet('/Platform/User/GetMembershipsForCurrentUser/', accessToken);
 }

@@ -2,7 +2,7 @@
 
 ## Overview
 
-**Forge** is a Destiny 2 loadout manager web application. It allows players to authenticate via Bungie's OAuth2 system, browse their inventory (currently using mock data), assemble custom loadouts by assigning items to equipment slots, save loadouts to a database, and share them via unique share codes/links. The UI is themed with a dark, Destiny-inspired aesthetic using custom clip-paths, animations, and a gold/indigo color palette.
+**Forge** is a Destiny 2 loadout manager web application. It allows players to authenticate via Bungie's OAuth2 system, browse their real game inventory separated by location (character, vault, postmaster), assemble custom loadouts by assigning items to equipment slots, save loadouts to a database, and share them via unique share codes/links. The UI is themed with a dark, Destiny-inspired aesthetic using custom clip-paths, animations, and a gold/indigo color palette.
 
 ## User Preferences
 
@@ -27,7 +27,7 @@ The project uses a three-directory monorepo layout:
 
 **Key pages:**
 - `/` — Home/Login: Handles Bungie OAuth flow, redirects to dashboard on auth
-- `/dashboard` — Main loadout builder with three tabs: Inventar (inventory grid, equipped slots, search, save/share), Hüter (character overview with power levels, equipped items, transfer-to-vault), Loadouts (saved loadouts with load/share/delete)
+- `/dashboard` — Main app with four tabs: Hüter (character overview with stats, equipped items, per-character inventory, quests), Tresor (vault items with advanced filters), Loadouts (saved loadouts with load/share/delete), Postmeister (postmaster items)
 - `/share/:shareCode` — Shared loadout view with adoption flow (best-match logic for missing items)
 
 ### Backend (server/)
@@ -37,14 +37,28 @@ The project uses a three-directory monorepo layout:
 - **Build:** Custom build script (`script/build.ts`) uses esbuild for server and Vite for client
 
 **API Routes (all under `/api/`):**
-- `GET /api/bungie/characters/:membershipType/:membershipId` — Fetch character summaries (class, power, emblem, equipped items)
-- `GET /api/bungie/inventory/:membershipType/:membershipId` — Fetch real Destiny 2 inventory from Bungie API (requires Bearer token)
+- `GET /api/bungie/profile-state/:membershipType/:membershipId` — Fetch comprehensive profile state: characters (with stats, equipped, inventory, quests), vault items, postmaster items, currencies
 - `POST /api/bungie/transfer` — Transfer item between vault and character (requires Bearer token)
 - `POST /api/bungie/equip` — Equip an item on a character (requires Bearer token)
 - `GET /api/loadouts/:bungieMembershipId` — List saved loadouts for a user
 - `POST /api/loadouts` — Create/save a new loadout
 - `DELETE /api/loadouts/:id` — Delete a saved loadout
 - `GET /api/loadouts/share/:shareCode` — Get a loadout by its share code
+
+### Bungie API Integration (server/bungie.ts)
+- **fetchProfileState()** — Main endpoint. Uses Bungie components 100,102,103,200,201,205,300 to fetch:
+  - Characters: class, race, power level, emblem, stats (Mobility/Resilience/Recovery/Discipline/Intellect/Strength), equipped items, per-character inventory, active quests
+  - Vault: items in bucket 138197802
+  - Postmaster: items in bucket 215938771
+  - Currencies: Glimmer, Silver, Bright Dust, Legendary Shards via component 103
+- **transferItem()** — Calls Bungie TransferItem API
+- **equipItem()** — Calls Bungie EquipItem API
+- **Manifest**: Cached 24h, parses gear buckets, quest bucket (1345459588), postmaster bucket, currency hashes
+
+### Client Hooks
+- **useProfileState** — Fetches `/api/bungie/profile-state`, returns structured ProfileState with characters, vault, postmaster, currencies
+- **useTransferItem / useEquipItem / useSwapItem** — Mutations for item management. useSwapItem orchestrates multi-step transfer+equip flows
+- **useLoadouts / useSaveLoadout / useDeleteLoadout** — Loadout CRUD operations
 
 ### Shared Layer (shared/)
 - **`schema.ts`** — Drizzle ORM table definitions and Zod schemas (using `drizzle-zod`)
@@ -55,7 +69,7 @@ The project uses a three-directory monorepo layout:
 - **Connection:** `node-postgres` (pg) Pool, configured via `DATABASE_URL` environment variable
 - **Schema push:** `npm run db:push` (uses `drizzle-kit push`)
 - **Tables:**
-  - `saved_loadouts` — Stores loadouts with fields: `id` (serial PK), `bungie_membership_id` (text), `name` (text), `items` (jsonb — maps slot to item data), `share_code` (unique text, nullable), `created_at` (timestamp)
+  - `saved_loadouts` — Stores loadouts with fields: `id` (serial PK), `bungie_membership_id` (text), `name` (text), `items` (jsonb — maps slot to item data), `artifact_mods` (jsonb), `class_type` (integer), `share_code` (unique text, nullable), `created_at` (timestamp)
 
 ### Authentication
 - **Bungie OAuth2:** Client-side public OAuth flow. The frontend redirects to Bungie for authorization, receives a code, and exchanges it for an access token directly from the client.
@@ -69,7 +83,7 @@ The project uses a three-directory monorepo layout:
 ## External Dependencies
 
 ### Third-Party Services
-- **Bungie.net API** — OAuth2 authentication and real inventory data fetching via server-side proxy (`server/bungie.ts`). The server fetches the Destiny 2 manifest (cached 24h) and player inventory, mapping items to the app's slot system. API key stored in `BUNGIE_API_KEY` environment variable.
+- **Bungie.net API** — OAuth2 authentication and real inventory data fetching via server-side proxy (`server/bungie.ts`). The server fetches the Destiny 2 manifest (cached 24h) and player inventory/characters/vault/currencies, mapping items to the app's slot system. API key stored in `BUNGIE_API_KEY` environment variable.
 - **PostgreSQL** — Primary database, connected via `DATABASE_URL` environment variable. Must be provisioned before the app can run.
 
 ### Key NPM Packages
