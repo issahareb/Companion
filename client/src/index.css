@@ -52,3 +52,54 @@ body {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
 }
+
+@keyframes pulse-glow {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.8; }
+}
+
+@keyframes scan-line {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(100%); }
+}
+
+@keyframes border-pulse {
+  0%, 100% { border-color: rgba(99, 102, 241, 0.15); }
+  50% { border-color: rgba(99, 102, 241, 0.4); }
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 3s ease-in-out infinite;
+}
+
+.animate-border-pulse {
+  animation: border-pulse 2s ease-in-out infinite;
+}
+
+.slot-row-active {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.08) 0%, rgba(0,0,0,0.3) 100%);
+  border-color: rgba(99, 102, 241, 0.3) !important;
+  box-shadow: 0 0 20px rgba(99, 102, 241, 0.1), inset 0 0 20px rgba(99, 102, 241, 0.03);
+}
+
+.item-card-hover {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.item-card-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.6), 0 0 15px rgba(99, 102, 241, 0.15);
+}
+
+.rarity-exotic-glow {
+  box-shadow: 0 0 12px rgba(229, 199, 107, 0.2), inset 0 0 12px rgba(229, 199, 107, 0.05);
+}
+
+.rarity-legendary-glow {
+  box-shadow: 0 0 12px rgba(125, 92, 150, 0.2), inset 0 0 12px rgba(125, 92, 150, 0.05);
+}
+
+.section-divider {
+  background: linear-gradient(90deg, transparent, rgba(99, 102, 241, 0.3), transparent);
+  height: 1px;
+}

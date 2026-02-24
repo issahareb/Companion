@@ -320,19 +320,22 @@ export default function Dashboard() {
               {activeTab === 'characters' && (
                 <motion.div key="characters" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="h-full flex flex-col">
                   {/* Character selector */}
-                  <div className="flex items-center gap-2 p-3 md:p-4 border-b border-white/5 shrink-0 overflow-x-auto">
+                  <div className="flex items-center gap-2 p-3 md:p-4 border-b border-white/[0.06] shrink-0 overflow-x-auto bg-black/20">
                     {characters.map(char => (
                       <button
                         key={char.characterId}
                         onClick={() => setSelectedCharacterId(char.characterId)}
-                        className={`flex items-center gap-2 px-3 py-2 border transition-all shrink-0 destiny-clip-sm ${
+                        className={`flex items-center gap-2.5 px-3.5 py-2.5 border transition-all duration-300 shrink-0 relative overflow-hidden ${
                           selectedCharacterId === char.characterId
-                            ? 'bg-indigo-600/20 border-indigo-500/50 text-white'
-                            : 'bg-white/5 border-white/10 text-gray-400 hover:border-white/30'
+                            ? 'bg-gradient-to-r from-indigo-600/20 to-transparent border-indigo-500/40 text-white shadow-lg shadow-indigo-900/20'
+                            : 'bg-white/[0.03] border-white/[0.06] text-gray-400 hover:border-white/20 hover:bg-white/[0.05]'
                         }`}
                         data-testid={`button-select-char-${char.characterId}`}
                       >
-                        {char.emblemPath && <img src={char.emblemPath} alt="" className="w-8 h-8 border border-white/10" />}
+                        {selectedCharacterId === char.characterId && (
+                          <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-indigo-500 to-purple-500" />
+                        )}
+                        {char.emblemPath && <img src={char.emblemPath} alt="" className="w-9 h-9 ring-1 ring-white/10" />}
                         <div className="text-left">
                           <p className="text-[10px] font-bold tracking-wider uppercase">{char.className}</p>
                           <p className="text-[9px] text-gray-500 flex items-center gap-1">
@@ -346,33 +349,35 @@ export default function Dashboard() {
                   {selectedCharacter && (
                     <div className="flex-1 min-h-0 overflow-y-auto">
                       {/* Character header */}
-                      <div className="relative">
+                      <div className="relative overflow-hidden">
                         {selectedCharacter.emblemBackgroundPath && (
-                          <img src={selectedCharacter.emblemBackgroundPath} alt="" className="absolute inset-0 w-full h-full object-cover opacity-30" />
+                          <img src={selectedCharacter.emblemBackgroundPath} alt="" className="absolute inset-0 w-full h-full object-cover opacity-25" />
                         )}
-                        <div className="relative z-10 p-4 md:p-6 flex items-center justify-between">
+                        <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-transparent" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-[#050507] via-transparent to-transparent" />
+                        <div className="relative z-10 p-5 md:p-7 flex items-center justify-between">
                           <div>
-                            <h3 className="text-xl md:text-2xl text-white font-display font-light tracking-wider">{selectedCharacter.className}</h3>
-                            <p className="text-[10px] text-gray-400 uppercase tracking-widest">{selectedCharacter.raceName}</p>
+                            <h3 className="text-2xl md:text-3xl text-white font-display font-light tracking-wider text-shadow-glow">{selectedCharacter.className}</h3>
+                            <p className="text-[10px] text-gray-400 uppercase tracking-[0.3em] mt-1">{selectedCharacter.raceName}</p>
                           </div>
                           <div className="text-right">
-                            <div className="flex items-center gap-2 justify-end">
-                              <Sparkles className="w-5 h-5 text-[#E5C76B]" />
-                              <span className="text-3xl font-display font-light text-white" data-testid="text-power-level">{selectedCharacter.light}</span>
+                            <div className="flex items-center gap-2.5 justify-end">
+                              <Sparkles className="w-5 h-5 text-[#E5C76B] animate-pulse-glow" />
+                              <span className="text-4xl font-display font-light text-white text-shadow-glow" data-testid="text-power-level">{selectedCharacter.light}</span>
                             </div>
-                            <p className="text-[9px] text-gray-500 uppercase tracking-widest mt-1">Power Level</p>
+                            <p className="text-[9px] text-gray-500 uppercase tracking-[0.25em] mt-1.5">Power Level</p>
                           </div>
                         </div>
                       </div>
 
                       {/* Stats */}
                       {Object.keys(selectedCharacter.stats).length > 0 && (
-                        <div className="px-4 md:px-6 pb-4">
-                          <div className="grid grid-cols-3 md:grid-cols-6 gap-2">
+                        <div className="px-4 md:px-6 pb-5">
+                          <div className="grid grid-cols-3 md:grid-cols-6 gap-1.5">
                             {Object.entries(selectedCharacter.stats).map(([name, val]) => (
-                              <div key={name} className="bg-white/5 border border-white/5 p-2 text-center">
-                                <p className="text-[9px] text-gray-500 uppercase tracking-widest mb-1">{name}</p>
-                                <p className="text-sm font-display text-white font-light" data-testid={`text-stat-${name.toLowerCase()}`}>{val}</p>
+                              <div key={name} className="bg-gradient-to-b from-white/[0.04] to-transparent border border-white/[0.06] p-2.5 text-center group/stat hover:border-indigo-500/20 transition-all duration-300">
+                                <p className="text-[8px] text-gray-600 uppercase tracking-[0.2em] mb-1 group-hover/stat:text-gray-400 transition-colors">{name}</p>
+                                <p className="text-base font-display text-white font-light group-hover/stat:text-indigo-300 transition-colors" data-testid={`text-stat-${name.toLowerCase()}`}>{val}</p>
                               </div>
                             ))}
                           </div>
@@ -380,11 +385,17 @@ export default function Dashboard() {
                       )}
 
                       {/* WAFFEN Section */}
-                      <div className="px-4 md:px-6 pb-4">
-                        <h4 className="text-[10px] text-gray-500 uppercase tracking-[0.3em] mb-3 font-display font-bold flex items-center gap-2">
-                          <Crosshair className="w-3.5 h-3.5" /> Waffen
-                        </h4>
-                        <div className="space-y-2">
+                      <div className="px-4 md:px-6 pb-5">
+                        <div className="flex items-center gap-3 mb-3">
+                          <div className="flex items-center gap-2">
+                            <div className="w-6 h-6 rounded-sm bg-gradient-to-br from-red-500/20 to-orange-500/10 flex items-center justify-center">
+                              <Crosshair className="w-3.5 h-3.5 text-red-400/80" />
+                            </div>
+                            <h4 className="text-[11px] text-white/80 uppercase tracking-[0.25em] font-display font-semibold">Waffen</h4>
+                          </div>
+                          <div className="flex-1 section-divider" />
+                        </div>
+                        <div className="space-y-1">
                           {(['kinetic', 'energy', 'power'] as const).map(slotId => {
                             const equipped = selectedCharacter.equippedItems.find(i => i.slot === slotId);
                             const slotLabel = slotId === 'kinetic' ? 'Primär' : slotId === 'energy' ? 'Energie' : 'Schwer';
@@ -396,8 +407,13 @@ export default function Dashboard() {
                                 slotLabel={slotLabel}
                                 SlotIcon={SlotIcon}
                                 item={equipped || null}
-                                onOpenPicker={() => setSlotPickerSlot(slotId)}
+                                isExpanded={slotPickerSlot === slotId}
+                                onTogglePicker={() => setSlotPickerSlot(slotPickerSlot === slotId ? null : slotId)}
                                 onAddToLoadout={equipped ? () => addToLoadout(toItem(equipped)) : undefined}
+                                character={selectedCharacter}
+                                vaultItems={vaultItems}
+                                onEquip={(item) => { handleEquip(item, selectedCharacter.characterId); setSlotPickerSlot(null); }}
+                                onAddToLoadoutItem={(item) => addToLoadout(toItem(item))}
                               />
                             );
                           })}
@@ -405,11 +421,17 @@ export default function Dashboard() {
                       </div>
 
                       {/* RÜSTUNG Section */}
-                      <div className="px-4 md:px-6 pb-4">
-                        <h4 className="text-[10px] text-gray-500 uppercase tracking-[0.3em] mb-3 font-display font-bold flex items-center gap-2">
-                          <Shield className="w-3.5 h-3.5" /> Rüstung
-                        </h4>
-                        <div className="space-y-2">
+                      <div className="px-4 md:px-6 pb-5">
+                        <div className="flex items-center gap-3 mb-3">
+                          <div className="flex items-center gap-2">
+                            <div className="w-6 h-6 rounded-sm bg-gradient-to-br from-blue-500/20 to-indigo-500/10 flex items-center justify-center">
+                              <Shield className="w-3.5 h-3.5 text-blue-400/80" />
+                            </div>
+                            <h4 className="text-[11px] text-white/80 uppercase tracking-[0.25em] font-display font-semibold">Rüstung</h4>
+                          </div>
+                          <div className="flex-1 section-divider" />
+                        </div>
+                        <div className="space-y-1">
                           {(['helmet', 'arms', 'chest', 'legs', 'class'] as const).map(slotId => {
                             const equipped = selectedCharacter.equippedItems.find(i => i.slot === slotId);
                             const slotLabels: Record<string, string> = { helmet: 'Kopf', arms: 'Arme', chest: 'Brust', legs: 'Beine', class: 'Klasse' };
@@ -420,8 +442,13 @@ export default function Dashboard() {
                                 slotLabel={slotLabels[slotId]}
                                 SlotIcon={slotId === 'class' ? Hexagon : Shield}
                                 item={equipped || null}
-                                onOpenPicker={() => setSlotPickerSlot(slotId)}
+                                isExpanded={slotPickerSlot === slotId}
+                                onTogglePicker={() => setSlotPickerSlot(slotPickerSlot === slotId ? null : slotId)}
                                 onAddToLoadout={equipped ? () => addToLoadout(toItem(equipped)) : undefined}
+                                character={selectedCharacter}
+                                vaultItems={vaultItems}
+                                onEquip={(item) => { handleEquip(item, selectedCharacter.characterId); setSlotPickerSlot(null); }}
+                                onAddToLoadoutItem={(item) => addToLoadout(toItem(item))}
                               />
                             );
                           })}
@@ -429,10 +456,16 @@ export default function Dashboard() {
                       </div>
 
                       {/* SUBKLASSE Section */}
-                      <div className="px-4 md:px-6 pb-4">
-                        <h4 className="text-[10px] text-gray-500 uppercase tracking-[0.3em] mb-3 font-display font-bold flex items-center gap-2">
-                          <Orbit className="w-3.5 h-3.5" /> Subklasse
-                        </h4>
+                      <div className="px-4 md:px-6 pb-5">
+                        <div className="flex items-center gap-3 mb-3">
+                          <div className="flex items-center gap-2">
+                            <div className="w-6 h-6 rounded-sm bg-gradient-to-br from-purple-500/20 to-violet-500/10 flex items-center justify-center">
+                              <Orbit className="w-3.5 h-3.5 text-purple-400/80" />
+                            </div>
+                            <h4 className="text-[11px] text-white/80 uppercase tracking-[0.25em] font-display font-semibold">Subklasse</h4>
+                          </div>
+                          <div className="flex-1 section-divider" />
+                        </div>
                         {(() => {
                           const subclass = selectedCharacter.equippedItems.find(i => i.slot === 'subclass');
                           return (
@@ -441,35 +474,30 @@ export default function Dashboard() {
                               slotLabel="Super"
                               SlotIcon={Orbit}
                               item={subclass || null}
-                              onOpenPicker={() => setSlotPickerSlot('subclass')}
+                              isExpanded={slotPickerSlot === 'subclass'}
+                              onTogglePicker={() => setSlotPickerSlot(slotPickerSlot === 'subclass' ? null : 'subclass')}
+                              character={selectedCharacter}
+                              vaultItems={vaultItems}
+                              onEquip={(item) => { handleEquip(item, selectedCharacter.characterId); setSlotPickerSlot(null); }}
+                              onAddToLoadoutItem={(item) => addToLoadout(toItem(item))}
                             />
                           );
                         })()}
                       </div>
 
-                      {/* Slot Picker Modal */}
-                      <AnimatePresence>
-                        {slotPickerSlot && selectedCharacter && (
-                          <SlotPickerModal
-                            slotId={slotPickerSlot}
-                            character={selectedCharacter}
-                            vaultItems={vaultItems}
-                            onClose={() => setSlotPickerSlot(null)}
-                            onEquip={(item) => {
-                              handleEquip(item, selectedCharacter.characterId);
-                              setSlotPickerSlot(null);
-                            }}
-                            onAddToLoadout={(item) => addToLoadout(toItem(item))}
-                          />
-                        )}
-                      </AnimatePresence>
-
                       {/* Quests */}
                       {selectedCharacter.quests.length > 0 && (
                         <div className="px-4 md:px-6 pb-6">
-                          <h4 className="text-[10px] text-gray-500 uppercase tracking-[0.3em] mb-3 font-display font-bold flex items-center gap-2">
-                            <Activity className="w-3.5 h-3.5" /> Aktive Quests ({selectedCharacter.quests.length})
-                          </h4>
+                          <div className="flex items-center gap-3 mb-3">
+                            <div className="flex items-center gap-2">
+                              <div className="w-6 h-6 rounded-sm bg-gradient-to-br from-green-500/20 to-emerald-500/10 flex items-center justify-center">
+                                <Activity className="w-3.5 h-3.5 text-green-400/80" />
+                              </div>
+                              <h4 className="text-[11px] text-white/80 uppercase tracking-[0.25em] font-display font-semibold">Aktive Quests</h4>
+                              <span className="text-[9px] text-gray-600 bg-white/[0.04] px-2 py-0.5 rounded-sm">{selectedCharacter.quests.length}</span>
+                            </div>
+                            <div className="flex-1 section-divider" />
+                          </div>
                           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
                             {selectedCharacter.quests.map(quest => (
                               <QuestCard key={quest.id} quest={quest} />
@@ -750,163 +778,184 @@ function FilterBar({ filters, onChange }: { filters: FilterState; onChange: (f: 
   );
 }
 
-function EquippedSlotRow({ slotId, slotLabel, SlotIcon, item, onOpenPicker, onAddToLoadout }: {
+function EquippedSlotRow({ slotId, slotLabel, SlotIcon, item, isExpanded, onTogglePicker, onAddToLoadout, character, vaultItems, onEquip, onAddToLoadoutItem }: {
   slotId: string;
   slotLabel: string;
   SlotIcon: React.ElementType;
   item: InventoryItem | null;
-  onOpenPicker: () => void;
+  isExpanded: boolean;
+  onTogglePicker: () => void;
   onAddToLoadout?: () => void;
-}) {
-  const isExotic = item?.rarity === 'exotic';
-  const rarityColor = isExotic ? '#E5C76B' : '#7D5C96';
-  return (
-    <div className="group flex items-center gap-3 bg-black/30 border border-white/5 p-2.5 hover:border-white/15 transition-all" data-testid={`equipped-slot-${slotId}`}>
-      <div className="w-12 h-12 shrink-0 border border-white/10 overflow-hidden relative bg-black/50 flex items-center justify-center">
-        {item ? (
-          <>
-            <div className="absolute top-0 left-0 w-full h-0.5 z-10" style={{ backgroundColor: rarityColor }} />
-            <img src={item.icon} alt={item.name} className="w-full h-full object-cover" />
-          </>
-        ) : (
-          <SlotIcon className="w-5 h-5 text-white/10" strokeWidth={1} />
-        )}
-      </div>
-      <div className="flex-1 min-w-0">
-        <p className="text-[8px] text-gray-600 uppercase tracking-[0.2em] mb-0.5">{slotLabel}</p>
-        {item ? (
-          <>
-            <p className="text-[10px] font-bold truncate tracking-wider uppercase" style={{ color: isExotic ? '#E5C76B' : 'white' }}>{item.name}</p>
-            <p className="text-[8px] text-gray-500 flex items-center gap-1 mt-0.5">
-              {item.power > 0 && <><Sparkles className="w-2.5 h-2.5 text-[#E5C76B] opacity-70" /> {item.power}</>}
-              <span className="text-gray-600 ml-1">{item.type}</span>
-            </p>
-          </>
-        ) : (
-          <p className="text-[10px] text-gray-700 uppercase tracking-widest">Leer</p>
-        )}
-      </div>
-      <div className="flex items-center gap-1">
-        {onAddToLoadout && item && (
-          <button onClick={(e) => { e.stopPropagation(); onAddToLoadout(); }} className="p-1.5 text-gray-600 hover:text-[#E5C76B] hover:bg-white/5 rounded opacity-0 group-hover:opacity-100 transition-all" title="Zum Loadout" data-testid={`button-loadout-${slotId}`}>
-            <Sparkles className="w-3.5 h-3.5" />
-          </button>
-        )}
-        <button onClick={onOpenPicker} className="p-1.5 text-gray-500 hover:text-white hover:bg-indigo-500/20 rounded transition-all border border-transparent hover:border-indigo-500/30" title="Wechseln" data-testid={`button-swap-${slotId}`}>
-          <Plus className="w-4 h-4" />
-        </button>
-      </div>
-    </div>
-  );
-}
-
-function SlotPickerModal({ slotId, character, vaultItems, onClose, onEquip, onAddToLoadout }: {
-  slotId: string;
   character: CharacterData;
   vaultItems: InventoryItem[];
-  onClose: () => void;
   onEquip: (item: InventoryItem) => void;
-  onAddToLoadout: (item: InventoryItem) => void;
+  onAddToLoadoutItem: (item: InventoryItem) => void;
 }) {
   const [searchText, setSearchText] = useState('');
   const [showVault, setShowVault] = useState(false);
-
-  const slotLabels: Record<string, string> = {
-    kinetic: 'Primär', energy: 'Energie', power: 'Schwer',
-    helmet: 'Kopf', arms: 'Arme', chest: 'Brust', legs: 'Beine', class: 'Klasse',
-    subclass: 'Subklasse',
-  };
+  const isExotic = item?.rarity === 'exotic';
+  const rarityColor = isExotic ? '#E5C76B' : '#7D5C96';
 
   const filtered = useMemo(() => {
     const charItems = character.inventory.filter(i => i.slot === slotId);
     const vaultSlotItems = showVault ? vaultItems.filter(i => i.slot === slotId) : [];
     const allItems = [...charItems, ...vaultSlotItems];
-    if (!searchText) return allItems;
+    if (!searchText) return allItems.sort((a, b) => b.power - a.power);
     const q = searchText.toLowerCase();
-    return allItems.filter(i => i.name.toLowerCase().includes(q) || i.type.toLowerCase().includes(q));
+    return allItems.filter(i => i.name.toLowerCase().includes(q) || i.type.toLowerCase().includes(q)).sort((a, b) => b.power - a.power);
   }, [character.inventory, vaultItems, slotId, showVault, searchText]);
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm"
-      onClick={onClose}
-    >
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95, y: 20 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
-        exit={{ opacity: 0, scale: 0.95, y: 20 }}
-        transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-        className="bg-[#0A0A0C] border border-white/10 w-[90vw] max-w-lg max-h-[80vh] flex flex-col shadow-2xl shadow-black/80"
-        onClick={(e) => e.stopPropagation()}
+    <div className="relative" data-testid={`equipped-slot-${slotId}`}>
+      <div
+        className={`group flex items-center gap-3 p-3 border transition-all duration-300 cursor-pointer relative overflow-hidden ${
+          isExpanded
+            ? 'slot-row-active border-indigo-500/30 bg-gradient-to-r from-indigo-500/10 via-transparent to-transparent'
+            : 'bg-black/40 border-white/[0.06] hover:border-white/20 hover:bg-white/[0.03]'
+        }`}
+        onClick={onTogglePicker}
       >
-        <div className="p-4 border-b border-white/5 flex items-center justify-between shrink-0">
-          <div>
-            <h3 className="text-white font-display font-light tracking-[0.2em] text-sm uppercase">{slotLabels[slotId] || slotId} wechseln</h3>
-            <p className="text-[9px] text-gray-500 uppercase tracking-widest mt-1">{filtered.length} verfügbar</p>
+        {item && (
+          <div className="absolute inset-0 opacity-[0.04] pointer-events-none">
+            <img src={item.screenshot || item.icon} alt="" className="w-full h-full object-cover blur-sm" />
           </div>
-          <button onClick={onClose} className="p-2 text-gray-400 hover:text-white hover:bg-white/5 rounded transition-all" data-testid="button-close-picker">
-            <X className="w-5 h-5" />
-          </button>
-        </div>
+        )}
+        <div className="absolute left-0 top-0 bottom-0 w-[2px] transition-all duration-300" style={{ backgroundColor: isExpanded ? '#6366f1' : item ? rarityColor : 'transparent' }} />
 
-        <div className="p-3 border-b border-white/5 shrink-0 space-y-2">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-500" />
-            <input
-              type="text"
-              placeholder="Suchen..."
-              value={searchText}
-              onChange={(e) => setSearchText(e.target.value)}
-              className="w-full bg-white/5 border border-white/5 text-white pl-8 pr-3 py-2 text-xs focus:outline-none focus:border-indigo-500/50 transition-all tracking-wider"
-              data-testid="input-picker-search"
-              autoFocus
-            />
-          </div>
-          <label className="flex items-center gap-2 cursor-pointer">
-            <input type="checkbox" checked={showVault} onChange={(e) => setShowVault(e.target.checked)} className="accent-indigo-500" data-testid="checkbox-show-vault" />
-            <span className="text-[10px] text-gray-400 uppercase tracking-widest">Tresor einbeziehen</span>
-          </label>
-        </div>
-
-        <div className="flex-1 overflow-y-auto p-3 space-y-1.5">
-          {filtered.length === 0 ? (
-            <p className="text-xs text-gray-600 text-center py-8">Keine Gegenstände für diesen Slot verfügbar.</p>
+        <div className={`w-12 h-12 shrink-0 overflow-hidden relative flex items-center justify-center transition-all duration-300 ${
+          item ? (isExotic ? 'rarity-exotic-glow' : 'rarity-legendary-glow') : ''
+        } ${isExpanded ? 'ring-1 ring-indigo-500/40' : 'ring-1 ring-white/10'}`}>
+          {item ? (
+            <>
+              <div className="absolute top-0 left-0 w-full h-[2px] z-10" style={{ backgroundColor: rarityColor }} />
+              <img src={item.icon} alt={item.name} className="w-full h-full object-cover" />
+            </>
           ) : (
-            filtered.sort((a, b) => b.power - a.power).map(item => {
-              const isExotic = item.rarity === 'exotic';
-              const fromVault = item.location === 'vault';
-              return (
-                <div key={item.id} className="group flex items-center gap-3 bg-black/40 border border-white/5 p-2 hover:border-white/20 hover:bg-white/[0.02] transition-all cursor-pointer" onClick={() => onEquip(item)} data-testid={`picker-item-${item.id}`}>
-                  <div className="w-10 h-10 shrink-0 border border-white/10 overflow-hidden relative bg-black">
-                    <div className="absolute top-0 left-0 w-full h-0.5" style={{ backgroundColor: isExotic ? '#E5C76B' : '#7D5C96' }} />
-                    <img src={item.icon} alt={item.name} className="w-full h-full object-cover" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-[10px] font-bold truncate tracking-wider uppercase" style={{ color: isExotic ? '#E5C76B' : 'white' }}>{item.name}</p>
-                    <p className="text-[8px] text-gray-500 flex items-center gap-1 mt-0.5">
-                      {item.power > 0 && <><Sparkles className="w-2.5 h-2.5 text-[#E5C76B] opacity-70" /> {item.power}</>}
-                      <span className="text-gray-600 ml-1">{item.type}</span>
-                      {fromVault && <span className="text-indigo-400 ml-1">• Tresor</span>}
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <button onClick={(e) => { e.stopPropagation(); onAddToLoadout(item); }} className="p-1.5 text-gray-600 hover:text-[#E5C76B] hover:bg-white/5 rounded opacity-0 group-hover:opacity-100 transition-all" title="Zum Loadout">
-                      <Sparkles className="w-3 h-3" />
-                    </button>
-                    <div className="p-1.5 text-indigo-400">
-                      <ArrowRightLeft className="w-3.5 h-3.5" />
-                    </div>
-                  </div>
-                </div>
-              );
-            })
+            <div className="w-full h-full bg-gradient-to-br from-white/[0.04] to-transparent flex items-center justify-center">
+              <SlotIcon className="w-5 h-5 text-white/15" strokeWidth={1.5} />
+            </div>
           )}
         </div>
-      </motion.div>
-    </motion.div>
+
+        <div className="flex-1 min-w-0 relative z-10">
+          <p className="text-[8px] text-gray-500 uppercase tracking-[0.25em] mb-0.5 font-medium">{slotLabel}</p>
+          {item ? (
+            <>
+              <p className="text-[11px] font-bold truncate tracking-wider uppercase" style={{ color: isExotic ? '#E5C76B' : 'white' }}>{item.name}</p>
+              <div className="flex items-center gap-2 mt-0.5">
+                {item.power > 0 && (
+                  <span className="text-[9px] text-yellow-500/80 flex items-center gap-0.5 font-medium">
+                    <Sparkles className="w-2.5 h-2.5" /> {item.power}
+                  </span>
+                )}
+                <span className="text-[8px] text-gray-600">{item.type}</span>
+              </div>
+            </>
+          ) : (
+            <p className="text-[10px] text-gray-700 uppercase tracking-widest italic">Kein Gegenstand</p>
+          )}
+        </div>
+
+        <div className="flex items-center gap-1.5 relative z-10">
+          {onAddToLoadout && item && (
+            <button onClick={(e) => { e.stopPropagation(); onAddToLoadout(); }} className="p-1.5 text-gray-600 hover:text-[#E5C76B] hover:bg-yellow-500/10 rounded-sm opacity-0 group-hover:opacity-100 transition-all duration-200" title="Zum Loadout" data-testid={`button-loadout-${slotId}`}>
+              <Sparkles className="w-3.5 h-3.5" />
+            </button>
+          )}
+          <div className={`p-1.5 rounded-sm transition-all duration-300 ${
+            isExpanded ? 'bg-indigo-500/20 text-indigo-400' : 'text-gray-600 hover:text-white hover:bg-white/10'
+          }`} data-testid={`button-swap-${slotId}`}>
+            {isExpanded ? <ChevronUp className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
+          </div>
+        </div>
+      </div>
+
+      <AnimatePresence>
+        {isExpanded && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
+            className="overflow-hidden"
+          >
+            <div className="border-x border-b border-indigo-500/15 bg-gradient-to-b from-indigo-500/[0.04] to-black/50">
+              <div className="p-3 flex items-center gap-2">
+                <div className="relative flex-1">
+                  <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3 h-3 text-gray-600" />
+                  <input
+                    type="text"
+                    placeholder="Suchen..."
+                    value={searchText}
+                    onChange={(e) => setSearchText(e.target.value)}
+                    className="w-full bg-black/40 border border-white/[0.06] text-white pl-7 pr-3 py-1.5 text-[11px] focus:outline-none focus:border-indigo-500/40 transition-all tracking-wider rounded-sm"
+                    data-testid="input-picker-search"
+                    autoFocus
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                </div>
+                <label className="flex items-center gap-1.5 cursor-pointer shrink-0" onClick={(e) => e.stopPropagation()}>
+                  <input type="checkbox" checked={showVault} onChange={(e) => setShowVault(e.target.checked)} className="accent-indigo-500 w-3 h-3" data-testid="checkbox-show-vault" />
+                  <span className="text-[9px] text-gray-500 uppercase tracking-widest">Tresor</span>
+                </label>
+                <span className="text-[9px] text-gray-600 shrink-0">{filtered.length}</span>
+              </div>
+
+              <div className="max-h-[280px] overflow-y-auto px-3 pb-3 space-y-1">
+                {filtered.length === 0 ? (
+                  <p className="text-[10px] text-gray-600 text-center py-6 italic">Keine Gegenstände verfügbar</p>
+                ) : (
+                  filtered.map((invItem, idx) => {
+                    const isItemExotic = invItem.rarity === 'exotic';
+                    const fromVault = invItem.location === 'vault';
+                    return (
+                      <motion.div
+                        key={invItem.id}
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: idx * 0.03, duration: 0.2 }}
+                        className={`group/item flex items-center gap-2.5 p-2 border cursor-pointer transition-all duration-200 item-card-hover relative overflow-hidden ${
+                          isItemExotic
+                            ? 'border-yellow-500/10 hover:border-yellow-500/30 bg-yellow-500/[0.02] hover:bg-yellow-500/[0.06]'
+                            : 'border-white/[0.04] hover:border-purple-400/20 bg-white/[0.01] hover:bg-white/[0.04]'
+                        }`}
+                        onClick={(e) => { e.stopPropagation(); onEquip(invItem); }}
+                        data-testid={`picker-item-${invItem.id}`}
+                      >
+                        <div className="absolute left-0 top-0 bottom-0 w-[2px]" style={{ backgroundColor: isItemExotic ? '#E5C76B' : '#7D5C96' }} />
+                        <div className={`w-9 h-9 shrink-0 overflow-hidden relative ${isItemExotic ? 'ring-1 ring-yellow-500/20' : 'ring-1 ring-white/10'}`}>
+                          <img src={invItem.icon} alt={invItem.name} className="w-full h-full object-cover" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-[10px] font-bold truncate tracking-wider uppercase" style={{ color: isItemExotic ? '#E5C76B' : '#e0e0e0' }}>{invItem.name}</p>
+                          <div className="flex items-center gap-2 mt-0.5">
+                            {invItem.power > 0 && (
+                              <span className="text-[8px] text-yellow-500/70 flex items-center gap-0.5">
+                                <Sparkles className="w-2 h-2" /> {invItem.power}
+                              </span>
+                            )}
+                            <span className="text-[7px] text-gray-600 uppercase">{invItem.type}</span>
+                            {fromVault && <span className="text-[7px] text-indigo-400/70 uppercase">Tresor</span>}
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-0.5">
+                          <button onClick={(e) => { e.stopPropagation(); onAddToLoadoutItem(invItem); }} className="p-1 text-gray-700 hover:text-[#E5C76B] transition-all opacity-0 group-hover/item:opacity-100" title="Zum Loadout">
+                            <Sparkles className="w-3 h-3" />
+                          </button>
+                          <div className="p-1 text-indigo-400/50 group-hover/item:text-indigo-400 transition-all">
+                            <ArrowRightLeft className="w-3 h-3" />
+                          </div>
+                        </div>
+                      </motion.div>
+                    );
+                  })
+                )}
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
   );
 }
 
@@ -974,16 +1023,16 @@ function VaultItemCard({ item, characters, onTransferToChar, onEquipOnChar, onAd
 
 function QuestCard({ quest }: { quest: QuestItem }) {
   return (
-    <div className="flex items-center gap-3 bg-black/40 border border-white/5 p-3 hover:border-white/20 transition-all" data-testid={`card-quest-${quest.id}`}>
-      <div className="w-10 h-10 shrink-0 border border-white/10 overflow-hidden bg-black">
+    <div className="flex items-center gap-3 bg-gradient-to-r from-white/[0.03] to-transparent border border-white/[0.06] p-3 hover:border-green-500/20 hover:from-green-500/[0.03] transition-all duration-300 group/quest" data-testid={`card-quest-${quest.id}`}>
+      <div className="w-10 h-10 shrink-0 ring-1 ring-white/10 overflow-hidden bg-black group-hover/quest:ring-green-500/20 transition-all">
         {quest.icon && <img src={quest.icon} alt="" className="w-full h-full object-cover" />}
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-[10px] font-bold truncate tracking-wider uppercase text-white">{quest.name}</p>
+        <p className="text-[10px] font-bold truncate tracking-wider uppercase text-white group-hover/quest:text-green-300/90 transition-colors">{quest.name}</p>
         {quest.description && (
           <p className="text-[9px] text-gray-500 truncate mt-0.5">{quest.description}</p>
         )}
-        <p className="text-[8px] text-indigo-400/60 uppercase tracking-widest mt-1">{quest.type || 'Quest'}</p>
+        <p className="text-[8px] text-green-500/50 uppercase tracking-widest mt-1">{quest.type || 'Quest'}</p>
       </div>
     </div>
   );
