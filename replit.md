@@ -37,6 +37,7 @@ The project uses a three-directory monorepo layout:
 - **Build:** Custom build script (`script/build.ts`) uses esbuild for server and Vite for client
 
 **API Routes (all under `/api/`):**
+- `GET /api/bungie/inventory/:membershipType/:membershipId` — Fetch real Destiny 2 inventory from Bungie API (requires Bearer token)
 - `GET /api/loadouts/:bungieMembershipId` — List saved loadouts for a user
 - `POST /api/loadouts` — Create/save a new loadout
 - `GET /api/loadouts/share/:shareCode` — Get a loadout by its share code
@@ -56,7 +57,7 @@ The project uses a three-directory monorepo layout:
 - **Bungie OAuth2:** Client-side public OAuth flow. The frontend redirects to Bungie for authorization, receives a code, and exchanges it for an access token directly from the client.
 - **Token storage:** Access token and profile data stored in `localStorage`
 - **No server-side session management** for auth — the server trusts the `bungieMembershipId` passed by the client in API requests.
-- **API Key & Client ID** are hardcoded in the frontend auth hook (`use-bungie-auth.ts`). The Bungie API key is `c95aec1b858f4122a4b1451c89b591ab` and client ID is `51625`.
+- **API Key & Client ID**: The Bungie API key is stored in the `BUNGIE_API_KEY` environment variable (used server-side in `server/bungie.ts`). The client ID `51625` is used in the frontend auth hook (`use-bungie-auth.ts`).
 
 ### Storage Pattern
 - The server uses a `DatabaseStorage` class implementing an `IStorage` interface, making the storage layer swappable. Currently only the PostgreSQL implementation exists.
@@ -64,7 +65,7 @@ The project uses a three-directory monorepo layout:
 ## External Dependencies
 
 ### Third-Party Services
-- **Bungie.net API** — OAuth2 authentication and (planned) inventory data fetching. Currently uses mock inventory data with Bungie CDN icon URLs.
+- **Bungie.net API** — OAuth2 authentication and real inventory data fetching via server-side proxy (`server/bungie.ts`). The server fetches the Destiny 2 manifest (cached 24h) and player inventory, mapping items to the app's slot system. API key stored in `BUNGIE_API_KEY` environment variable.
 - **PostgreSQL** — Primary database, connected via `DATABASE_URL` environment variable. Must be provisioned before the app can run.
 
 ### Key NPM Packages

@@ -3,11 +3,30 @@ import type { Server } from "http";
 import { storage } from "./storage";
 import { api } from "@shared/routes";
 import { z } from "zod";
+import { fetchInventory } from "./bungie";
 
 export async function registerRoutes(
   httpServer: Server,
   app: Express
 ): Promise<Server> {
+  app.get('/api/bungie/inventory/:membershipType/:membershipId', async (req, res) => {
+    try {
+      const { membershipType, membershipId } = req.params;
+      const authHeader = req.headers.authorization;
+      const accessToken = authHeader?.replace('Bearer ', '') || '';
+
+      if (!accessToken) {
+        return res.status(401).json({ message: 'Access token required' });
+      }
+
+      const inventory = await fetchInventory(membershipType, membershipId, accessToken);
+      res.json(inventory);
+    } catch (err: any) {
+      console.error('[bungie inventory error]', err.message);
+      res.status(502).json({ message: 'Failed to fetch inventory from Bungie', error: err.message });
+    }
+  });
+
   app.get(api.loadouts.list.path, async (req, res) => {
     const bungieMembershipId = req.params.bungieMembershipId;
     const loadouts = await storage.getLoadouts(bungieMembershipId);

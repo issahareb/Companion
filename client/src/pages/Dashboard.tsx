@@ -2,30 +2,19 @@ import React, { useState, useEffect } from 'react';
 import { 
   Settings, Share2, Search, Backpack, Crosshair, 
   Zap, Flame, Hexagon, Shield, Save, Copy, Check, Archive,
-  Sparkles, Activity, Loader2
+  Sparkles, Activity, Loader2, AlertTriangle, RefreshCw
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 import { useBungieAuth } from '@/hooks/use-bungie-auth';
 import { useLoadouts, useSaveLoadout } from '@/hooks/use-loadouts';
+import { useInventory } from '@/hooks/use-inventory';
 
 import { DesktopNavButton, MobileNavButton, UserProfile } from '@/components/Navigation';
 import { ItemCard, EquippedSlot, type Item, type SlotInfo } from '@/components/Inventory';
 import { SaveLoadoutModal } from '@/components/SaveLoadoutModal';
 import { useToast } from '@/hooks/use-toast';
 import { api, buildUrl } from '@shared/routes';
-
-// --- UPDATED MOCK DATA ---
-const mockInventory: Item[] = [
-  { id: '1', name: 'Schicksalsbringer', type: 'Handfeuerwaffe', slot: 'kinetic', rarity: 'legendary', power: 1810, icon: 'https://www.bungie.net/common/destiny2_content/icons/12e2e92c57ba8b9cc67776156e5df4e2.jpg' },
-  { id: '2', name: 'Gjallarhorn', type: 'Raketenwerfer', slot: 'power', rarity: 'exotic', power: 1810, icon: 'https://www.bungie.net/common/destiny2_content/icons/5cbcd5970c6dfcb208b534608c0f5f8b.jpg' },
-  { id: '3', name: 'Zügelloser Flug', type: 'Maschinenpistole', slot: 'energy', rarity: 'legendary', power: 1805, icon: 'https://www.bungie.net/common/destiny2_content/icons/5a0c10816997cbda306db09b93b80e81.jpg' },
-  { id: '4', name: 'Wurmgott-Kürass', type: 'Panzerhandschuhe', slot: 'arms', rarity: 'exotic', power: 1810, icon: 'https://www.bungie.net/common/destiny2_content/icons/80e927c3f0b2f15591fc09520e791b72.jpg' },
-  { id: '5', name: 'Helm des 14. Heiligen', type: 'Helm', slot: 'helmet', rarity: 'exotic', power: 1800, icon: 'https://www.bungie.net/common/destiny2_content/icons/68c8f0003b1373510526eef40dff7ec2.jpg' },
-  { id: '6', name: 'Gießerei-Brustschutz', type: 'Brustschutz', slot: 'chest', rarity: 'legendary', power: 1810, icon: 'https://www.bungie.net/common/destiny2_content/icons/1217e997f7dc8826d57cd8db82046bc3.jpg' },
-  { id: '7', name: 'Dünenwanderer', type: 'Beinschutz', slot: 'legs', rarity: 'exotic', power: 1810, icon: 'https://www.bungie.net/common/destiny2_content/icons/e77c8e92fcaedfe9e8e50b904d1ef5e8.jpg' },
-  { id: '8', name: 'Markeloses Zeichen', type: 'Klassengegenstand', slot: 'class', rarity: 'legendary', power: 1810, icon: 'https://www.bungie.net/common/destiny2_content/icons/769396e95b0ff72e5ddb018b3ffb7923.jpg' },
-];
 
 const ITEM_SLOTS: SlotInfo[] = [
   { id: 'kinetic', label: 'Kinetik', icon: Crosshair },
@@ -40,6 +29,12 @@ const ITEM_SLOTS: SlotInfo[] = [
 
 export default function Dashboard() {
   const { destinyProfile, logout } = useBungieAuth();
+  const { 
+    data: inventory = [], 
+    isLoading: isLoadingInventory, 
+    error: inventoryError,
+    refetch: refetchInventory
+  } = useInventory(destinyProfile?.membershipType, destinyProfile?.membershipId);
   const { data: savedLoadouts = [], isLoading: isLoadingLoadouts } = useLoadouts(destinyProfile?.membershipId);
   const saveLoadoutMutation = useSaveLoadout();
   const { toast } = useToast();
@@ -111,7 +106,7 @@ export default function Dashboard() {
     });
   };
 
-  const filteredInventory = mockInventory.filter(item => 
+  const filteredInventory = inventory.filter(item => 
     item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     item.type.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -196,16 +191,47 @@ export default function Dashboard() {
                   </div>
                   
                   <div className="flex-1 overflow-y-auto p-8 pt-2">
-                    <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-6 gap-6">
-                      {filteredInventory.map(item => (
-                        <ItemCard 
-                          key={item.id} 
-                          item={item} 
-                          isEquipped={loadout[item.slot]?.id === item.id}
-                          onClick={() => equipItem(item)}
-                        />
-                      ))}
-                    </div>
+                    {isLoadingInventory ? (
+                      <div className="flex flex-col items-center justify-center h-64 space-y-4">
+                        <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
+                        <p className="text-[10px] text-gray-500 uppercase tracking-[0.3em] font-display">
+                          Lade Inventar von Bungie...
+                        </p>
+                      </div>
+                    ) : inventoryError ? (
+                      <div className="flex flex-col items-center justify-center h-64 space-y-4">
+                        <AlertTriangle className="w-8 h-8 text-amber-500" />
+                        <p className="text-sm text-gray-400 text-center max-w-md">
+                          Inventar konnte nicht geladen werden. Bitte melde dich erneut an.
+                        </p>
+                        <button 
+                          onClick={() => refetchInventory()}
+                          className="flex items-center gap-2 px-4 py-2 text-xs uppercase tracking-widest bg-white/5 hover:bg-white/10 text-white border border-white/10 transition-all destiny-clip-sm"
+                          data-testid="button-retry-inventory"
+                        >
+                          <RefreshCw className="w-3.5 h-3.5" />
+                          Erneut versuchen
+                        </button>
+                      </div>
+                    ) : filteredInventory.length === 0 ? (
+                      <div className="flex flex-col items-center justify-center h-64 space-y-4">
+                        <Search className="w-8 h-8 text-gray-600" />
+                        <p className="text-sm text-gray-500">
+                          {searchQuery ? 'Keine Gegenstände gefunden.' : 'Kein Inventar verfügbar.'}
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-6 gap-6">
+                        {filteredInventory.map(item => (
+                          <ItemCard 
+                            key={item.id} 
+                            item={item} 
+                            isEquipped={loadout[item.slot]?.id === item.id}
+                            onClick={() => equipItem(item)}
+                          />
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
 
