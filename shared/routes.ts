@@ -26,10 +26,20 @@ export const api = {
     create: {
       method: 'POST' as const,
       path: '/api/loadouts' as const,
-      input: insertLoadoutSchema,
+      input: insertLoadoutSchema.extend({
+        shareCode: z.string().optional(),
+      }),
       responses: {
         201: z.custom<typeof savedLoadouts.$inferSelect>(),
         400: errorSchemas.validation,
+      },
+    },
+    getByShareCode: {
+      method: 'GET' as const,
+      path: '/api/loadouts/share/:shareCode' as const,
+      responses: {
+        200: z.custom<typeof savedLoadouts.$inferSelect>(),
+        404: errorSchemas.notFound,
       },
     }
   },

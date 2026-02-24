@@ -30,5 +30,14 @@ export async function registerRoutes(
     }
   });
 
+  app.get(api.loadouts.getByShareCode.path, async (req, res) => {
+    const shareCode = req.params.shareCode;
+    const loadout = await storage.getLoadoutByShareCode(shareCode);
+    if (!loadout) {
+      return res.status(404).json({ message: "Loadout not found" });
+    }
+    res.json(loadout);
+  });
+
   return httpServer;
 }

@@ -8,12 +8,18 @@ import { eq } from "drizzle-orm";
 
 export interface IStorage {
   getLoadouts(bungieMembershipId: string): Promise<SavedLoadout[]>;
+  getLoadoutByShareCode(shareCode: string): Promise<SavedLoadout | undefined>;
   createLoadout(loadout: InsertLoadout): Promise<SavedLoadout>;
 }
 
 export class DatabaseStorage implements IStorage {
   async getLoadouts(bungieMembershipId: string): Promise<SavedLoadout[]> {
     return await db.select().from(savedLoadouts).where(eq(savedLoadouts.bungieMembershipId, bungieMembershipId));
+  }
+
+  async getLoadoutByShareCode(shareCode: string): Promise<SavedLoadout | undefined> {
+    const [loadout] = await db.select().from(savedLoadouts).where(eq(savedLoadouts.shareCode, shareCode));
+    return loadout;
   }
 
   async createLoadout(loadout: InsertLoadout): Promise<SavedLoadout> {

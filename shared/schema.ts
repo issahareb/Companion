@@ -7,6 +7,7 @@ export const savedLoadouts = pgTable("saved_loadouts", {
   bungieMembershipId: text("bungie_membership_id").notNull(),
   name: text("name").notNull(),
   items: jsonb("items").$type<Record<string, any>>().notNull(), // stored loadout items mapping slot -> item
+  shareCode: text("share_code").unique(),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
