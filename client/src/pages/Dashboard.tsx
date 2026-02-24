@@ -165,7 +165,7 @@ export default function Dashboard() {
           </div>
         </header>
 
-        <div className="flex-1 overflow-hidden relative">
+        <div className="flex-1 min-h-0 overflow-hidden relative">
           <AnimatePresence mode="wait">
             {activeTab === 'inventory' && (
               <motion.div 
@@ -173,24 +173,24 @@ export default function Dashboard() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="absolute inset-0 flex flex-col lg:flex-row"
+                className="h-full flex flex-col lg:flex-row"
               >
                 {/* Left Panel: Inventory Vault */}
-                <div className="flex-1 flex flex-col min-w-0 border-r border-white/5">
-                  <div className="p-8 pb-4 shrink-0">
+                <div className="flex-1 flex flex-col min-w-0 border-r border-white/5 min-h-0 overflow-hidden">
+                  <div className="p-4 md:p-8 pb-2 md:pb-4 shrink-0">
                     <div className="relative group">
-                      <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 group-focus-within:text-indigo-400 transition-colors" />
+                      <Search className="absolute left-4 md:left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 group-focus-within:text-indigo-400 transition-colors" />
                       <input 
                         type="text" 
                         placeholder="Tresor durchsuchen..." 
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full bg-[#0A0A0C]/60 border border-white/10 text-white pl-12 pr-6 py-4 focus:outline-none focus:border-indigo-500/50 transition-all font-light tracking-wider destiny-clip-sm"
+                        className="w-full bg-[#0A0A0C]/60 border border-white/10 text-white pl-10 md:pl-12 pr-4 md:pr-6 py-3 md:py-4 text-sm focus:outline-none focus:border-indigo-500/50 transition-all font-light tracking-wider destiny-clip-sm"
                       />
                     </div>
                   </div>
                   
-                  <div className="flex-1 overflow-y-auto p-8 pt-2">
+                  <div className="flex-1 overflow-y-auto p-4 md:p-8 pt-2">
                     {isLoadingInventory ? (
                       <div className="flex flex-col items-center justify-center h-64 space-y-4">
                         <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
@@ -221,7 +221,7 @@ export default function Dashboard() {
                         </p>
                       </div>
                     ) : (
-                      <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-6 gap-6">
+                      <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-6 gap-2 md:gap-4">
                         {filteredInventory.map(item => (
                           <ItemCard 
                             key={item.id} 
@@ -276,7 +276,7 @@ export default function Dashboard() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="absolute inset-0 p-10 overflow-y-auto"
+                className="h-full p-6 md:p-10 overflow-y-auto"
               >
                 {isLoadingLoadouts ? (
                   <div className="flex items-center justify-center h-64">

@@ -7,6 +7,7 @@ export interface Item {
   name: string;
   type: string;
   slot: string;
+  screenshot: string;
   rarity: 'legendary' | 'exotic';
   power: number;
   icon: string;
@@ -28,11 +29,13 @@ export function ItemCard({ item, isEquipped, onClick }: ItemCardProps) {
   const isExotic = item.rarity === 'exotic';
   const rarityColor = isExotic ? '#E5C76B' : '#7D5C96'; 
   
+  const imgSrc = item.screenshot || item.icon;
+
   return (
     <motion.div 
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      whileHover={!isEquipped ? { y: -5, scale: 1.02 } : {}}
+      whileHover={!isEquipped ? { y: -3, scale: 1.02 } : {}}
       onClick={onClick} 
       className={`group cursor-pointer relative bg-[#0A0A0C]/80 border border-white/10 overflow-hidden transition-all duration-500 destiny-clip-sm ${
         isEquipped 
@@ -40,22 +43,23 @@ export function ItemCard({ item, isEquipped, onClick }: ItemCardProps) {
           : 'hover:border-white/40 hover:shadow-[0_10px_40px_rgba(0,0,0,0.8)]'
       }`}
     >
-      <div className="h-1 w-full" style={{ backgroundColor: rarityColor }} />
-      <div className="aspect-square relative overflow-hidden bg-black">
+      <div className="h-0.5 w-full" style={{ backgroundColor: rarityColor }} />
+      <div className="aspect-[4/3] relative overflow-hidden bg-black">
         <img 
-          src={item.icon} 
-          alt={item.name} 
-          className={`w-full h-full object-cover transition-transform duration-1000 ease-out group-hover:scale-115 ${
+          src={imgSrc} 
+          alt={item.name}
+          loading="lazy"
+          className={`w-full h-full object-cover transition-transform duration-1000 ease-out group-hover:scale-110 ${
             isEquipped ? '' : 'filter brightness-90 group-hover:brightness-110'
           }`} 
         />
         <div className="absolute inset-0 bg-gradient-to-t from-[#0A0A0C] via-transparent to-transparent opacity-90" />
       </div>
-      <div className="p-4 relative z-10 bg-[#0A0A0C]">
-        <h4 className="text-[10px] font-bold truncate tracking-wider uppercase" style={{ color: isExotic ? '#E5C76B' : 'white' }}>
+      <div className="px-2.5 py-2 relative z-10 bg-[#0A0A0C]">
+        <h4 className="text-[9px] font-bold truncate tracking-wider uppercase" style={{ color: isExotic ? '#E5C76B' : 'white' }}>
           {item.name}
         </h4>
-        <p className="text-[9px] text-gray-500 mt-1 uppercase tracking-widest font-medium opacity-70">{item.type}</p>
+        <p className="text-[8px] text-gray-500 mt-0.5 uppercase tracking-widest font-medium opacity-70">{item.type}</p>
       </div>
     </motion.div>
   );

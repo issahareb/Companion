@@ -30,6 +30,7 @@ interface ManifestCache {
 interface ManifestItem {
   name: string;
   icon: string;
+  screenshot: string;
   type: string;
   bucketHash: number;
   tierTypeName: string;
@@ -84,6 +85,9 @@ async function fetchManifest(): Promise<Record<string, ManifestItem>> {
       name: def.displayProperties.name,
       icon: def.displayProperties.hasIcon
         ? `${BUNGIE_BASE}${def.displayProperties.icon}`
+        : '',
+      screenshot: def.screenshot
+        ? `${BUNGIE_BASE}${def.screenshot}`
         : '',
       type: def.itemTypeDisplayName || '',
       bucketHash,
@@ -162,6 +166,7 @@ export interface InventoryItem {
   name: string;
   type: string;
   slot: string;
+  screenshot: string;
   rarity: 'legendary' | 'exotic';
   power: number;
   icon: string;
@@ -241,6 +246,7 @@ export async function fetchInventory(
       rarity,
       power,
       icon: manifestItem.icon,
+      screenshot: manifestItem.screenshot,
     });
   }
 
