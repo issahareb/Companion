@@ -38,14 +38,14 @@ export function ItemCard({ item, isEquipped, onClick }: ItemCardProps) {
       animate={{ opacity: 1, y: 0 }}
       whileHover={!isEquipped ? { y: -3, scale: 1.02 } : {}}
       onClick={onClick} 
-      className={`group cursor-pointer relative bg-[#0A0A0C]/80 border border-white/10 overflow-hidden transition-all duration-500 destiny-clip-sm ${
+      className={`group cursor-pointer relative bg-gradient-to-b from-white/[0.03] to-transparent border overflow-hidden transition-all duration-500 destiny-clip-sm ${
         isEquipped 
-          ? 'opacity-30 grayscale-[70%]' 
-          : 'hover:border-white/40 hover:shadow-[0_10px_40px_rgba(0,0,0,0.8)]'
+          ? 'opacity-30 grayscale-[70%] border-white/5' 
+          : 'border-white/[0.08] hover:border-white/30 hover:shadow-[0_10px_40px_rgba(0,0,0,0.8)]'
       }`}
     >
-      <div className="h-0.5 w-full" style={{ backgroundColor: rarityColor }} />
-      <div className="aspect-[4/3] relative overflow-hidden bg-black">
+      <div className="h-[2px] w-full" style={{ backgroundColor: rarityColor }} />
+      <div className="aspect-[4/3] relative overflow-hidden bg-black/80">
         <img 
           src={imgSrc} 
           alt={item.name}
@@ -54,9 +54,9 @@ export function ItemCard({ item, isEquipped, onClick }: ItemCardProps) {
             isEquipped ? '' : 'filter brightness-90 group-hover:brightness-110'
           }`} 
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#0A0A0C] via-transparent to-transparent opacity-90" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#0a0e18] via-transparent to-transparent opacity-90" />
       </div>
-      <div className="px-2.5 py-2 relative z-10 bg-[#0A0A0C]">
+      <div className="px-2.5 py-2 relative z-10">
         <h4 className="text-[9px] font-bold truncate tracking-wider uppercase" style={{ color: isExotic ? '#E5C76B' : 'white' }}>
           {item.name}
         </h4>
@@ -77,7 +77,7 @@ export function EquippedSlot({ slotInfo, item, onUnequip }: EquippedSlotProps) {
   const rarityColor = isExotic ? '#CEAE33' : '#522F65';
   
   return (
-    <div className="group relative bg-[#0A0A0C]/80 backdrop-blur-sm border border-white/10 p-4 flex items-center space-x-5 transition-all duration-500 hover:border-white/30 destiny-clip-sm">
+    <div className="group relative bg-gradient-to-r from-white/[0.03] to-transparent backdrop-blur-sm border border-white/[0.08] p-4 flex items-center space-x-5 transition-all duration-500 hover:border-white/25 destiny-clip-sm">
       <div className="w-16 h-16 bg-black border border-white/10 flex-shrink-0 relative flex items-center justify-center destiny-clip-sm overflow-hidden shadow-inner">
         {item ? (
           <>

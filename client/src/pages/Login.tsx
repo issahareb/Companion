@@ -10,9 +10,9 @@ interface LoginProps {
 
 export default function Login({ onLogin, isAuthenticating, error }: LoginProps) {
   return (
-    <div className="min-h-screen bg-[#050507] text-gray-200 flex flex-col items-center justify-center p-6 relative overflow-hidden">
-      {/* Atmospheric background */}
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,_rgba(40,40,60,0.4)_0%,_rgba(5,5,7,1)_100%)] z-0" />
+    <div className="min-h-screen bg-app text-gray-200 flex flex-col items-center justify-center p-6 relative overflow-hidden">
+      <div className="absolute inset-0 bg-app-overlay z-0" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_40%,_rgba(59,45,120,0.15)_0%,_transparent_70%)] z-0" />
       <div className="absolute top-0 left-0 w-full h-1/2 bg-gradient-to-b from-indigo-900/10 to-transparent blur-3xl z-0" />
       
       <div className="max-w-md w-full space-y-12 text-center z-10">
@@ -66,7 +66,7 @@ export default function Login({ onLogin, isAuthenticating, error }: LoginProps) 
           <button 
             onClick={onLogin}
             disabled={isAuthenticating}
-            className="relative w-full bg-[#0A0A0B]/60 border border-white/10 hover:border-white/40 p-6 flex items-center justify-center transition-all duration-500 backdrop-blur-xl destiny-clip group-hover:-translate-y-1"
+            className="relative w-full bg-[#0c1020]/60 border border-white/10 hover:border-white/40 p-6 flex items-center justify-center transition-all duration-500 backdrop-blur-xl destiny-clip group-hover:-translate-y-1"
           >
             {isAuthenticating ? (
               <span className="flex items-center space-x-4 text-[11px] tracking-[0.3em] text-[#E5C76B]">

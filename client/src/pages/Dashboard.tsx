@@ -238,15 +238,15 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="h-screen bg-[#050507] text-gray-300 font-sans selection:bg-indigo-500/30 flex flex-col md:flex-row overflow-hidden relative">
-      <div className="fixed inset-0 pointer-events-none z-0">
-        <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-[0.03]" />
-        <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-indigo-900/20 blur-[120px] rounded-full" />
-        <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] bg-[#522F65]/10 blur-[120px] rounded-full" />
+    <div className="h-screen bg-app text-gray-300 font-sans selection:bg-indigo-500/30 flex flex-col md:flex-row overflow-hidden relative">
+      <div className="fixed inset-0 pointer-events-none z-0 bg-app-overlay">
+        <div className="absolute top-[-15%] left-[-5%] w-[45%] h-[45%] bg-indigo-900/15 blur-[150px] rounded-full animate-pulse-glow" />
+        <div className="absolute bottom-[-15%] right-[-5%] w-[40%] h-[40%] bg-purple-900/10 blur-[130px] rounded-full" />
+        <div className="absolute top-[30%] right-[20%] w-[25%] h-[25%] bg-blue-900/8 blur-[100px] rounded-full" />
       </div>
 
       {/* DESKTOP SIDEBAR */}
-      <aside className="hidden md:flex flex-col w-64 bg-[#0A0A0C]/80 backdrop-blur-xl border-r border-white/5 shrink-0 z-20 shadow-2xl relative">
+      <aside className="hidden md:flex flex-col w-64 bg-sidebar backdrop-blur-xl border-r border-white/[0.06] shrink-0 z-20 shadow-2xl relative">
         <div className="p-6 pb-2">
           <div className="flex items-center space-x-3 mb-6">
             <Hexagon className="w-8 h-8 text-white shadow-[0_0_20px_rgba(255,255,255,0.2)]" strokeWidth={1.5} />
@@ -276,7 +276,7 @@ export default function Dashboard() {
 
       <main className="flex-1 flex flex-col h-full relative overflow-hidden z-10">
         {/* HEADER */}
-        <header className="h-14 md:h-16 border-b border-white/5 bg-[#050507]/60 backdrop-blur-xl flex items-center justify-between px-4 md:px-8 shrink-0 z-10">
+        <header className="h-14 md:h-16 border-b border-white/[0.06] bg-header backdrop-blur-xl flex items-center justify-between px-4 md:px-8 shrink-0 z-10">
           <div className="flex items-center space-x-4">
             <Activity className="w-5 h-5 text-indigo-400 opacity-70" />
             <h2 className="font-display font-light text-sm tracking-[0.2em] text-white/90 uppercase" data-testid="text-header-title">
@@ -354,7 +354,7 @@ export default function Dashboard() {
                           <img src={selectedCharacter.emblemBackgroundPath} alt="" className="absolute inset-0 w-full h-full object-cover opacity-25" />
                         )}
                         <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-transparent" />
-                        <div className="absolute inset-0 bg-gradient-to-t from-[#050507] via-transparent to-transparent" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-[#080b14] via-transparent to-transparent" />
                         <div className="relative z-10 p-5 md:p-7 flex items-center justify-between">
                           <div>
                             <h3 className="text-2xl md:text-3xl text-white font-display font-light tracking-wider text-shadow-glow">{selectedCharacter.className}</h3>
@@ -522,7 +522,7 @@ export default function Dashboard() {
                           placeholder="Tresor durchsuchen..."
                           value={vaultFilters.search}
                           onChange={(e) => setVaultFilters(f => ({ ...f, search: e.target.value }))}
-                          className="w-full bg-[#0A0A0C]/60 border border-white/10 text-white pl-10 pr-4 py-3 text-sm focus:outline-none focus:border-indigo-500/50 transition-all font-light tracking-wider destiny-clip-sm"
+                          className="w-full bg-[#0a0e18]/80 border border-white/[0.08] text-white pl-10 pr-4 py-3 text-sm focus:outline-none focus:border-indigo-500/40 transition-all font-light tracking-wider destiny-clip-sm"
                           data-testid="input-search-vault"
                         />
                       </div>
@@ -559,7 +559,7 @@ export default function Dashboard() {
                   </div>
 
                   {/* Loadout panel desktop */}
-                  <div className="hidden lg:flex w-[380px] bg-[#0A0A0C]/40 backdrop-blur-sm flex-col shrink-0 relative overflow-hidden">
+                  <div className="hidden lg:flex w-[380px] bg-[#0a0e18]/60 backdrop-blur-sm flex-col shrink-0 relative overflow-hidden">
                     <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/5 blur-[60px] pointer-events-none" />
                     <div className="p-6 border-b border-white/5 flex items-center justify-between">
                       <h3 className="text-white font-display font-light tracking-[0.2em] flex items-center gap-3 text-xs">
@@ -599,7 +599,7 @@ export default function Dashboard() {
                   ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                       {savedLoadouts.map((saved) => (
-                        <div key={saved.id} className="bg-[#0A0A0C]/80 border border-white/10 p-4 group destiny-clip-sm hover:border-white/30 transition-all duration-500" data-testid={`card-loadout-${saved.id}`}>
+                        <div key={saved.id} className="bg-gradient-to-b from-white/[0.03] to-transparent border border-white/[0.08] p-4 group destiny-clip-sm hover:border-white/25 transition-all duration-500" data-testid={`card-loadout-${saved.id}`}>
                           <div className="flex justify-between items-start mb-3">
                             <div>
                               <h3 className="text-white font-display text-base font-light tracking-wider">{saved.name}</h3>
@@ -651,13 +651,13 @@ export default function Dashboard() {
                       <p className="text-[10px] text-gray-500 uppercase tracking-widest mb-4">{postmasterItems.length} Gegenstände beim Postmeister</p>
                       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
                         {postmasterItems.map(item => (
-                          <div key={item.id} className="bg-[#0A0A0C]/80 border border-amber-500/20 overflow-hidden destiny-clip-sm" data-testid={`card-postmaster-${item.id}`}>
-                            <div className="h-0.5 w-full bg-amber-500/60" />
-                            <div className="aspect-[4/3] relative overflow-hidden bg-black">
+                          <div key={item.id} className="bg-gradient-to-b from-amber-500/[0.03] to-transparent border border-amber-500/15 overflow-hidden destiny-clip-sm hover:border-amber-500/30 transition-all duration-300" data-testid={`card-postmaster-${item.id}`}>
+                            <div className="h-[2px] w-full bg-amber-500/60" />
+                            <div className="aspect-[4/3] relative overflow-hidden bg-black/80">
                               <img src={item.screenshot || item.icon} alt={item.name} className="w-full h-full object-cover brightness-90" />
-                              <div className="absolute inset-0 bg-gradient-to-t from-[#0A0A0C] via-transparent to-transparent opacity-90" />
+                              <div className="absolute inset-0 bg-gradient-to-t from-[#0a0e18] via-transparent to-transparent opacity-90" />
                             </div>
-                            <div className="px-2.5 py-2 bg-[#0A0A0C]">
+                            <div className="px-2.5 py-2">
                               <h4 className="text-[9px] font-bold truncate tracking-wider uppercase text-amber-400">{item.name}</h4>
                               <p className="text-[8px] text-gray-500 mt-0.5 uppercase tracking-widest">{item.type}</p>
                               {item.power > 0 && (
@@ -699,7 +699,7 @@ export default function Dashboard() {
             className="lg:hidden fixed inset-0 z-40 bg-black/80 backdrop-blur-sm" onClick={() => setShowMobileLoadout(false)}>
             <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
               transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-              className="absolute bottom-0 left-0 right-0 max-h-[85vh] bg-[#0A0A0C] border-t border-white/10 rounded-t-2xl flex flex-col"
+              className="absolute bottom-0 left-0 right-0 max-h-[85vh] bg-[#0a0e18] border-t border-white/[0.08] rounded-t-2xl flex flex-col"
               onClick={(e) => e.stopPropagation()}>
               <div className="flex items-center justify-center pt-3 pb-1">
                 <div className="w-10 h-1 bg-white/20 rounded-full" />
@@ -729,7 +729,7 @@ export default function Dashboard() {
       </AnimatePresence>
 
       {/* Mobile bottom nav */}
-      <nav className="md:hidden flex items-center justify-around bg-[#0A0A0C] border-t border-white/5 py-2.5 px-2 z-20">
+      <nav className="md:hidden flex items-center justify-around bg-[#0a0e18]/95 backdrop-blur-lg border-t border-white/[0.06] py-2.5 px-2 z-20">
         <MobileNavButton icon={Users} label="HÜTER" active={activeTab === 'characters'} onClick={() => setActiveTab('characters')} />
         <MobileNavButton icon={Package} label="TRESOR" active={activeTab === 'vault'} onClick={() => setActiveTab('vault')} />
         <MobileNavButton icon={Archive} label="LOADOUTS" active={activeTab === 'loadouts'} onClick={() => setActiveTab('loadouts')} />
@@ -967,20 +967,35 @@ function VaultItemCard({ item, characters, onTransferToChar, onEquipOnChar, onAd
   onAddToLoadout: () => void;
   isInLoadout: boolean;
 }) {
-  const [showActions, setShowActions] = useState(false);
+  const [showDropdown, setShowDropdown] = useState(false);
   const isExotic = item.rarity === 'exotic';
   const rarityColor = isExotic ? '#E5C76B' : '#7D5C96';
 
+  useEffect(() => {
+    if (!showDropdown) return;
+    const close = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (!target.closest(`[data-dropdown-id="${item.id}"]`)) setShowDropdown(false);
+    };
+    document.addEventListener('click', close);
+    return () => document.removeEventListener('click', close);
+  }, [showDropdown, item.id]);
+
   return (
-    <div className={`group relative bg-[#0A0A0C]/80 border border-white/10 overflow-hidden transition-all duration-500 destiny-clip-sm ${
-      isInLoadout ? 'opacity-30 grayscale-[70%]' : 'hover:border-white/40'
-    }`}>
-      <div className="h-0.5 w-full" style={{ backgroundColor: rarityColor }} />
-      <div className="aspect-[4/3] relative overflow-hidden bg-black cursor-pointer" onClick={() => setShowActions(!showActions)}>
+    <div
+      className={`group relative bg-gradient-to-b from-white/[0.03] to-transparent border transition-all duration-500 destiny-clip-sm ${
+        isInLoadout ? 'opacity-30 grayscale-[70%] border-white/5' : 'border-white/[0.08] hover:border-white/25 item-card-hover'
+      }`}
+      style={{ overflow: showDropdown ? 'visible' : 'hidden' }}
+      data-dropdown-id={item.id}
+    >
+      <div className="h-[2px] w-full" style={{ backgroundColor: rarityColor }} />
+      <div className="aspect-[4/3] relative overflow-hidden bg-black/80 cursor-pointer" onClick={() => setShowDropdown(!showDropdown)}>
         <img src={item.screenshot || item.icon} alt={item.name} className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110 brightness-90 group-hover:brightness-110" loading="lazy" />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#0A0A0C] via-transparent to-transparent opacity-90" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#0a0e18] via-transparent to-transparent opacity-90" />
+        {showDropdown && <div className="absolute inset-0 bg-indigo-500/[0.06]" />}
       </div>
-      <div className="px-2.5 py-2 bg-[#0A0A0C] relative z-10">
+      <div className="px-2.5 py-2 relative z-10">
         <h4 className="text-[9px] font-bold truncate tracking-wider uppercase" style={{ color: isExotic ? '#E5C76B' : 'white' }}>{item.name}</h4>
         <div className="flex items-center justify-between mt-0.5">
           <p className="text-[8px] text-gray-500 uppercase tracking-widest">{item.type}</p>
@@ -993,22 +1008,31 @@ function VaultItemCard({ item, characters, onTransferToChar, onEquipOnChar, onAd
       </div>
 
       <AnimatePresence>
-        {showActions && (
-          <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}
-            className="border-t border-white/5 bg-[#0A0A0C] overflow-hidden">
-            <div className="p-2 space-y-1">
-              <button onClick={() => { onAddToLoadout(); setShowActions(false); }}
-                className="w-full flex items-center gap-2 px-2 py-1.5 text-[9px] uppercase tracking-widest text-[#E5C76B] hover:bg-white/5 transition-all">
+        {showDropdown && (
+          <motion.div
+            initial={{ opacity: 0, y: -4 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -4 }}
+            transition={{ duration: 0.15 }}
+            className="absolute left-0 right-0 bottom-0 z-30 bg-[#0c1020]/95 backdrop-blur-md border-t border-indigo-500/20 shadow-xl shadow-black/60"
+          >
+            <div className="py-1">
+              <button onClick={() => { onAddToLoadout(); setShowDropdown(false); }}
+                className="w-full flex items-center gap-2 px-3 py-2 text-[9px] uppercase tracking-widest text-[#E5C76B] hover:bg-yellow-500/10 transition-all"
+                data-testid={`dropdown-loadout-${item.id}`}>
                 <Sparkles className="w-3 h-3" /> Zum Loadout
               </button>
+              <div className="h-px bg-white/[0.04] mx-2" />
               {characters.map(c => (
-                <div key={c.characterId} className="flex items-center gap-1">
-                  <button onClick={() => { onTransferToChar(c.characterId); setShowActions(false); }}
-                    className="flex-1 flex items-center gap-2 px-2 py-1.5 text-[9px] uppercase tracking-widest text-gray-400 hover:text-white hover:bg-white/5 transition-all">
-                    <ArrowRightLeft className="w-3 h-3" /> → {c.className}
+                <div key={c.characterId} className="flex items-center">
+                  <button onClick={() => { onTransferToChar(c.characterId); setShowDropdown(false); }}
+                    className="flex-1 flex items-center gap-2 px-3 py-2 text-[9px] uppercase tracking-widest text-gray-400 hover:text-white hover:bg-white/[0.06] transition-all"
+                    data-testid={`dropdown-transfer-${item.id}-${c.characterId}`}>
+                    <ArrowRightLeft className="w-3 h-3" /> {c.className}
                   </button>
-                  <button onClick={() => { onEquipOnChar(c.characterId); setShowActions(false); }}
-                    className="px-2 py-1.5 text-[9px] uppercase tracking-widest text-indigo-400 hover:text-white hover:bg-indigo-500/20 transition-all" title="Anlegen">
+                  <button onClick={() => { onEquipOnChar(c.characterId); setShowDropdown(false); }}
+                    className="px-3 py-2 text-[9px] uppercase tracking-widest text-indigo-400 hover:text-white hover:bg-indigo-500/15 transition-all" title="Anlegen"
+                    data-testid={`dropdown-equip-${item.id}-${c.characterId}`}>
                     <Shield className="w-3 h-3" />
                   </button>
                 </div>
