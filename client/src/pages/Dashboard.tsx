@@ -45,6 +45,7 @@ export default function Dashboard() {
   const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
   const [shareLink, setShareLink] = useState('');
   const [copied, setCopied] = useState(false);
+  const [showMobileLoadout, setShowMobileLoadout] = useState(false);
 
   const equipItem = (item: Item) => {
     setLoadout(prev => {
@@ -149,7 +150,7 @@ export default function Dashboard() {
 
       {/* MAIN CONTENT AREA */}
       <main className="flex-1 flex flex-col h-full relative overflow-hidden z-10">
-        <header className="h-20 border-b border-white/5 bg-[#050507]/60 backdrop-blur-xl flex items-center justify-between px-8 shrink-0 z-10">
+        <header className="h-14 md:h-20 border-b border-white/5 bg-[#050507]/60 backdrop-blur-xl flex items-center justify-between px-4 md:px-8 shrink-0 z-10">
           <div className="flex items-center space-x-4">
             <Activity className="w-5 h-5 text-indigo-400 opacity-70" />
             <h2 className="font-display font-light text-sm tracking-[0.2em] text-white/90 uppercase">
@@ -235,8 +236,8 @@ export default function Dashboard() {
                   </div>
                 </div>
 
-                {/* Right Panel: Active Loadout */}
-                <div className="w-full lg:w-[400px] bg-[#0A0A0C]/40 backdrop-blur-sm flex flex-col shrink-0 relative overflow-hidden">
+                {/* Right Panel: Active Loadout (desktop only) */}
+                <div className="hidden lg:flex w-[400px] bg-[#0A0A0C]/40 backdrop-blur-sm flex-col shrink-0 relative overflow-hidden">
                    <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/5 blur-[60px] pointer-events-none" />
                   
                   <div className="p-8 border-b border-white/5 flex items-center justify-between">
@@ -335,6 +336,79 @@ export default function Dashboard() {
           </AnimatePresence>
         </div>
       </main>
+
+      {/* Mobile Loadout Floating Button */}
+      {activeTab === 'inventory' && (
+        <button
+          onClick={() => setShowMobileLoadout(true)}
+          className="lg:hidden fixed bottom-20 right-4 z-30 w-14 h-14 bg-indigo-600 hover:bg-indigo-500 text-white rounded-full flex items-center justify-center shadow-lg shadow-indigo-900/50 transition-all"
+          data-testid="button-mobile-loadout"
+        >
+          <Sparkles className="w-5 h-5" />
+          {Object.keys(loadout).length > 0 && (
+            <span className="absolute -top-1 -right-1 w-5 h-5 bg-[#E5C76B] text-black text-[10px] font-bold rounded-full flex items-center justify-center">
+              {Object.keys(loadout).length}
+            </span>
+          )}
+        </button>
+      )}
+
+      {/* Mobile Loadout Overlay */}
+      <AnimatePresence>
+        {showMobileLoadout && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="lg:hidden fixed inset-0 z-40 bg-black/80 backdrop-blur-sm"
+            onClick={() => setShowMobileLoadout(false)}
+          >
+            <motion.div
+              initial={{ y: '100%' }}
+              animate={{ y: 0 }}
+              exit={{ y: '100%' }}
+              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+              className="absolute bottom-0 left-0 right-0 max-h-[85vh] bg-[#0A0A0C] border-t border-white/10 rounded-t-2xl flex flex-col"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-center pt-3 pb-1">
+                <div className="w-10 h-1 bg-white/20 rounded-full" />
+              </div>
+              <div className="p-4 border-b border-white/5 flex items-center justify-between">
+                <h3 className="text-white font-display font-light tracking-[0.2em] flex items-center gap-3 text-sm">
+                  <Sparkles className="w-4 h-4 text-[#E5C76B]" />
+                  AKTIVES LOADOUT
+                </h3>
+                <div className="flex items-center gap-2">
+                  <button 
+                    onClick={() => setIsSaveModalOpen(true)}
+                    disabled={Object.keys(loadout).length === 0}
+                    className="px-4 py-2 bg-white/5 hover:bg-white text-white hover:text-black transition-all duration-500 disabled:opacity-20 border border-white/10 hover:border-white text-[10px] font-bold tracking-[0.2em] destiny-clip-sm"
+                  >
+                    SPEICHERN
+                  </button>
+                  <button 
+                    onClick={() => setShowMobileLoadout(false)}
+                    className="p-2 text-gray-400 hover:text-white"
+                  >
+                    <Crosshair className="w-5 h-5 rotate-45" />
+                  </button>
+                </div>
+              </div>
+              <div className="flex-1 overflow-y-auto p-4 space-y-3">
+                {ITEM_SLOTS.map(slot => (
+                  <EquippedSlot 
+                    key={slot.id} 
+                    slotInfo={slot} 
+                    item={loadout[slot.id]} 
+                    onUnequip={() => unequipItem(slot.id)}
+                  />
+                ))}
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <nav className="md:hidden flex items-center justify-around bg-[#0A0A0C] border-t border-white/5 py-4 px-6 z-20">
         <MobileNavButton 
