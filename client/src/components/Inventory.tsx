@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 
 export interface Item {
   id: string;
+  itemHash: number;
   name: string;
   type: string;
   slot: string;

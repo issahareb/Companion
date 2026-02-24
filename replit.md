@@ -27,8 +27,8 @@ The project uses a three-directory monorepo layout:
 
 **Key pages:**
 - `/` — Home/Login: Handles Bungie OAuth flow, redirects to dashboard on auth
-- `/dashboard` — Main loadout builder with inventory grid, equipped slots, search, save/share
-- `/share/:shareCode` — Public read-only view of a shared loadout
+- `/dashboard` — Main loadout builder with three tabs: Inventar (inventory grid, equipped slots, search, save/share), Hüter (character overview with power levels, equipped items, transfer-to-vault), Loadouts (saved loadouts with load/share/delete)
+- `/share/:shareCode` — Shared loadout view with adoption flow (best-match logic for missing items)
 
 ### Backend (server/)
 - **Framework:** Express 5 on Node.js, wrapped in an HTTP server
@@ -37,9 +37,13 @@ The project uses a three-directory monorepo layout:
 - **Build:** Custom build script (`script/build.ts`) uses esbuild for server and Vite for client
 
 **API Routes (all under `/api/`):**
+- `GET /api/bungie/characters/:membershipType/:membershipId` — Fetch character summaries (class, power, emblem, equipped items)
 - `GET /api/bungie/inventory/:membershipType/:membershipId` — Fetch real Destiny 2 inventory from Bungie API (requires Bearer token)
+- `POST /api/bungie/transfer` — Transfer item between vault and character (requires Bearer token)
+- `POST /api/bungie/equip` — Equip an item on a character (requires Bearer token)
 - `GET /api/loadouts/:bungieMembershipId` — List saved loadouts for a user
 - `POST /api/loadouts` — Create/save a new loadout
+- `DELETE /api/loadouts/:id` — Delete a saved loadout
 - `GET /api/loadouts/share/:shareCode` — Get a loadout by its share code
 
 ### Shared Layer (shared/)

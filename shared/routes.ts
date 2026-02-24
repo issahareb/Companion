@@ -28,10 +28,20 @@ export const api = {
       path: '/api/loadouts' as const,
       input: insertLoadoutSchema.extend({
         shareCode: z.string().optional(),
+        artifactMods: z.array(z.any()).optional(),
+        classType: z.number().optional(),
       }),
       responses: {
         201: z.custom<typeof savedLoadouts.$inferSelect>(),
         400: errorSchemas.validation,
+      },
+    },
+    delete: {
+      method: 'DELETE' as const,
+      path: '/api/loadouts/:id' as const,
+      responses: {
+        200: z.object({ success: z.boolean() }),
+        404: errorSchemas.notFound,
       },
     },
     getByShareCode: {

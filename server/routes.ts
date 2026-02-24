@@ -3,7 +3,7 @@ import type { Server } from "http";
 import { storage } from "./storage";
 import { api } from "@shared/routes";
 import { z } from "zod";
-import { fetchInventory, exchangeToken, fetchMemberships } from "./bungie";
+import { fetchInventory, exchangeToken, fetchMemberships, fetchCharacters, transferItem, equipItem } from "./bungie";
 
 export async function registerRoutes(
   httpServer: Server,
@@ -35,6 +35,52 @@ export async function registerRoutes(
     } catch (err: any) {
       console.error('[bungie membership error]', err.message);
       res.status(502).json({ message: 'Failed to fetch membership', error: err.message });
+    }
+  });
+
+  app.get('/api/bungie/characters/:membershipType/:membershipId', async (req, res) => {
+    try {
+      const { membershipType, membershipId } = req.params;
+      const authHeader = req.headers.authorization;
+      const accessToken = authHeader?.replace('Bearer ', '') || '';
+      if (!accessToken) {
+        return res.status(401).json({ message: 'Access token required' });
+      }
+      const characters = await fetchCharacters(membershipType, membershipId, accessToken);
+      res.json(characters);
+    } catch (err: any) {
+      console.error('[bungie characters error]', err.message);
+      res.status(502).json({ message: 'Failed to fetch characters', error: err.message });
+    }
+  });
+
+  app.post('/api/bungie/transfer', async (req, res) => {
+    try {
+      const authHeader = req.headers.authorization;
+      const accessToken = authHeader?.replace('Bearer ', '') || '';
+      if (!accessToken) {
+        return res.status(401).json({ message: 'Access token required' });
+      }
+      const result = await transferItem(req.body, accessToken);
+      res.json(result);
+    } catch (err: any) {
+      console.error('[bungie transfer error]', err.message);
+      res.status(502).json({ message: err.message || 'Transfer failed' });
+    }
+  });
+
+  app.post('/api/bungie/equip', async (req, res) => {
+    try {
+      const authHeader = req.headers.authorization;
+      const accessToken = authHeader?.replace('Bearer ', '') || '';
+      if (!accessToken) {
+        return res.status(401).json({ message: 'Access token required' });
+      }
+      const result = await equipItem(req.body, accessToken);
+      res.json(result);
+    } catch (err: any) {
+      console.error('[bungie equip error]', err.message);
+      res.status(502).json({ message: err.message || 'Equip failed' });
     }
   });
 
@@ -75,6 +121,22 @@ export async function registerRoutes(
         });
       }
       throw err;
+    }
+  });
+
+  app.delete('/api/loadouts/:id', async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: 'Invalid loadout ID' });
+      }
+      const deleted = await storage.deleteLoadout(id);
+      if (!deleted) {
+        return res.status(404).json({ message: 'Loadout not found' });
+      }
+      res.json({ success: true });
+    } catch (err: any) {
+      res.status(500).json({ message: 'Failed to delete loadout' });
     }
   });
 

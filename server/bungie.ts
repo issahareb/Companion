@@ -161,8 +161,99 @@ export async function fetchMemberships(accessToken: string): Promise<DestinyMemb
   };
 }
 
+const CLASS_NAMES: Record<number, string> = {
+  0: 'Titan',
+  1: 'Hunter',
+  2: 'Warlock',
+};
+
+const RACE_NAMES: Record<number, string> = {
+  0: 'Human',
+  1: 'Awoken',
+  2: 'Exo',
+};
+
+export interface CharacterSummary {
+  characterId: string;
+  classType: number;
+  className: string;
+  raceName: string;
+  light: number;
+  emblemPath: string;
+  emblemBackgroundPath: string;
+  dateLastPlayed: string;
+  equippedItems: InventoryItem[];
+}
+
+export async function fetchCharacters(
+  membershipType: string,
+  membershipId: string,
+  accessToken: string
+): Promise<CharacterSummary[]> {
+  const [manifest, profileData] = await Promise.all([
+    fetchManifest(),
+    bungieGet(
+      `/Platform/Destiny2/${membershipType}/Profile/${membershipId}/?components=200,205,300`,
+      accessToken
+    ),
+  ]);
+
+  const response = profileData.Response;
+  if (!response?.characters?.data) {
+    throw new Error('No character data returned from Bungie');
+  }
+
+  const characters: CharacterSummary[] = [];
+  const instanceDetails = response.itemComponents?.instances?.data || {};
+  const characterEquipment = response.characterEquipment?.data || {};
+
+  for (const [charId, charData] of Object.entries(response.characters.data) as [string, any][]) {
+    const equipped: InventoryItem[] = [];
+    const charEquip = characterEquipment[charId];
+    if (charEquip?.items) {
+      for (const item of charEquip.items) {
+        const hashStr = String(item.itemHash);
+        const manifestItem = manifest[hashStr];
+        if (!manifestItem) continue;
+        const slot = BUCKET_TO_SLOT[manifestItem.bucketHash];
+        if (!slot) continue;
+        const rarity = TIER_TO_RARITY[manifestItem.tierTypeName];
+        if (!rarity) continue;
+        const instance = item.itemInstanceId ? instanceDetails[item.itemInstanceId] : null;
+        equipped.push({
+          id: item.itemInstanceId || hashStr,
+          itemHash: item.itemHash,
+          name: manifestItem.name,
+          type: manifestItem.type,
+          slot,
+          rarity,
+          power: instance?.primaryStat?.value || 0,
+          icon: manifestItem.icon,
+          screenshot: manifestItem.screenshot,
+        });
+      }
+    }
+
+    characters.push({
+      characterId: charId,
+      classType: charData.classType,
+      className: CLASS_NAMES[charData.classType] || 'Unknown',
+      raceName: RACE_NAMES[charData.raceType] || 'Unknown',
+      light: charData.light || 0,
+      emblemPath: charData.emblemPath ? `${BUNGIE_BASE}${charData.emblemPath}` : '',
+      emblemBackgroundPath: charData.emblemBackgroundPath ? `${BUNGIE_BASE}${charData.emblemBackgroundPath}` : '',
+      dateLastPlayed: charData.dateLastPlayed || '',
+      equippedItems: equipped,
+    });
+  }
+
+  characters.sort((a, b) => new Date(b.dateLastPlayed).getTime() - new Date(a.dateLastPlayed).getTime());
+  return characters;
+}
+
 export interface InventoryItem {
   id: string;
+  itemHash: number;
   name: string;
   type: string;
   slot: string;
@@ -240,6 +331,7 @@ export async function fetchInventory(
 
     inventory.push({
       id: instanceId,
+      itemHash: item.itemHash,
       name: manifestItem.name,
       type: manifestItem.type,
       slot,
@@ -253,4 +345,69 @@ export async function fetchInventory(
   inventory.sort((a, b) => b.power - a.power);
 
   return inventory;
+}
+
+export interface TransferRequest {
+  itemReferenceHash: number;
+  itemId: string;
+  characterId: string;
+  membershipType: number;
+  transferToVault: boolean;
+}
+
+export async function transferItem(request: TransferRequest, accessToken: string): Promise<any> {
+  const body = {
+    itemReferenceHash: request.itemReferenceHash,
+    itemId: request.itemId,
+    characterId: request.characterId,
+    membershipType: request.membershipType,
+    transferToVault: request.transferToVault,
+    stackSize: 1,
+  };
+
+  const res = await fetch(`${BUNGIE_BASE}/Platform/Destiny2/Actions/Items/TransferItem/`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-API-Key': BUNGIE_API_KEY || '',
+      'Authorization': `Bearer ${accessToken}`,
+    },
+    body: JSON.stringify(body),
+  });
+
+  const data = await res.json();
+  if (data.ErrorCode !== 1) {
+    throw new Error(data.Message || `Transfer failed: ${data.ErrorStatus}`);
+  }
+  return data;
+}
+
+export interface EquipRequest {
+  itemId: string;
+  characterId: string;
+  membershipType: number;
+}
+
+export async function equipItem(request: EquipRequest, accessToken: string): Promise<any> {
+  const body = {
+    itemId: request.itemId,
+    characterId: request.characterId,
+    membershipType: request.membershipType,
+  };
+
+  const res = await fetch(`${BUNGIE_BASE}/Platform/Destiny2/Actions/Items/EquipItem/`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-API-Key': BUNGIE_API_KEY || '',
+      'Authorization': `Bearer ${accessToken}`,
+    },
+    body: JSON.stringify(body),
+  });
+
+  const data = await res.json();
+  if (data.ErrorCode !== 1) {
+    throw new Error(data.Message || `Equip failed: ${data.ErrorStatus}`);
+  }
+  return data;
 }

@@ -45,3 +45,23 @@ export function useSaveLoadout() {
     },
   });
 }
+
+export function useDeleteLoadout() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ id, bungieMembershipId }: { id: number; bungieMembershipId: string }) => {
+      const res = await fetch(`/api/loadouts/${id}`, {
+        method: 'DELETE',
+        credentials: 'include',
+      });
+      if (!res.ok) throw new Error('Failed to delete loadout');
+      return res.json();
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: [api.loadouts.list.path, variables.bungieMembershipId],
+      });
+    },
+  });
+}
