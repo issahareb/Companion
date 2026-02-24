@@ -97,6 +97,66 @@ async function fetchManifest(): Promise<Record<string, ManifestItem>> {
   return items;
 }
 
+const BUNGIE_CLIENT_ID = '51625';
+
+export interface TokenResponse {
+  access_token: string;
+  token_type: string;
+  expires_in: number;
+  membership_id: string;
+}
+
+export async function exchangeToken(code: string): Promise<TokenResponse> {
+  const body = new URLSearchParams({
+    grant_type: 'authorization_code',
+    client_id: BUNGIE_CLIENT_ID,
+    code,
+  });
+
+  const res = await fetch(`${BUNGIE_BASE}/Platform/App/OAuth/Token/`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    body: body.toString(),
+  });
+
+  if (!res.ok) {
+    const text = await res.text();
+    console.error('[bungie] Token exchange failed:', res.status, text);
+    throw new Error(`Token exchange failed: ${res.status}`);
+  }
+
+  return res.json();
+}
+
+export interface DestinyMembership {
+  membershipId: string;
+  membershipType: number;
+  displayName: string;
+  iconPath?: string;
+}
+
+export async function fetchMemberships(accessToken: string): Promise<DestinyMembership> {
+  const data = await bungieGet('/Platform/User/GetMembershipsForCurrentUser/', accessToken);
+
+  if (!data.Response?.destinyMemberships?.length) {
+    throw new Error('No Destiny 2 memberships found');
+  }
+
+  const memberships = data.Response.destinyMemberships;
+  const active = memberships.find(
+    (m: any) => m.crossSaveOverride === m.membershipType
+  ) || memberships[0];
+
+  return {
+    membershipId: active.membershipId,
+    membershipType: active.membershipType,
+    displayName: active.bungieGlobalDisplayName || active.displayName,
+    iconPath: active.iconPath,
+  };
+}
+
 export interface InventoryItem {
   id: string;
   name: string;

@@ -3,12 +3,41 @@ import type { Server } from "http";
 import { storage } from "./storage";
 import { api } from "@shared/routes";
 import { z } from "zod";
-import { fetchInventory } from "./bungie";
+import { fetchInventory, exchangeToken, fetchMemberships } from "./bungie";
 
 export async function registerRoutes(
   httpServer: Server,
   app: Express
 ): Promise<Server> {
+  app.post('/api/bungie/token', async (req, res) => {
+    try {
+      const { code } = req.body;
+      if (!code) {
+        return res.status(400).json({ message: 'Authorization code required' });
+      }
+      const tokenData = await exchangeToken(code);
+      res.json(tokenData);
+    } catch (err: any) {
+      console.error('[bungie token error]', err.message);
+      res.status(502).json({ message: 'Failed to exchange token', error: err.message });
+    }
+  });
+
+  app.get('/api/bungie/membership', async (req, res) => {
+    try {
+      const authHeader = req.headers.authorization;
+      const accessToken = authHeader?.replace('Bearer ', '') || '';
+      if (!accessToken) {
+        return res.status(401).json({ message: 'Access token required' });
+      }
+      const membership = await fetchMemberships(accessToken);
+      res.json(membership);
+    } catch (err: any) {
+      console.error('[bungie membership error]', err.message);
+      res.status(502).json({ message: 'Failed to fetch membership', error: err.message });
+    }
+  });
+
   app.get('/api/bungie/inventory/:membershipType/:membershipId', async (req, res) => {
     try {
       const { membershipType, membershipId } = req.params;

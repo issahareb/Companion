@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
 
-const BUNGIE_API_KEY = 'c95aec1b858f4122a4b1451c89b591ab';
 const BUNGIE_CLIENT_ID = '51625';
 const BUNGIE_AUTH_URL = `https://www.bungie.net/en/OAuth/Authorize?client_id=${BUNGIE_CLIENT_ID}&response_type=code`;
 
@@ -32,7 +31,6 @@ export function useBungieAuth() {
         try {
           setDestinyProfile(JSON.parse(savedProfile));
         } catch (e) {
-          // ignore parsing error
         }
       }
       return;
@@ -44,7 +42,6 @@ export function useBungieAuth() {
     if (authCode && !hasAttemptedAuth.current) {
       hasAttemptedAuth.current = true;
       setIsAuthenticating(true);
-      // Clean up URL immediately to prevent multiple attempts on re-renders
       window.history.replaceState({}, document.title, window.location.pathname);
       exchangeCodeForToken(authCode);
     }
@@ -58,24 +55,15 @@ export function useBungieAuth() {
 
   const exchangeCodeForToken = async (code: string) => {
     try {
-      // In a real app, this should go through a backend proxy to attach the client_secret.
-      // For this prototype, we're simulating the flow or using public client flow.
-      const body = new URLSearchParams({
-        grant_type: 'authorization_code',
-        client_id: BUNGIE_CLIENT_ID,
-        code: code,
-      });
-
-      const res = await fetch('https://www.bungie.net/Platform/App/OAuth/Token/', {
+      const res = await fetch('/api/bungie/token', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: body.toString()
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code }),
       });
 
       if (!res.ok) {
-        throw new Error('Failed to exchange code');
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.message || 'Token exchange failed');
       }
 
       const data = await res.json();
@@ -85,67 +73,41 @@ export function useBungieAuth() {
       setAccessToken(token);
       setIsAuthenticated(true);
     } catch (err) {
-      console.error(err);
-      setAuthError('Authentication failed. Please try again.');
-      
-      // FALLBACK FOR DEMO: If token exchange fails due to CORS/Secrets, 
-      // we mock a successful login to show the UI
-      console.log("Falling back to demo mode due to OAuth failure");
-      const demoToken = "demo_token_123";
-      localStorage.setItem('bungie_access_token', demoToken);
-      setAccessToken(demoToken);
-      setIsAuthenticated(true);
+      console.error('Auth error:', err);
+      setAuthError('Anmeldung fehlgeschlagen. Bitte versuche es erneut.');
     } finally {
       setIsAuthenticating(false);
-      setIsFetchingProfile(false); // Ensure both are reset
     }
   };
 
   const fetchDestinyProfile = async () => {
     setIsFetchingProfile(true);
     try {
-      if (accessToken === "demo_token_123") {
-        // DEMO MODE PROFILE
-        const demoProfile = {
-          membershipId: "demo_user_456",
-          membershipType: 3,
-          displayName: "Guardian#1234",
-          emblemPath: "https://www.bungie.net/common/destiny2_content/icons/eb9024f9c5fcb0a3afae80e22ea1ba1a.jpg"
-        };
-        setDestinyProfile(demoProfile);
-        localStorage.setItem('destiny_profile', JSON.stringify(demoProfile));
-        setIsFetchingProfile(false);
-        return;
-      }
-
-      const memRes = await fetch('https://www.bungie.net/Platform/User/GetMembershipsForCurrentUser/', {
-        headers: { 
-          'X-API-Key': BUNGIE_API_KEY, 
-          'Authorization': `Bearer ${accessToken}` 
-        }
+      const res = await fetch('/api/bungie/membership', {
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+        },
       });
-      const memData = await memRes.json();
 
-      if (!memData.Response || !memData.Response.destinyMemberships || memData.Response.destinyMemberships.length === 0) {
-        throw new Error("No Destiny 2 account linked to this login.");
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.message || 'Failed to fetch profile');
       }
 
-      const activeMembership = memData.Response.destinyMemberships.find(
-        (m: any) => m.crossSaveOverride === m.membershipType
-      ) || memData.Response.destinyMemberships[0];
+      const membership = await res.json();
 
       const profile: DestinyProfile = {
-        membershipId: activeMembership.membershipId,
-        membershipType: activeMembership.membershipType,
-        displayName: activeMembership.bungieGlobalDisplayName || activeMembership.displayName,
-        emblemPath: activeMembership.iconPath
+        membershipId: membership.membershipId,
+        membershipType: membership.membershipType,
+        displayName: membership.displayName,
+        emblemPath: membership.iconPath,
       };
 
       setDestinyProfile(profile);
       localStorage.setItem('destiny_profile', JSON.stringify(profile));
     } catch (err) {
-      console.error(err);
-      setAuthError('Could not fetch Destiny profile.');
+      console.error('Profile error:', err);
+      setAuthError('Destiny-Profil konnte nicht geladen werden.');
     } finally {
       setIsFetchingProfile(false);
     }
