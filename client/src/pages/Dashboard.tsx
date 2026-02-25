@@ -11,6 +11,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import hunterBgImg from '@assets/IMG_0576_1772037013335.jpeg';
 import warlockBgImg from '@assets/IMG_0577_1772043445515.jpeg';
+import ggLogoImg from '@assets/IMG_0608_1772051654559.png';
 
 import { useBungieAuth } from '@/hooks/use-bungie-auth';
 import { useLoadouts, useSaveLoadout, useDeleteLoadout } from '@/hooks/use-loadouts';
@@ -341,6 +342,15 @@ export default function Dashboard() {
       </aside>
 
       <main className="flex-1 flex flex-col h-full relative overflow-hidden z-10">
+        {/* LOGO BAR */}
+        <div className="h-10 border-b border-white/[0.06] bg-[#060a14] flex items-center px-4 md:px-8 shrink-0 z-10">
+          <div className="flex items-center gap-2.5">
+            <img src={ggLogoImg} alt="GG" className="h-6 mix-blend-screen" data-testid="img-gg-logo" />
+            <span className="font-display text-[13px] tracking-[0.15em] text-white/80 uppercase">
+              <span className="text-[#E5C76B] text-[15px]">G</span>uardian<span className="text-[#7CB9E8] text-[15px]">G</span>rid <span className="text-[#E5C76B]/70 text-[11px] tracking-[0.2em]">(adept)</span>
+            </span>
+          </div>
+        </div>
         {/* HEADER */}
         <header className="h-14 md:h-16 border-b border-white/[0.06] bg-header backdrop-blur-xl flex items-center justify-between px-4 md:px-8 shrink-0 z-10">
           <div className="flex items-center space-x-4">
