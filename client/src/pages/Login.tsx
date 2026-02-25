@@ -91,9 +91,9 @@ export default function Login({ onLogin, isAuthenticating, error }: LoginProps) 
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.3, duration: 0.8 }}
-            className="-mt-4"
+            className="mt-1 w-full"
           >
-            <img src={logoImg} alt="GuardianGrid (Adept)" className="max-w-[320px] w-full h-auto drop-shadow-[0_0_20px_rgba(255,255,255,0.15)] mix-blend-screen" data-testid="img-logo" />
+            <img src={logoImg} alt="GuardianGrid (Adept)" className="w-full h-auto drop-shadow-[0_0_20px_rgba(255,255,255,0.15)] mix-blend-screen" data-testid="img-logo" />
           </motion.div>
         </div>
 
