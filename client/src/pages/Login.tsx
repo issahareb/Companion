@@ -29,7 +29,7 @@ export default function Login({ onLogin, isAuthenticating, error }: LoginProps) 
   const currentLang = LANGUAGES.find(l => l.id === language)!;
 
   return (
-    <div className="min-h-screen text-gray-200 flex flex-col items-center justify-center p-6 relative overflow-hidden">
+    <div className="min-h-screen text-gray-200 flex flex-col items-center justify-center p-6 relative overflow-hidden pt-0" style={{ justifyContent: 'start', paddingTop: '10vh' }}>
       <img src={bgImg} alt="" className="absolute inset-0 w-full h-full object-cover z-0" />
       <div className="absolute inset-0 bg-black/50 z-0" />
       <div className="absolute inset-0 bg-gradient-to-t from-[#080b14] via-transparent to-[#080b14]/80 z-0" />
