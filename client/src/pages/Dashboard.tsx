@@ -284,28 +284,21 @@ export default function Dashboard() {
           <div className="flex items-center space-x-4">
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="p-2.5 -ml-2 text-white/70 hover:text-white transition-colors"
+              className="p-2 -ml-1 text-white hover:text-indigo-400 transition-colors"
               data-testid="button-menu-toggle"
             >
-              <div className="w-6 h-6 flex flex-col justify-center items-center gap-[6px]">
-                <motion.span
-                  animate={isMenuOpen ? { rotate: 45, y: 8 } : { rotate: 0, y: 0 }}
-                  transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
-                  className="block w-6 h-[2px] bg-current origin-center rounded-full"
-                />
-                <motion.span
-                  animate={isMenuOpen ? { opacity: 0, scaleX: 0 } : { opacity: 1, scaleX: 1 }}
-                  transition={{ duration: 0.2 }}
-                  className="block w-6 h-[2px] bg-current origin-center rounded-full"
-                />
-                <motion.span
-                  animate={isMenuOpen ? { rotate: -45, y: -8 } : { rotate: 0, y: 0 }}
-                  transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
-                  className="block w-6 h-[2px] bg-current origin-center rounded-full"
-                />
-              </div>
+              <AnimatePresence mode="wait">
+                {isMenuOpen ? (
+                  <motion.div key="close" initial={{ rotate: -90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: 90, opacity: 0 }} transition={{ duration: 0.2 }}>
+                    <X className="w-6 h-6" />
+                  </motion.div>
+                ) : (
+                  <motion.div key="menu" initial={{ rotate: 90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: -90, opacity: 0 }} transition={{ duration: 0.2 }}>
+                    <Menu className="w-6 h-6" />
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </button>
-            <Activity className="w-5 h-5 text-indigo-400 opacity-70 hidden md:block" />
             <h2 className="font-display font-light text-sm tracking-[0.2em] text-white/90 uppercase" data-testid="text-header-title">
               {tabTitles[activeTab]}
             </h2>
