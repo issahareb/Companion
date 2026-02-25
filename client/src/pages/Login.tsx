@@ -3,7 +3,7 @@ import { Loader2, ExternalLink, AlertTriangle, Globe, ChevronDown } from 'lucide
 import { motion } from 'framer-motion';
 import ghostImg from '@assets/IMG_0547_1772026484289.gif';
 import bgImg from '@assets/IMG_0553_1772027873435.jpeg';
-import logoImg from '@assets/IMG_0598_1772050085088.png';
+import logoImg from '@assets/IMG_0600_1772050220314.png';
 import { useI18n, LANGUAGES } from '@/lib/i18n';
 
 interface LoginProps {
@@ -93,7 +93,7 @@ export default function Login({ onLogin, isAuthenticating, error }: LoginProps) 
             transition={{ delay: 0.3, duration: 0.8 }}
             className="mt-2"
           >
-            <img src={logoImg} alt="GuardianGrid (Adept)" className="max-w-[320px] w-full h-auto drop-shadow-[0_0_20px_rgba(255,255,255,0.15)] mix-blend-screen" data-testid="img-logo" />
+            <img src={logoImg} alt="GuardianGrid (Adept)" className="max-w-[480px] w-full h-auto drop-shadow-[0_0_20px_rgba(255,255,255,0.15)] mix-blend-screen mt-6" data-testid="img-logo" />
           </motion.div>
         </div>
 
