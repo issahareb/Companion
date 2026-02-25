@@ -75,6 +75,15 @@ export default function Login({ onLogin, isAuthenticating, error }: LoginProps) 
             <h1 className="text-3xl tracking-[0.3em] text-white uppercase text-shadow-glow font-display">GuardianGrid <span className="text-[#E5C76B]">(Adept)</span></h1>
           </motion.div>
 
+          <motion.div
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.3, duration: 0.8 }}
+            className="mt-6 w-full"
+          >
+            <p className="text-[11px] text-[#E5C76B] font-mono tracking-[0.25em] uppercase leading-relaxed drop-shadow-[0_2px_6px_rgba(0,0,0,0.9)] [text-shadow:0_0_8px_rgba(0,0,0,0.8),0_1px_3px_rgba(0,0,0,0.9)]">{t('login.subtitle')}</p>
+          </motion.div>
+
           <div className="w-36 h-36 mx-auto relative flex items-center justify-center mt-10">
             <div className="absolute inset-0 border border-white/20 rotate-45 animate-[spin_15s_linear_infinite]" />
             <div className="absolute inset-2 border border-white/10 -rotate-12 animate-[spin_20s_linear_infinite_reverse]" />
@@ -93,17 +102,6 @@ export default function Login({ onLogin, isAuthenticating, error }: LoginProps) 
               />
             </motion.div>
           </div>
-          
-          <motion.div
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.3, duration: 0.8 }}
-            className="mt-10 w-full"
-          >
-            <div className="bg-black/50 backdrop-blur-sm border border-white/[0.06] px-6 py-4 mx-auto max-w-sm">
-              <p className="text-[11px] text-[#E5C76B] font-mono tracking-[0.25em] uppercase leading-relaxed drop-shadow-[0_1px_4px_rgba(0,0,0,0.8)]">{t('login.subtitle')}</p>
-            </div>
-          </motion.div>
         </div>
 
         {error && (
