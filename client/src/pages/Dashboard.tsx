@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import hunterBgImg from '@assets/IMG_0576_1772037013335.jpeg';
+import ghostImg from '@assets/IMG_0547_1772026484289.gif';
 import warlockBgImg from '@assets/IMG_0577_1772043445515.jpeg';
 
 import { useBungieAuth } from '@/hooks/use-bungie-auth';
