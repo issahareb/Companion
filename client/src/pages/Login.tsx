@@ -1,7 +1,7 @@
 import { Loader2, ExternalLink, AlertTriangle } from 'lucide-react';
 import { motion } from 'framer-motion';
 import ghostImg from '@assets/IMG_0547_1772026484289.gif';
-import bgImg from '@assets/IMG_0553_1772027721718.jpeg';
+import bgImg from '@assets/IMG_0553_1772027873435.jpeg';
 
 interface LoginProps {
   onLogin: () => void;
