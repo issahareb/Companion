@@ -284,24 +284,24 @@ export default function Dashboard() {
           <div className="flex items-center space-x-4">
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="p-2 -ml-2 text-gray-400 hover:text-white transition-colors"
+              className="p-2.5 -ml-2 text-white/70 hover:text-white transition-colors"
               data-testid="button-menu-toggle"
             >
-              <div className="w-5 h-5 flex flex-col justify-center items-center gap-[5px]">
+              <div className="w-6 h-6 flex flex-col justify-center items-center gap-[6px]">
                 <motion.span
-                  animate={isMenuOpen ? { rotate: 45, y: 7 } : { rotate: 0, y: 0 }}
+                  animate={isMenuOpen ? { rotate: 45, y: 8 } : { rotate: 0, y: 0 }}
                   transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
-                  className="block w-5 h-[1.5px] bg-current origin-center"
+                  className="block w-6 h-[2px] bg-current origin-center rounded-full"
                 />
                 <motion.span
                   animate={isMenuOpen ? { opacity: 0, scaleX: 0 } : { opacity: 1, scaleX: 1 }}
                   transition={{ duration: 0.2 }}
-                  className="block w-5 h-[1.5px] bg-current origin-center"
+                  className="block w-6 h-[2px] bg-current origin-center rounded-full"
                 />
                 <motion.span
-                  animate={isMenuOpen ? { rotate: -45, y: -7 } : { rotate: 0, y: 0 }}
+                  animate={isMenuOpen ? { rotate: -45, y: -8 } : { rotate: 0, y: 0 }}
                   transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
-                  className="block w-5 h-[1.5px] bg-current origin-center"
+                  className="block w-6 h-[2px] bg-current origin-center rounded-full"
                 />
               </div>
             </button>
