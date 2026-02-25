@@ -65,7 +65,7 @@ export default function Login({ onLogin, isAuthenticating, error }: LoginProps) 
         )}
       </div>
       
-      <div className="max-w-md w-full text-center z-10 flex flex-col items-center">
+      <div className="max-w-md w-full text-center z-10 flex flex-col items-center flex-1">
         <div className="relative flex flex-col items-center">
           <div className="w-36 h-36 mx-auto relative flex items-center justify-center">
             <div className="absolute inset-0 border border-white/20 rotate-45 animate-[spin_15s_linear_infinite]" />
@@ -96,11 +96,13 @@ export default function Login({ onLogin, isAuthenticating, error }: LoginProps) 
           </motion.div>
         </div>
 
+        <div className="flex-1" />
+
         {error && (
           <motion.div 
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="mt-8 w-full bg-red-950/40 border border-red-500/20 text-red-400 p-5 flex items-start space-x-4 text-left backdrop-blur-md destiny-clip-sm"
+            className="mb-6 w-full bg-red-950/40 border border-red-500/20 text-red-400 p-5 flex items-start space-x-4 text-left backdrop-blur-md destiny-clip-sm"
           >
             <AlertTriangle className="w-5 h-5 flex-shrink-0 mt-0.5 text-red-500" />
             <div className="text-xs tracking-widest leading-relaxed uppercase">
@@ -114,7 +116,7 @@ export default function Login({ onLogin, isAuthenticating, error }: LoginProps) 
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.3, duration: 0.8 }}
-          className="mt-10 w-full"
+          className="w-full"
         >
           <p className="text-[11px] text-[#E5C76B] font-mono tracking-[0.25em] uppercase leading-relaxed drop-shadow-[0_2px_6px_rgba(0,0,0,0.9)] [text-shadow:0_0_8px_rgba(0,0,0,0.8),0_1px_3px_rgba(0,0,0,0.9)]">{t('login.subtitle')}</p>
         </motion.div>
@@ -152,7 +154,7 @@ export default function Login({ onLogin, isAuthenticating, error }: LoginProps) 
           initial={{ opacity: 0 }}
           animate={{ opacity: 0.4 }}
           transition={{ delay: 1, duration: 1 }}
-          className="text-[10px] tracking-[0.2em] text-white/40 mt-6"
+          className="text-[10px] tracking-[0.2em] text-white/40 mt-6 mb-8"
         >
           {t('login.disclaimer')}
         </motion.p>
