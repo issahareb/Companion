@@ -27,8 +27,10 @@ const ARMOR_SLOTS = ['helmet', 'arms', 'chest', 'legs', 'class'];
 
 const TIER_TO_RARITY: Record<string, 'common' | 'uncommon' | 'rare' | 'legendary' | 'exotic'> = {
   Common: 'common',
+  Basic: 'common',
   Uncommon: 'uncommon',
   Rare: 'rare',
+  Superior: 'legendary',
   Legendary: 'legendary',
   Exotic: 'exotic',
 };
@@ -272,8 +274,7 @@ function parseGearItem(
   const slot = GEAR_BUCKET_TO_SLOT[manifestItem.bucketHash];
   if (!slot) return null;
 
-  const rarity = TIER_TO_RARITY[manifestItem.tierTypeName];
-  if (!rarity) return null;
+  const rarity = TIER_TO_RARITY[manifestItem.tierTypeName] || 'common';
 
   const instanceId = item.itemInstanceId || hashStr;
   const instance = item.itemInstanceId ? instanceDetails[item.itemInstanceId] : null;
@@ -336,6 +337,9 @@ export async function fetchProfileState(
   const postmasterItems: InventoryItem[] = [];
 
   const profileInventory = response.profileInventory?.data?.items;
+  console.log(`[bungie] profileInventory items count: ${profileInventory?.length || 0}`);
+  let vaultBucketCount = 0;
+  let vaultParseFails = 0;
   if (profileInventory) {
     for (const item of profileInventory) {
       const hashStr = String(item.itemHash);
@@ -343,11 +347,20 @@ export async function fetchProfileState(
       if (!manifestItem) continue;
 
       if (item.bucketHash === VAULT_BUCKET || manifestItem.bucketHash === VAULT_BUCKET) {
+        vaultBucketCount++;
         const parsed = parseGearItem(item, manifest, instanceDetails, 'vault');
         if (parsed) vaultItems.push(parsed);
+        else {
+          vaultParseFails++;
+          const slot = GEAR_BUCKET_TO_SLOT[manifestItem.bucketHash];
+          if (vaultParseFails <= 5) {
+            console.log(`[bungie] vault parse fail: "${manifestItem.name}" bucket=${manifestItem.bucketHash} slot=${slot} tier=${manifestItem.tierTypeName}`);
+          }
+        }
       }
     }
   }
+  console.log(`[bungie] vault bucket items: ${vaultBucketCount}, parsed ok: ${vaultItems.length}, parse fails: ${vaultParseFails}`);
 
   const characters: CharacterData[] = [];
   const characterData = response.characters?.data || {};
