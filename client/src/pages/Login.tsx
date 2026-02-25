@@ -116,8 +116,9 @@ export default function Login({ onLogin, isAuthenticating, error }: LoginProps) 
           transition={{ delay: 0.6, duration: 0.8 }}
           className="relative group"
         >
-          <div className="absolute -inset-3 bg-gradient-to-r from-purple-600 via-pink-500 via-indigo-500 to-purple-600 rounded-lg blur-xl opacity-[0.48] group-hover:opacity-[0.68] transition duration-1000 animate-pulse-glow" />
-          <div className="absolute -inset-1 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 rounded-lg blur opacity-[0.48] group-hover:opacity-[0.68] transition duration-1000" />
+          <div className="absolute -inset-6 bg-gradient-to-r from-purple-600 via-fuchsia-500 via-pink-500 to-purple-600 rounded-2xl blur-2xl opacity-[0.55] group-hover:opacity-[0.80] transition duration-1000 animate-pulse-glow" />
+          <div className="absolute -inset-3 bg-gradient-to-r from-pink-500 via-purple-500 to-fuchsia-500 rounded-xl blur-lg opacity-[0.50] group-hover:opacity-[0.75] transition duration-1000 animate-pulse-glow" style={{ animationDelay: '0.5s' }} />
+          <div className="absolute -inset-1 bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 rounded-lg blur-md opacity-[0.45] group-hover:opacity-[0.65] transition duration-1000" />
           <button 
             onClick={onLogin}
             disabled={isAuthenticating}
