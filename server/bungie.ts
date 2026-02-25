@@ -722,7 +722,12 @@ export async function fetchProfileState(
 
         if (item.bucketHash === POSTMASTER_BUCKET) {
           const parsed = parseGearItem(item, manifest, instanceDetails, 'postmaster', charId);
-          if (parsed) postmasterItems.push(parsed);
+          if (parsed) {
+            console.log(`[bungie] postmaster item found for char ${charId}: "${parsed.name}" (hash=${item.itemHash})`);
+            postmasterItems.push(parsed);
+          } else {
+            console.log(`[bungie] postmaster item parse failed: hash=${item.itemHash}, manifest=${manifestItem?.name || 'missing'}`);
+          }
           continue;
         }
 
@@ -933,6 +938,7 @@ export async function fetchProfileState(
     inGameLoadouts[charId] = charLoadouts.filter(l => l.items.length > 0);
   }
 
+  console.log(`[bungie] total postmaster items: ${postmasterItems.length}`);
   return { characters, vaultItems, postmasterItems, currencies, collectibles, records, artifact, inGameLoadouts };
 }
 
