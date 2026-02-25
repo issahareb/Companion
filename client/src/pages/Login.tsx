@@ -3,7 +3,7 @@ import { Loader2, ExternalLink, AlertTriangle, Globe, ChevronDown } from 'lucide
 import { motion } from 'framer-motion';
 import ghostImg from '@assets/IMG_0547_1772026484289.gif';
 import bgImg from '@assets/IMG_0553_1772027873435.jpeg';
-import logoImg from '@assets/IMG_0593_1772049492150.png';
+import logoImg from '@assets/IMG_0598_1772050085088.png';
 import { useI18n, LANGUAGES } from '@/lib/i18n';
 
 interface LoginProps {
