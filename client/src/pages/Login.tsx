@@ -1,6 +1,6 @@
-import React from 'react';
-import { Hexagon, Loader2, ExternalLink, AlertTriangle } from 'lucide-react';
+import { Loader2, ExternalLink, AlertTriangle } from 'lucide-react';
 import { motion } from 'framer-motion';
+import ghostImg from '@assets/IMG_0546_1772026129974.jpeg';
 
 interface LoginProps {
   onLogin: () => void;
@@ -17,8 +17,7 @@ export default function Login({ onLogin, isAuthenticating, error }: LoginProps) 
       
       <div className="max-w-md w-full space-y-12 text-center z-10">
         <div className="space-y-8 relative">
-          <div className="w-32 h-32 mx-auto relative flex items-center justify-center">
-             {/* Animated rotating borders */}
+          <div className="w-40 h-40 mx-auto relative flex items-center justify-center">
             <div className="absolute inset-0 border border-white/20 rotate-45 animate-[spin_15s_linear_infinite]" />
             <div className="absolute inset-2 border border-white/10 -rotate-12 animate-[spin_20s_linear_infinite_reverse]" />
             <div className="absolute inset-4 border border-indigo-500/20 rotate-180 animate-[spin_10s_linear_infinite]" />
@@ -27,8 +26,14 @@ export default function Login({ onLogin, isAuthenticating, error }: LoginProps) 
               initial={{ scale: 0.8, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               transition={{ duration: 1, ease: "easeOut" }}
+              className="ghost-float"
             >
-              <Hexagon className="w-16 h-16 text-white shadow-[0_0_40px_rgba(255,255,255,0.3)]" strokeWidth={1} />
+              <img
+                src={ghostImg}
+                alt="Destiny Ghost"
+                className="w-24 h-24 object-contain drop-shadow-[0_0_25px_rgba(255,255,255,0.35)]"
+                data-testid="img-ghost-logo"
+              />
             </motion.div>
           </div>
           
@@ -62,24 +67,27 @@ export default function Login({ onLogin, isAuthenticating, error }: LoginProps) 
           transition={{ delay: 0.6, duration: 0.8 }}
           className="relative group"
         >
-          <div className="absolute -inset-1 bg-gradient-to-r from-indigo-500 to-[#E5C76B] rounded-lg blur opacity-10 group-hover:opacity-30 transition duration-1000" />
-          <button 
-            onClick={onLogin}
-            disabled={isAuthenticating}
-            className="relative w-full bg-[#0c1020]/60 border border-white/10 hover:border-white/40 p-6 flex items-center justify-center transition-all duration-500 backdrop-blur-xl destiny-clip group-hover:-translate-y-1"
-          >
-            {isAuthenticating ? (
-              <span className="flex items-center space-x-4 text-[11px] tracking-[0.3em] text-[#E5C76B]">
-                <Loader2 className="w-5 h-5 animate-spin" />
-                <span>VERBINDE...</span>
-              </span>
-            ) : (
-              <span className="flex items-center space-x-4 text-[11px] tracking-[0.3em] text-white font-bold">
-                <span>LOGIN VIA BUNGIE.NET</span>
-                <ExternalLink className="w-4 h-4 opacity-40 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
-              </span>
-            )}
-          </button>
+          <div className="relative p-[2px] overflow-hidden group-hover:-translate-y-1 transition-transform duration-500 group-hover:shadow-[0_0_30px_rgba(99,102,241,0.25),0_0_60px_rgba(229,199,107,0.12)]">
+            <div className="absolute inset-[-50%] animate-[border-shimmer-rotate_3s_linear_infinite] bg-[conic-gradient(from_0deg,transparent_0deg,rgba(99,102,241,0.7)_60deg,rgba(229,199,107,0.8)_120deg,transparent_180deg,transparent_240deg,rgba(99,102,241,0.7)_300deg,rgba(229,199,107,0.8)_340deg,transparent_360deg)] group-hover:opacity-100 opacity-60 transition-opacity duration-500" />
+            <button 
+              onClick={onLogin}
+              disabled={isAuthenticating}
+              className="relative w-full bg-[#0c1020] p-6 flex items-center justify-center transition-all duration-500 backdrop-blur-xl"
+              data-testid="button-login"
+            >
+              {isAuthenticating ? (
+                <span className="flex items-center space-x-4 text-[11px] tracking-[0.3em] text-[#E5C76B]">
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  <span>VERBINDE...</span>
+                </span>
+              ) : (
+                <span className="flex items-center space-x-4 text-[11px] tracking-[0.3em] text-white font-bold">
+                  <span>LOGIN VIA BUNGIE.NET</span>
+                  <ExternalLink className="w-4 h-4 opacity-40 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
+                </span>
+              )}
+            </button>
+          </div>
         </motion.div>
         
         <motion.p 
