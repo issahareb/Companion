@@ -93,7 +93,7 @@ export default function Login({ onLogin, isAuthenticating, error }: LoginProps) 
             transition={{ delay: 0.3, duration: 0.8 }}
             className="mt-2"
           >
-            <img src={logoImg} alt="GuardianGrid (Adept)" className="max-w-[640px] w-full h-auto drop-shadow-[0_0_20px_rgba(255,255,255,0.15)] mix-blend-screen mt-6" data-testid="img-logo" />
+            <img src={logoImg} alt="GuardianGrid (Adept)" className="max-w-[320px] w-full h-auto drop-shadow-[0_0_20px_rgba(255,255,255,0.15)] mix-blend-screen" data-testid="img-logo" />
           </motion.div>
         </div>
 
