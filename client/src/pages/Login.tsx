@@ -151,7 +151,7 @@ export default function Login({ onLogin, isAuthenticating, error }: LoginProps) 
           initial={{ opacity: 0 }}
           animate={{ opacity: 0.4 }}
           transition={{ delay: 1, duration: 1 }}
-          className="text-[9px] uppercase tracking-[0.3em] text-gray-500 mt-6"
+          className="text-[10px] tracking-[0.2em] text-white/40 mt-6"
         >
           {t('login.disclaimer')}
         </motion.p>
