@@ -65,9 +65,17 @@ export default function Login({ onLogin, isAuthenticating, error }: LoginProps) 
         )}
       </div>
       
-      <div className="max-w-md w-full space-y-12 text-center z-10">
-        <div className="space-y-8 relative">
-          <div className="w-40 h-40 mx-auto relative flex items-center justify-center">
+      <div className="max-w-md w-full text-center z-10 flex flex-col items-center">
+        <div className="relative flex flex-col items-center">
+          <motion.div
+            initial={{ y: -10, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.1, duration: 0.8 }}
+          >
+            <h1 className="text-3xl tracking-[0.3em] text-white uppercase text-shadow-glow font-display">GuardianGrid <span className="text-[#E5C76B]">(Adept)</span></h1>
+          </motion.div>
+
+          <div className="w-36 h-36 mx-auto relative flex items-center justify-center mt-10">
             <div className="absolute inset-0 border border-white/20 rotate-45 animate-[spin_15s_linear_infinite]" />
             <div className="absolute inset-2 border border-white/10 -rotate-12 animate-[spin_20s_linear_infinite_reverse]" />
             <div className="absolute inset-4 border border-indigo-500/20 rotate-180 animate-[spin_10s_linear_infinite]" />
@@ -80,7 +88,7 @@ export default function Login({ onLogin, isAuthenticating, error }: LoginProps) 
               <img
                 src={ghostImg}
                 alt="Destiny Ghost"
-                className="w-28 h-28 object-contain drop-shadow-[0_0_30px_rgba(255,255,255,0.3)]"
+                className="w-24 h-24 object-contain drop-shadow-[0_0_30px_rgba(255,255,255,0.3)]"
                 data-testid="img-ghost-logo"
               />
             </motion.div>
@@ -90,9 +98,11 @@ export default function Login({ onLogin, isAuthenticating, error }: LoginProps) 
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.3, duration: 0.8 }}
+            className="mt-10 w-full"
           >
-            <h1 className="text-3xl tracking-[0.3em] text-white uppercase text-shadow-glow font-display">GuardianGrid <span className="text-[#E5C76B]">(Adept)</span></h1>
-            <p className="text-[10px] text-[#E5C76B] font-mono tracking-[0.3em] mt-4 uppercase opacity-70">{t('login.subtitle')}</p>
+            <div className="bg-black/50 backdrop-blur-sm border border-white/[0.06] px-6 py-4 mx-auto max-w-sm">
+              <p className="text-[11px] text-[#E5C76B] font-mono tracking-[0.25em] uppercase leading-relaxed drop-shadow-[0_1px_4px_rgba(0,0,0,0.8)]">{t('login.subtitle')}</p>
+            </div>
           </motion.div>
         </div>
 
@@ -100,7 +110,7 @@ export default function Login({ onLogin, isAuthenticating, error }: LoginProps) 
           <motion.div 
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="bg-red-950/40 border border-red-500/20 text-red-400 p-5 flex items-start space-x-4 text-left backdrop-blur-md destiny-clip-sm"
+            className="mt-8 w-full bg-red-950/40 border border-red-500/20 text-red-400 p-5 flex items-start space-x-4 text-left backdrop-blur-md destiny-clip-sm"
           >
             <AlertTriangle className="w-5 h-5 flex-shrink-0 mt-0.5 text-red-500" />
             <div className="text-xs tracking-widest leading-relaxed uppercase">
@@ -114,7 +124,7 @@ export default function Login({ onLogin, isAuthenticating, error }: LoginProps) 
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.6, duration: 0.8 }}
-          className="relative group"
+          className="relative group mt-10 w-full"
         >
           <div className="absolute -inset-6 bg-gradient-to-r from-purple-600 via-fuchsia-500 via-pink-500 to-purple-600 rounded-2xl blur-2xl opacity-[0.25] group-hover:opacity-[0.45] transition duration-1000 animate-pulse-glow" />
           <div className="absolute -inset-3 bg-gradient-to-r from-pink-500 via-purple-500 to-fuchsia-500 rounded-xl blur-lg opacity-[0.20] group-hover:opacity-[0.40] transition duration-1000 animate-pulse-glow" style={{ animationDelay: '0.5s' }} />
@@ -143,7 +153,7 @@ export default function Login({ onLogin, isAuthenticating, error }: LoginProps) 
           initial={{ opacity: 0 }}
           animate={{ opacity: 0.4 }}
           transition={{ delay: 1, duration: 1 }}
-          className="text-[9px] uppercase tracking-[0.3em] text-gray-500"
+          className="text-[9px] uppercase tracking-[0.3em] text-gray-500 mt-6"
         >
           {t('login.disclaimer')}
         </motion.p>
