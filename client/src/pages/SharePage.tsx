@@ -8,67 +8,7 @@ import { SavedLoadout } from '@shared/schema';
 import { useBungieAuth } from '@/hooks/use-bungie-auth';
 import { useInventory } from '@/hooks/use-inventory';
 import { motion, AnimatePresence } from 'framer-motion';
-
-const ITEM_SLOTS = [
-  { id: 'kinetic', label: 'Kinetik', icon: () => null },
-  { id: 'energy', label: 'Energie', icon: () => null },
-  { id: 'power', label: 'Power', icon: () => null },
-  { id: 'helmet', label: 'Helm', icon: () => null },
-  { id: 'arms', label: 'Arme', icon: () => null },
-  { id: 'chest', label: 'Brust', icon: () => null },
-  { id: 'legs', label: 'Beine', icon: () => null },
-  { id: 'class', label: 'Klasse', icon: () => null },
-];
-
-interface MatchResult {
-  slot: string;
-  wanted: Item | null;
-  matched: Item | null;
-  status: 'exact' | 'substitute' | 'missing';
-  note?: string;
-}
-
-function matchLoadoutToInventory(loadoutItems: Record<string, Item>, inventory: Item[]): MatchResult[] {
-  const results: MatchResult[] = [];
-
-  for (const slot of ITEM_SLOTS) {
-    const wanted = loadoutItems[slot.id] as Item | undefined;
-    if (!wanted) {
-      results.push({ slot: slot.id, wanted: null, matched: null, status: 'exact' });
-      continue;
-    }
-
-    const exactMatch = inventory.find(i => i.name === wanted.name && i.slot === wanted.slot);
-    if (exactMatch) {
-      results.push({ slot: slot.id, wanted, matched: exactMatch, status: 'exact' });
-      continue;
-    }
-
-    const slotItems = inventory.filter(i => i.slot === wanted.slot);
-    const sameRarity = slotItems.filter(i => i.rarity === wanted.rarity);
-    const bestMatch = (sameRarity.length > 0 ? sameRarity : slotItems).sort((a, b) => b.power - a.power)[0];
-
-    if (bestMatch) {
-      results.push({
-        slot: slot.id,
-        wanted,
-        matched: bestMatch,
-        status: 'substitute',
-        note: `"${wanted.name}" nicht vorhanden. "${bestMatch.name}" als Ersatz gewählt.`,
-      });
-    } else {
-      results.push({
-        slot: slot.id,
-        wanted,
-        matched: null,
-        status: 'missing',
-        note: `"${wanted.name}" nicht im Inventar gefunden.`,
-      });
-    }
-  }
-
-  return results;
-}
+import { useI18n } from '@/lib/i18n';
 
 export default function SharePage() {
   const [, params] = useRoute('/share/:shareCode');
@@ -77,6 +17,18 @@ export default function SharePage() {
   const { isAuthenticated, destinyProfile, login } = useBungieAuth();
   const { data: inventory = [] } = useInventory(destinyProfile?.membershipType, destinyProfile?.membershipId);
   const [showAdoptModal, setShowAdoptModal] = useState(false);
+  const { t } = useI18n();
+
+  const ITEM_SLOTS = [
+    { id: 'kinetic', label: t('slot.kinetic'), icon: () => null },
+    { id: 'energy', label: t('slot.energy'), icon: () => null },
+    { id: 'power', label: t('slot.power'), icon: () => null },
+    { id: 'helmet', label: t('slot.helmet'), icon: () => null },
+    { id: 'arms', label: t('slot.arms'), icon: () => null },
+    { id: 'chest', label: t('slot.chest'), icon: () => null },
+    { id: 'legs', label: t('slot.legs'), icon: () => null },
+    { id: 'class', label: t('slot.class'), icon: () => null },
+  ];
 
   const { data: loadout, isLoading, error } = useQuery<SavedLoadout>({
     queryKey: [buildUrl(api.loadouts.getByShareCode.path, { shareCode: shareCode! })],
@@ -85,7 +37,7 @@ export default function SharePage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-[#050507] flex items-center justify-center">
+      <div className="min-h-screen bg-[#080b14] flex items-center justify-center">
         <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
       </div>
     );
@@ -93,33 +45,76 @@ export default function SharePage() {
 
   if (error || !loadout) {
     return (
-      <div className="min-h-screen bg-[#050507] flex flex-col items-center justify-center p-6 text-center">
-        <h1 className="text-2xl font-display font-light text-white mb-4 tracking-widest">LOADOUT NICHT GEFUNDEN</h1>
+      <div className="min-h-screen bg-[#080b14] flex flex-col items-center justify-center p-6 text-center">
+        <h1 className="text-2xl font-display font-light text-white mb-4 tracking-widest">{t('share.notFound')}</h1>
         <button onClick={() => setLocation('/')} className="text-indigo-400 hover:text-indigo-300 flex items-center gap-2 uppercase tracking-widest text-xs">
-          <ArrowLeft className="w-4 h-4" /> Zurück zum Orbit
+          <ArrowLeft className="w-4 h-4" /> {t('action.backToOrbit')}
         </button>
       </div>
     );
   }
 
   const loadoutItems = loadout.items as Record<string, Item>;
+
+  function matchLoadoutToInventory(loadoutItems: Record<string, Item>, inventory: Item[]) {
+    const results: { slot: string; wanted: Item | null; matched: Item | null; status: 'exact' | 'substitute' | 'missing'; note?: string }[] = [];
+
+    for (const slot of ITEM_SLOTS) {
+      const wanted = loadoutItems[slot.id] as Item | undefined;
+      if (!wanted) {
+        results.push({ slot: slot.id, wanted: null, matched: null, status: 'exact' });
+        continue;
+      }
+
+      const exactMatch = inventory.find(i => i.name === wanted.name && i.slot === wanted.slot);
+      if (exactMatch) {
+        results.push({ slot: slot.id, wanted, matched: exactMatch, status: 'exact' });
+        continue;
+      }
+
+      const slotItems = inventory.filter(i => i.slot === wanted.slot);
+      const sameRarity = slotItems.filter(i => i.rarity === wanted.rarity);
+      const bestMatch = (sameRarity.length > 0 ? sameRarity : slotItems).sort((a, b) => b.power - a.power)[0];
+
+      if (bestMatch) {
+        results.push({
+          slot: slot.id,
+          wanted,
+          matched: bestMatch,
+          status: 'substitute',
+          note: `"${wanted.name}" ${t('share.notAvailable')} "${bestMatch.name}" ${t('share.substituteChosen')}`,
+        });
+      } else {
+        results.push({
+          slot: slot.id,
+          wanted,
+          matched: null,
+          status: 'missing',
+          note: `"${wanted.name}" ${t('share.notInInventory')}`,
+        });
+      }
+    }
+
+    return results;
+  }
+
   const matchResults = isAuthenticated && inventory.length > 0 ? matchLoadoutToInventory(loadoutItems, inventory) : null;
 
   return (
-    <div className="min-h-screen bg-[#050507] text-gray-300 p-4 md:p-6 flex flex-col items-center relative overflow-hidden">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,_rgba(40,40,60,0.3)_0%,_rgba(5,5,7,1)_100%)] z-0" />
+    <div className="min-h-screen bg-[#080b14] text-gray-300 p-4 md:p-6 flex flex-col items-center relative overflow-hidden">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,_rgba(40,40,60,0.3)_0%,_rgba(8,11,20,1)_100%)] z-0" />
       
       <div className="max-w-2xl w-full z-10 space-y-6">
         <div className="text-center space-y-4 pt-4">
           <Hexagon className="w-10 h-10 mx-auto text-white opacity-80" strokeWidth={1} />
           <h1 className="text-2xl md:text-3xl font-display font-light text-white tracking-[0.3em] uppercase" data-testid="text-loadout-name">{loadout.name}</h1>
-          <p className="text-[10px] text-indigo-400 tracking-[0.3em] font-mono uppercase opacity-70">Geteilte Konfiguration</p>
+          <p className="text-[10px] text-indigo-400 tracking-[0.3em] font-mono uppercase opacity-70">{t('share.config')}</p>
         </div>
 
         <div className="bg-[#0A0A0C]/60 backdrop-blur-xl border border-white/10 p-5 md:p-8 destiny-clip-sm space-y-4 shadow-2xl">
           <div className="flex items-center gap-3 mb-4">
             <Sparkles className="w-4 h-4 text-[#E5C76B]" />
-            <h3 className="text-xs font-display font-light tracking-[0.2em] text-white">AUSRÜSTUNG</h3>
+            <h3 className="text-xs font-display font-light tracking-[0.2em] text-white">{t('section.equipment')}</h3>
           </div>
           
           <div className="grid gap-3">
@@ -141,7 +136,7 @@ export default function SharePage() {
             className="w-full py-4 bg-indigo-600 hover:bg-indigo-500 text-white transition-all destiny-clip-sm text-[10px] tracking-[0.3em] font-bold uppercase"
             data-testid="button-adopt-loadout"
           >
-            LOADOUT ÜBERNEHMEN
+            {t('action.adoptLoadout')}
           </button>
         ) : (
           <div className="space-y-3">
@@ -149,13 +144,13 @@ export default function SharePage() {
               onClick={login}
               className="w-full py-4 bg-indigo-600 hover:bg-indigo-500 text-white transition-all destiny-clip-sm text-[10px] tracking-[0.3em] font-bold uppercase"
             >
-              ANMELDEN UM LOADOUT ZU ÜBERNEHMEN
+              {t('action.loginToAdopt')}
             </button>
             <button 
               onClick={() => setLocation('/')}
               className="w-full py-4 bg-white/5 border border-white/10 hover:border-white/40 text-white transition-all destiny-clip-sm text-[10px] tracking-[0.3em] font-bold uppercase"
             >
-              EIGENES LOADOUT ERSTELLEN
+              {t('action.createOwn')}
             </button>
           </div>
         )}
@@ -170,7 +165,7 @@ export default function SharePage() {
               onClick={(e) => e.stopPropagation()}
               className="bg-[#141417] border border-white/10 p-6 w-full max-w-lg shadow-2xl max-h-[85vh] overflow-y-auto">
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-lg font-display font-light text-white tracking-wider">Loadout übernehmen</h2>
+                <h2 className="text-lg font-display font-light text-white tracking-wider">{t('share.adoptHeading')}</h2>
                 <button onClick={() => setShowAdoptModal(false)} className="text-gray-500 hover:text-white">
                   <X className="w-5 h-5" />
                 </button>
@@ -214,14 +209,14 @@ export default function SharePage() {
 
               {matchResults.some(r => r.status === 'substitute' || r.status === 'missing') && (
                 <p className="text-[10px] text-gray-500 mb-4">
-                  Einige Gegenstände konnten nicht exakt zugeordnet werden. Die bestmögliche Alternative wurde gewählt.
+                  {t('share.itemsMismatch')}
                 </p>
               )}
 
               <div className="flex gap-3">
                 <button onClick={() => setShowAdoptModal(false)}
                   className="flex-1 py-3 bg-white/5 border border-white/10 text-white text-[10px] tracking-[0.2em] uppercase font-bold hover:bg-white/10 transition-all">
-                  Abbrechen
+                  {t('action.cancel')}
                 </button>
                 <button onClick={() => {
                   const adoptedLoadout: Record<string, Item> = {};
@@ -233,7 +228,7 @@ export default function SharePage() {
                 }}
                   className="flex-1 py-3 bg-indigo-600 hover:bg-indigo-500 text-white text-[10px] tracking-[0.2em] uppercase font-bold transition-all"
                   data-testid="button-confirm-adopt">
-                  Übernehmen
+                  {t('action.adopt')}
                 </button>
               </div>
             </motion.div>

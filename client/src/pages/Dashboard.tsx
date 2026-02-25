@@ -18,40 +18,9 @@ import { DesktopNavButton, MobileNavButton, UserProfile } from '@/components/Nav
 import { ItemCard, EquippedSlot, type Item, type SlotInfo } from '@/components/Inventory';
 import { SaveLoadoutModal } from '@/components/SaveLoadoutModal';
 import { useToast } from '@/hooks/use-toast';
-
-const ITEM_SLOTS: SlotInfo[] = [
-  { id: 'kinetic', label: 'Primär', icon: Crosshair },
-  { id: 'energy', label: 'Energie', icon: Zap },
-  { id: 'power', label: 'Schwer', icon: Flame },
-  { id: 'helmet', label: 'Kopf', icon: Shield },
-  { id: 'arms', label: 'Arme', icon: Shield },
-  { id: 'chest', label: 'Brust', icon: Shield },
-  { id: 'legs', label: 'Beine', icon: Shield },
-  { id: 'class', label: 'Klasse', icon: Hexagon },
-  { id: 'subclass', label: 'Subklasse', icon: Orbit },
-];
+import { useI18n } from '@/lib/i18n';
 
 type TabType = 'characters' | 'vault' | 'loadouts' | 'postmaster';
-
-const SLOT_FILTERS = [
-  { id: 'all', label: 'Alle' },
-  { id: 'kinetic', label: 'Primär' },
-  { id: 'energy', label: 'Energie' },
-  { id: 'power', label: 'Schwer' },
-  { id: 'helmet', label: 'Kopf' },
-  { id: 'arms', label: 'Arme' },
-  { id: 'chest', label: 'Brust' },
-  { id: 'legs', label: 'Beine' },
-  { id: 'class', label: 'Klasse' },
-  { id: 'subclass', label: 'Subklasse' },
-];
-
-const RARITY_FILTERS = [
-  { id: 'all', label: 'Alle' },
-  { id: 'exotic', label: 'Exotisch' },
-  { id: 'legendary', label: 'Legendär' },
-  { id: 'rare', label: 'Selten' },
-];
 
 function toItem(inv: InventoryItem): Item {
   return {
@@ -106,6 +75,39 @@ export default function Dashboard() {
   const equipMutation = useEquipItem();
   const swapMutation = useSwapItem();
   const { toast } = useToast();
+  const { t } = useI18n();
+
+  const ITEM_SLOTS: SlotInfo[] = [
+    { id: 'kinetic', label: t('slot.kinetic'), icon: Crosshair },
+    { id: 'energy', label: t('slot.energy'), icon: Zap },
+    { id: 'power', label: t('slot.power'), icon: Flame },
+    { id: 'helmet', label: t('slot.helmet'), icon: Shield },
+    { id: 'arms', label: t('slot.arms'), icon: Shield },
+    { id: 'chest', label: t('slot.chest'), icon: Shield },
+    { id: 'legs', label: t('slot.legs'), icon: Shield },
+    { id: 'class', label: t('slot.class'), icon: Hexagon },
+    { id: 'subclass', label: t('slot.subclass'), icon: Orbit },
+  ];
+
+  const SLOT_FILTERS = [
+    { id: 'all', label: t('filter.all') },
+    { id: 'kinetic', label: t('slot.kinetic') },
+    { id: 'energy', label: t('slot.energy') },
+    { id: 'power', label: t('slot.power') },
+    { id: 'helmet', label: t('slot.helmet') },
+    { id: 'arms', label: t('slot.arms') },
+    { id: 'chest', label: t('slot.chest') },
+    { id: 'legs', label: t('slot.legs') },
+    { id: 'class', label: t('slot.class') },
+    { id: 'subclass', label: t('slot.subclass') },
+  ];
+
+  const RARITY_FILTERS = [
+    { id: 'all', label: t('filter.all') },
+    { id: 'exotic', label: t('filter.exotic') },
+    { id: 'legendary', label: t('filter.legendary') },
+    { id: 'rare', label: t('filter.rare') },
+  ];
 
   const [activeTab, setActiveTab] = useState<TabType>('characters');
   const [loadout, setLoadout] = useState<Record<string, Item>>({});
@@ -133,7 +135,7 @@ export default function Dashboard() {
     if (pending) {
       try {
         setLoadout(JSON.parse(pending));
-        toast({ title: "Loadout übernommen", description: "Das geteilte Loadout wurde geladen." });
+        toast({ title: t('toast.loadoutAdopted'), description: t('toast.loadoutAdoptedDesc') });
       } catch {}
       localStorage.removeItem('pending_loadout');
     }
@@ -156,7 +158,7 @@ export default function Dashboard() {
       newLoadout[item.slot] = item;
       return newLoadout;
     });
-    toast({ title: "Hinzugefügt", description: `${item.name} zum Loadout hinzugefügt.`, duration: 2000 });
+    toast({ title: t('toast.added'), description: `${item.name} ${t('toast.addedDesc')}`, duration: 2000 });
   };
 
   const unequipItem = (slotId: string) => {
@@ -167,14 +169,14 @@ export default function Dashboard() {
     if (!destinyProfile?.membershipId) return;
     const shareCode = Math.random().toString(36).substring(2, 10);
     await saveLoadoutMutation.mutateAsync({ bungieMembershipId: destinyProfile.membershipId, name, items: loadout as any, shareCode });
-    toast({ title: "Loadout gespeichert", description: `"${name}" erfolgreich gespeichert.` });
+    toast({ title: t('toast.saved'), description: `"${name}" ${t('toast.savedDesc')}` });
     setActiveTab('loadouts');
   };
 
   const handleDeleteLoadout = async (id: number) => {
     if (!destinyProfile?.membershipId) return;
     await deleteLoadoutMutation.mutateAsync({ id, bungieMembershipId: destinyProfile.membershipId });
-    toast({ title: "Loadout gelöscht" });
+    toast({ title: t('toast.deleted') });
   };
 
   const handleTransfer = async (item: InventoryItem, toVault: boolean, characterId: string) => {
@@ -187,9 +189,9 @@ export default function Dashboard() {
         membershipType: destinyProfile.membershipType,
         transferToVault: toVault,
       });
-      toast({ title: "Verschoben", description: `${item.name} wurde ${toVault ? 'in den Tresor' : 'zum Hüter'} verschoben.` });
+      toast({ title: t('toast.moved'), description: `${item.name} ${t('toast.movedDesc')}` });
     } catch (err: any) {
-      toast({ title: "Fehler", description: err.message, variant: "destructive" });
+      toast({ title: t('error.generic'), description: err.message, variant: "destructive" });
     }
   };
 
@@ -217,24 +219,24 @@ export default function Dashboard() {
           });
         }
       }
-      toast({ title: "Angelegt", description: `${item.name} wurde angelegt.` });
+      toast({ title: t('toast.equipped'), description: `${item.name} ${t('toast.equippedDesc')}` });
     } catch (err: any) {
-      toast({ title: "Fehler", description: err.message, variant: "destructive" });
+      toast({ title: t('error.generic'), description: err.message, variant: "destructive" });
     }
   };
 
   const copyToClipboard = (code: string) => {
     const link = `${window.location.origin}/share/${code}`;
     navigator.clipboard.writeText(link).then(() => {
-      toast({ title: "Link kopiert!" });
+      toast({ title: t('toast.linkCopied') });
     });
   };
 
   const tabTitles: Record<TabType, string> = {
-    characters: 'Hüter-Übersicht',
-    vault: 'Tresor',
-    loadouts: 'Loadouts',
-    postmaster: 'Postmeister',
+    characters: t('nav.characters'),
+    vault: t('nav.vault'),
+    loadouts: t('nav.loadouts'),
+    postmaster: t('nav.postmaster'),
   };
 
   return (
@@ -304,14 +306,14 @@ export default function Dashboard() {
           {isLoadingProfile ? (
             <div className="flex flex-col items-center justify-center h-full space-y-4">
               <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
-              <p className="text-[10px] text-gray-500 uppercase tracking-[0.3em] font-display">Lade Profildaten von Bungie...</p>
+              <p className="text-[10px] text-gray-500 uppercase tracking-[0.3em] font-display">{t('loading.profile')}</p>
             </div>
           ) : profileError ? (
             <div className="flex flex-col items-center justify-center h-full space-y-4">
               <AlertTriangle className="w-8 h-8 text-amber-500" />
-              <p className="text-sm text-gray-400 text-center max-w-md">Profildaten konnten nicht geladen werden.</p>
+              <p className="text-sm text-gray-400 text-center max-w-md">{t('error.profile')}</p>
               <button onClick={() => refetchProfile()} className="flex items-center gap-2 px-4 py-2 text-xs uppercase tracking-widest bg-white/5 hover:bg-white/10 text-white border border-white/10 transition-all destiny-clip-sm">
-                <RefreshCw className="w-3.5 h-3.5" /> Erneut versuchen
+                <RefreshCw className="w-3.5 h-3.5" /> {t('error.retry')}
               </button>
             </div>
           ) : (
@@ -365,7 +367,7 @@ export default function Dashboard() {
                               <Sparkles className="w-5 h-5 text-[#E5C76B] animate-pulse-glow" />
                               <span className="text-4xl font-display font-light text-white text-shadow-glow" data-testid="text-power-level">{selectedCharacter.light}</span>
                             </div>
-                            <p className="text-[9px] text-gray-500 uppercase tracking-[0.25em] mt-1.5">Power Level</p>
+                            <p className="text-[9px] text-gray-500 uppercase tracking-[0.25em] mt-1.5">{t('power.label')}</p>
                           </div>
                         </div>
                       </div>
@@ -391,7 +393,7 @@ export default function Dashboard() {
                             <div className="w-6 h-6 rounded-sm bg-gradient-to-br from-red-500/20 to-orange-500/10 flex items-center justify-center">
                               <Crosshair className="w-3.5 h-3.5 text-red-400/80" />
                             </div>
-                            <h4 className="text-[11px] text-white/80 uppercase tracking-[0.25em] font-display font-semibold">Waffen</h4>
+                            <h4 className="text-[11px] text-white/80 uppercase tracking-[0.25em] font-display font-semibold">{t('section.weapons')}</h4>
                           </div>
                           <div className="flex-1 section-divider" />
                         </div>
@@ -427,7 +429,7 @@ export default function Dashboard() {
                             <div className="w-6 h-6 rounded-sm bg-gradient-to-br from-blue-500/20 to-indigo-500/10 flex items-center justify-center">
                               <Shield className="w-3.5 h-3.5 text-blue-400/80" />
                             </div>
-                            <h4 className="text-[11px] text-white/80 uppercase tracking-[0.25em] font-display font-semibold">Rüstung</h4>
+                            <h4 className="text-[11px] text-white/80 uppercase tracking-[0.25em] font-display font-semibold">{t('section.armor')}</h4>
                           </div>
                           <div className="flex-1 section-divider" />
                         </div>
@@ -519,7 +521,7 @@ export default function Dashboard() {
                         <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 group-focus-within:text-indigo-400 transition-colors" />
                         <input 
                           type="text"
-                          placeholder="Tresor durchsuchen..."
+                          placeholder={t('vault.search')}
                           value={vaultFilters.search}
                           onChange={(e) => setVaultFilters(f => ({ ...f, search: e.target.value }))}
                           className="w-full bg-[#0a0e18]/80 border border-white/[0.08] text-white pl-10 pr-4 py-3 text-sm focus:outline-none focus:border-indigo-500/40 transition-all font-light tracking-wider destiny-clip-sm"
@@ -536,8 +538,8 @@ export default function Dashboard() {
                           <Package className="w-12 h-12 text-gray-700" />
                           <p className="text-sm text-gray-500">
                             {vaultFilters.search || vaultFilters.slot !== 'all' || vaultFilters.rarity !== 'all'
-                              ? 'Keine Gegenstände gefunden.'
-                              : 'Der Tresor ist leer.'}
+                              ? t('item.noneAvailable')
+                              : t('item.noneAvailable')}
                           </p>
                         </div>
                       ) : (
@@ -594,7 +596,7 @@ export default function Dashboard() {
                     <div className="flex flex-col items-center justify-center h-64 text-gray-500 space-y-6">
                       <Archive className="w-16 h-16 opacity-10" />
                       <p className="font-display tracking-[0.3em] uppercase text-xs">Keine Loadouts gespeichert</p>
-                      <p className="text-xs text-gray-600 max-w-md text-center">Gehe zum Tresor oder Hüter-Inventar, stelle ein Loadout zusammen und speichere es hier.</p>
+                      <p className="text-xs text-gray-600 max-w-md text-center">{t('loadouts.empty')}</p>
                     </div>
                   ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
@@ -613,7 +615,7 @@ export default function Dashboard() {
                                   <Share2 className="w-3.5 h-3.5" />
                                 </button>
                               )}
-                              <button onClick={() => { setLoadout(saved.items as Record<string, Item>); setActiveTab('vault'); toast({ title: "Loadout geladen" }); }}
+                              <button onClick={() => { setLoadout(saved.items as Record<string, Item>); setActiveTab('vault'); toast({ title: t('toast.loadoutAdopted') }); }}
                                 className="w-8 h-8 bg-indigo-500/20 flex items-center justify-center text-indigo-400 hover:bg-white hover:text-black transition-all destiny-clip-sm border border-indigo-500/20" title="Laden" data-testid={`button-load-${saved.id}`}>
                                 <Check className="w-4 h-4" />
                               </button>
@@ -793,6 +795,7 @@ function EquippedSlotRow({ slotId, slotLabel, SlotIcon, item, isExpanded, onTogg
 }) {
   const [searchText, setSearchText] = useState('');
   const [showVault, setShowVault] = useState(false);
+  const { t } = useI18n();
   const isExotic = item?.rarity === 'exotic';
   const rarityColor = isExotic ? '#E5C76B' : '#7D5C96';
 
@@ -852,13 +855,13 @@ function EquippedSlotRow({ slotId, slotLabel, SlotIcon, item, isExpanded, onTogg
               </div>
             </>
           ) : (
-            <p className="text-[10px] text-gray-700 uppercase tracking-widest italic">Kein Gegenstand</p>
+            <p className="text-[10px] text-gray-700 uppercase tracking-widest italic">{t('item.none')}</p>
           )}
         </div>
 
         <div className="flex items-center gap-1.5 relative z-10">
           {onAddToLoadout && item && (
-            <button onClick={(e) => { e.stopPropagation(); onAddToLoadout(); }} className="p-1.5 text-gray-600 hover:text-[#E5C76B] hover:bg-yellow-500/10 rounded-sm opacity-0 group-hover:opacity-100 transition-all duration-200" title="Zum Loadout" data-testid={`button-loadout-${slotId}`}>
+            <button onClick={(e) => { e.stopPropagation(); onAddToLoadout(); }} className="p-1.5 text-gray-600 hover:text-[#E5C76B] hover:bg-yellow-500/10 rounded-sm opacity-0 group-hover:opacity-100 transition-all duration-200" title={t('action.toLoadout')} data-testid={`button-loadout-${slotId}`}>
               <Sparkles className="w-3.5 h-3.5" />
             </button>
           )}
@@ -896,14 +899,14 @@ function EquippedSlotRow({ slotId, slotLabel, SlotIcon, item, isExpanded, onTogg
                 </div>
                 <label className="flex items-center gap-1.5 cursor-pointer shrink-0" onClick={(e) => e.stopPropagation()}>
                   <input type="checkbox" checked={showVault} onChange={(e) => setShowVault(e.target.checked)} className="accent-indigo-500 w-3 h-3" data-testid="checkbox-show-vault" />
-                  <span className="text-[9px] text-gray-500 uppercase tracking-widest">Tresor</span>
+                  <span className="text-[9px] text-gray-500 uppercase tracking-widest">{t('nav.vault')}</span>
                 </label>
                 <span className="text-[9px] text-gray-600 shrink-0">{filtered.length}</span>
               </div>
 
               <div className="max-h-[280px] overflow-y-auto px-3 pb-3 space-y-1">
                 {filtered.length === 0 ? (
-                  <p className="text-[10px] text-gray-600 text-center py-6 italic">Keine Gegenstände verfügbar</p>
+                  <p className="text-[10px] text-gray-600 text-center py-6 italic">{t('item.noneAvailable')}</p>
                 ) : (
                   filtered.map((invItem, idx) => {
                     const isItemExotic = invItem.rarity === 'exotic';
@@ -935,11 +938,11 @@ function EquippedSlotRow({ slotId, slotLabel, SlotIcon, item, isExpanded, onTogg
                               </span>
                             )}
                             <span className="text-[7px] text-gray-600 uppercase">{invItem.type}</span>
-                            {fromVault && <span className="text-[7px] text-indigo-400/70 uppercase">Tresor</span>}
+                            {fromVault && <span className="text-[7px] text-indigo-400/70 uppercase">{t('vault.label')}</span>}
                           </div>
                         </div>
                         <div className="flex items-center gap-0.5">
-                          <button onClick={(e) => { e.stopPropagation(); onAddToLoadoutItem(invItem); }} className="p-1 text-gray-700 hover:text-[#E5C76B] transition-all opacity-0 group-hover/item:opacity-100" title="Zum Loadout">
+                          <button onClick={(e) => { e.stopPropagation(); onAddToLoadoutItem(invItem); }} className="p-1 text-gray-700 hover:text-[#E5C76B] transition-all opacity-0 group-hover/item:opacity-100" title={t('action.toLoadout')}>
                             <Sparkles className="w-3 h-3" />
                           </button>
                           <div className="p-1 text-indigo-400/50 group-hover/item:text-indigo-400 transition-all">
@@ -968,6 +971,7 @@ function VaultItemCard({ item, characters, onTransferToChar, onEquipOnChar, onAd
   isInLoadout: boolean;
 }) {
   const [showDropdown, setShowDropdown] = useState(false);
+  const { t } = useI18n();
   const isExotic = item.rarity === 'exotic';
   const rarityColor = isExotic ? '#E5C76B' : '#7D5C96';
 
@@ -1020,7 +1024,7 @@ function VaultItemCard({ item, characters, onTransferToChar, onEquipOnChar, onAd
               <button onClick={() => { onAddToLoadout(); setShowDropdown(false); }}
                 className="w-full flex items-center gap-2 px-3 py-2 text-[9px] uppercase tracking-widest text-[#E5C76B] hover:bg-yellow-500/10 transition-all"
                 data-testid={`dropdown-loadout-${item.id}`}>
-                <Sparkles className="w-3 h-3" /> Zum Loadout
+                <Sparkles className="w-3 h-3" /> {t('action.toLoadout')}
               </button>
               <div className="h-px bg-white/[0.04] mx-2" />
               {characters.map(c => (
@@ -1031,7 +1035,7 @@ function VaultItemCard({ item, characters, onTransferToChar, onEquipOnChar, onAd
                     <ArrowRightLeft className="w-3 h-3" /> {c.className}
                   </button>
                   <button onClick={() => { onEquipOnChar(c.characterId); setShowDropdown(false); }}
-                    className="px-3 py-2 text-[9px] uppercase tracking-widest text-indigo-400 hover:text-white hover:bg-indigo-500/15 transition-all" title="Anlegen"
+                    className="px-3 py-2 text-[9px] uppercase tracking-widest text-indigo-400 hover:text-white hover:bg-indigo-500/15 transition-all" title={t('action.equip')}
                     data-testid={`dropdown-equip-${item.id}-${c.characterId}`}>
                     <Shield className="w-3 h-3" />
                   </button>

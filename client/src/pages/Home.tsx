@@ -1,9 +1,10 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { useBungieAuth } from '@/hooks/use-bungie-auth';
 import Login from './Login';
 import { Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLocation } from 'wouter';
+import { useI18n } from '@/lib/i18n';
 
 export default function Home() {
   const { 
@@ -14,6 +15,7 @@ export default function Home() {
     login 
   } = useBungieAuth();
   const [, setLocation] = useLocation();
+  const { t } = useI18n();
 
   useEffect(() => {
     if (isAuthenticated && !isFetchingProfile && !isAuthenticating) {
@@ -34,7 +36,7 @@ export default function Home() {
           <div className="absolute inset-0 bg-app-overlay" />
           <Loader2 className="w-10 h-10 text-indigo-500 animate-spin mb-6 relative z-10" />
           <p className="text-white/50 font-display tracking-[0.3em] relative z-10 uppercase text-[10px]">
-            INITIALISIERE ORBIT-VERBINDUNG...
+            {t('loading.orbit')}
           </p>
         </motion.div>
       ) : (

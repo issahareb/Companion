@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Loader2, X, Save } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useI18n } from '@/lib/i18n';
 
 interface SaveLoadoutModalProps {
   isOpen: boolean;
@@ -11,6 +12,7 @@ interface SaveLoadoutModalProps {
 export function SaveLoadoutModal({ isOpen, onClose, onSave }: SaveLoadoutModalProps) {
   const [name, setName] = useState('');
   const [isSaving, setIsSaving] = useState(false);
+  const { t } = useI18n();
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -53,23 +55,23 @@ export function SaveLoadoutModal({ isOpen, onClose, onSave }: SaveLoadoutModalPr
               
               <h2 className="text-xl font-display font-medium text-white mb-2 tracking-wider flex items-center gap-2">
                 <Save className="w-5 h-5 opacity-70" />
-                Save Loadout
+                {t('modal.saveLoadout')}
               </h2>
               <p className="text-sm text-gray-400 mb-6">
-                Enter a memorable name for this configuration to quickly equip it later.
+                {t('modal.saveDesc')}
               </p>
               
               <form onSubmit={handleSave}>
                 <div className="mb-6">
                   <label htmlFor="loadout-name" className="block text-xs uppercase tracking-widest text-gray-500 mb-2 font-display">
-                    Loadout Name
+                    {t('modal.loadoutName')}
                   </label>
                   <input
                     id="loadout-name"
                     type="text"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    placeholder="e.g. Raid DPS, Crucible PvP..."
+                    placeholder={t('modal.loadoutPlaceholder')}
                     className="w-full bg-black/50 border border-white/20 text-white px-4 py-3 focus:outline-none focus:border-white/50 focus:ring-1 focus:ring-white/20 transition-all font-display text-lg tracking-wide"
                     autoFocus
                     required
@@ -83,14 +85,14 @@ export function SaveLoadoutModal({ isOpen, onClose, onSave }: SaveLoadoutModalPr
                     className="px-5 py-2.5 text-sm font-display tracking-widest uppercase text-gray-400 hover:text-white hover:bg-white/5 transition-colors"
                     disabled={isSaving}
                   >
-                    Cancel
+                    {t('action.cancel')}
                   </button>
                   <button
                     type="submit"
                     disabled={!name.trim() || isSaving}
                     className="px-6 py-2.5 bg-white text-black text-sm font-display font-bold tracking-widest uppercase hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center min-w-[120px] transition-colors"
                   >
-                    {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Save'}
+                    {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : t('modal.save')}
                   </button>
                 </div>
               </form>

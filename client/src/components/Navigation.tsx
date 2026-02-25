@@ -1,6 +1,6 @@
-import React from 'react';
 import { ChevronRight, LogOut } from 'lucide-react';
 import { DestinyProfile } from '@/hooks/use-bungie-auth';
+import { useI18n } from '@/lib/i18n';
 
 interface NavButtonProps {
   icon: React.ElementType;
@@ -47,6 +47,7 @@ interface UserProfileProps {
 }
 
 export function UserProfile({ profile, onLogout }: UserProfileProps) {
+  const { t } = useI18n();
   if (!profile) return null;
   
   return (
@@ -62,13 +63,13 @@ export function UserProfile({ profile, onLogout }: UserProfileProps) {
           </div>
           <div className="truncate">
             <p className="text-xs text-white font-medium truncate">{profile.displayName}</p>
-            <p className="text-[10px] text-gray-500 uppercase tracking-widest mt-0.5">Online</p>
+            <p className="text-[10px] text-gray-500 uppercase tracking-widest mt-0.5">{t('nav.online')}</p>
           </div>
         </div>
         <button 
           onClick={onLogout}
           className="p-2 text-gray-500 hover:text-white transition-colors ml-2 shrink-0 bg-white/5 rounded hover:bg-white/10"
-          title="Logout"
+          title={t('nav.logout')}
         >
           <LogOut className="w-4 h-4" />
         </button>
