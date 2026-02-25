@@ -1,6 +1,6 @@
 import { Loader2, ExternalLink, AlertTriangle } from 'lucide-react';
 import { motion } from 'framer-motion';
-import ghostImg from '@assets/IMG_0546_1772026129974.jpeg';
+import ghostImg from '@assets/IMG_0547_1772026484289.gif';
 
 interface LoginProps {
   onLogin: () => void;
@@ -26,12 +26,11 @@ export default function Login({ onLogin, isAuthenticating, error }: LoginProps) 
               initial={{ scale: 0.8, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               transition={{ duration: 1, ease: "easeOut" }}
-              className="ghost-float"
             >
               <img
                 src={ghostImg}
                 alt="Destiny Ghost"
-                className="w-24 h-24 object-contain drop-shadow-[0_0_25px_rgba(255,255,255,0.35)]"
+                className="w-28 h-28 object-contain drop-shadow-[0_0_30px_rgba(255,255,255,0.3)]"
                 data-testid="img-ghost-logo"
               />
             </motion.div>
@@ -68,7 +67,7 @@ export default function Login({ onLogin, isAuthenticating, error }: LoginProps) 
           className="relative group"
         >
           <div className="relative p-[2px] overflow-hidden group-hover:-translate-y-1 transition-transform duration-500 group-hover:shadow-[0_0_30px_rgba(99,102,241,0.25),0_0_60px_rgba(229,199,107,0.12)]">
-            <div className="absolute inset-[-50%] animate-[border-shimmer-rotate_3s_linear_infinite] bg-[conic-gradient(from_0deg,transparent_0deg,rgba(99,102,241,0.7)_60deg,rgba(229,199,107,0.8)_120deg,transparent_180deg,transparent_240deg,rgba(99,102,241,0.7)_300deg,rgba(229,199,107,0.8)_340deg,transparent_360deg)] group-hover:opacity-100 opacity-60 transition-opacity duration-500" />
+            <div className="absolute inset-[-50%] animate-[border-shimmer-rotate_8s_linear_infinite] bg-[conic-gradient(from_0deg,transparent_0deg,rgba(99,102,241,0.4)_80deg,rgba(229,199,107,0.5)_140deg,transparent_200deg,transparent_300deg,rgba(99,102,241,0.35)_340deg,transparent_360deg)] group-hover:opacity-80 opacity-40 transition-opacity duration-700" />
             <button 
               onClick={onLogin}
               disabled={isAuthenticating}
