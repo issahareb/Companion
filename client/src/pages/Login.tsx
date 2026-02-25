@@ -91,7 +91,7 @@ export default function Login({ onLogin, isAuthenticating, error }: LoginProps) 
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.3, duration: 0.8 }}
           >
-            <h1 className="text-3xl font-light tracking-[0.3em] text-white uppercase text-shadow-glow">GuardianGrid <span className="text-[#E5C76B]">(Adept)</span></h1>
+            <h1 className="text-3xl tracking-[0.3em] text-white uppercase text-shadow-glow font-display">GuardianGrid <span className="text-[#E5C76B]">(Adept)</span></h1>
             <p className="text-[10px] text-[#E5C76B] font-mono tracking-[0.3em] mt-4 uppercase opacity-70">{t('login.subtitle')}</p>
           </motion.div>
         </div>
@@ -116,9 +116,9 @@ export default function Login({ onLogin, isAuthenticating, error }: LoginProps) 
           transition={{ delay: 0.6, duration: 0.8 }}
           className="relative group"
         >
-          <div className="absolute -inset-6 bg-gradient-to-r from-purple-600 via-fuchsia-500 via-pink-500 to-purple-600 rounded-2xl blur-2xl opacity-[0.55] group-hover:opacity-[0.80] transition duration-1000 animate-pulse-glow" />
-          <div className="absolute -inset-3 bg-gradient-to-r from-pink-500 via-purple-500 to-fuchsia-500 rounded-xl blur-lg opacity-[0.50] group-hover:opacity-[0.75] transition duration-1000 animate-pulse-glow" style={{ animationDelay: '0.5s' }} />
-          <div className="absolute -inset-1 bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 rounded-lg blur-md opacity-[0.45] group-hover:opacity-[0.65] transition duration-1000" />
+          <div className="absolute -inset-6 bg-gradient-to-r from-purple-600 via-fuchsia-500 via-pink-500 to-purple-600 rounded-2xl blur-2xl opacity-[0.25] group-hover:opacity-[0.45] transition duration-1000 animate-pulse-glow" />
+          <div className="absolute -inset-3 bg-gradient-to-r from-pink-500 via-purple-500 to-fuchsia-500 rounded-xl blur-lg opacity-[0.20] group-hover:opacity-[0.40] transition duration-1000 animate-pulse-glow" style={{ animationDelay: '0.5s' }} />
+          <div className="absolute -inset-1 bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 rounded-lg blur-md opacity-[0.18] group-hover:opacity-[0.35] transition duration-1000" />
           <button 
             onClick={onLogin}
             disabled={isAuthenticating}
