@@ -1,11 +1,11 @@
 import { useState, useEffect, useMemo } from 'react';
 import { 
-  Settings, Share2, Search, Crosshair, 
+  Settings, Share2, Search, Crosshair, Menu,
   Zap, Flame, Hexagon, Shield, Check, Archive,
   Sparkles, Activity, Loader2, AlertTriangle, RefreshCw,
   Users, ArrowRightLeft, Trash2, X, Package, Mail,
   ChevronDown, ChevronUp, Filter, SlidersHorizontal, Coins,
-  Plus, Sword, ShieldHalf, Orbit, Eye
+  Plus, Sword, ShieldHalf, Orbit, Eye, ScrollText
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import hunterBgImg from '@assets/IMG_0576_1772037013335.jpeg';
@@ -117,6 +117,7 @@ export default function Dashboard() {
   const [selectedCharacterId, setSelectedCharacterId] = useState<string | null>(null);
   const [vaultFilters, setVaultFilters] = useState<FilterState>({ search: '', slot: 'all', rarity: 'all', minPower: '', maxPower: '' });
   const [slotPickerSlot, setSlotPickerSlot] = useState<string | null>(null);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const characters = profileState?.characters || [];
   const vaultItems = profileState?.vaultItems || [];
@@ -281,7 +282,30 @@ export default function Dashboard() {
         {/* HEADER */}
         <header className="h-14 md:h-16 border-b border-white/[0.06] bg-header backdrop-blur-xl flex items-center justify-between px-4 md:px-8 shrink-0 z-10">
           <div className="flex items-center space-x-4">
-            <Activity className="w-5 h-5 text-indigo-400 opacity-70" />
+            <button
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              className="md:hidden p-2 -ml-2 text-gray-400 hover:text-white transition-colors"
+              data-testid="button-menu-toggle"
+            >
+              <div className="w-5 h-5 flex flex-col justify-center items-center gap-[5px]">
+                <motion.span
+                  animate={isMenuOpen ? { rotate: 45, y: 7 } : { rotate: 0, y: 0 }}
+                  transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
+                  className="block w-5 h-[1.5px] bg-current origin-center"
+                />
+                <motion.span
+                  animate={isMenuOpen ? { opacity: 0, scaleX: 0 } : { opacity: 1, scaleX: 1 }}
+                  transition={{ duration: 0.2 }}
+                  className="block w-5 h-[1.5px] bg-current origin-center"
+                />
+                <motion.span
+                  animate={isMenuOpen ? { rotate: -45, y: -7 } : { rotate: 0, y: 0 }}
+                  transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
+                  className="block w-5 h-[1.5px] bg-current origin-center"
+                />
+              </div>
+            </button>
+            <Activity className="w-5 h-5 text-indigo-400 opacity-70 hidden md:block" />
             <h2 className="font-display font-light text-sm tracking-[0.2em] text-white/90 uppercase" data-testid="text-header-title">
               {tabTitles[activeTab]}
             </h2>
@@ -302,6 +326,80 @@ export default function Dashboard() {
             </button>
           </div>
         </header>
+
+        <AnimatePresence>
+          {isMenuOpen && (
+            <>
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.3 }}
+                className="md:hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-30"
+                onClick={() => setIsMenuOpen(false)}
+              />
+              <motion.div
+                initial={{ x: '-100%' }}
+                animate={{ x: 0 }}
+                exit={{ x: '-100%' }}
+                transition={{ type: 'spring', damping: 30, stiffness: 300 }}
+                className="md:hidden fixed top-0 left-0 bottom-0 w-72 bg-[#0a0e1a]/98 backdrop-blur-2xl border-r border-white/[0.08] z-40 flex flex-col"
+              >
+                <div className="p-6 pb-4 border-b border-white/[0.06]">
+                  <div className="flex items-center justify-between">
+                    <span className="font-display text-lg tracking-[0.15em] text-white">GUARDIANGRID <span className="text-[#E5C76B] text-sm">(Adept)</span></span>
+                    <button onClick={() => setIsMenuOpen(false)} className="p-1.5 text-gray-500 hover:text-white transition-colors">
+                      <X className="w-5 h-5" />
+                    </button>
+                  </div>
+                </div>
+                <nav className="flex-1 py-4 px-3">
+                  {[
+                    { key: 'guardian', id: 'characters' as TabType, icon: Users, label: t('nav.guardian') },
+                    { key: 'vault', id: 'vault' as TabType, icon: Package, label: t('nav.vault') },
+                    { key: 'postmaster', id: 'postmaster' as TabType, icon: Mail, label: t('nav.postmaster') },
+                    { key: 'quests', id: 'characters' as TabType, icon: ScrollText, label: 'Quests' },
+                  ].map((item, i) => (
+                    <motion.button
+                      key={item.key}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: 0.05 + i * 0.06, duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
+                      onClick={() => { setActiveTab(item.id); setIsMenuOpen(false); }}
+                      className={`w-full flex items-center gap-4 px-4 py-3.5 mb-1 rounded-lg transition-all duration-300 ${
+                        (item.key === 'guardian' && activeTab === 'characters') || (item.key !== 'guardian' && item.key !== 'quests' && activeTab === item.id)
+                          ? 'bg-white/[0.08] text-white'
+                          : 'text-gray-500 hover:text-white hover:bg-white/[0.04]'
+                      }`}
+                      data-testid={`menu-item-${item.key}`}
+                    >
+                      <item.icon className={`w-5 h-5 ${(item.key === 'guardian' && activeTab === 'characters') || (item.key !== 'guardian' && item.key !== 'quests' && activeTab === item.id) ? 'text-indigo-400' : ''}`} />
+                      <span className="text-sm font-display tracking-[0.15em] uppercase">{item.label}</span>
+                      {((item.key === 'guardian' && activeTab === 'characters') || (item.key !== 'guardian' && item.key !== 'quests' && activeTab === item.id)) && (
+                        <motion.div
+                          layoutId="menu-indicator"
+                          className="ml-auto w-1.5 h-1.5 rounded-full bg-indigo-400"
+                        />
+                      )}
+                    </motion.button>
+                  ))}
+                </nav>
+                {currencies.length > 0 && (
+                  <div className="px-6 py-4 border-t border-white/[0.06]">
+                    <div className="flex items-center gap-4">
+                      {currencies.slice(0, 3).map(c => (
+                        <div key={c.itemHash} className="flex items-center gap-1.5" title={c.name}>
+                          {c.icon && <img src={c.icon} alt="" className="w-4 h-4 opacity-70" />}
+                          <span className="text-[10px] text-gray-400 font-mono">{c.quantity.toLocaleString('de-DE')}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </motion.div>
+            </>
+          )}
+        </AnimatePresence>
 
         <div className="flex-1 min-h-0 overflow-hidden relative">
           {activeTab === 'characters' && selectedCharacter?.className === 'Hunter' && (
@@ -739,12 +837,7 @@ export default function Dashboard() {
       </AnimatePresence>
 
       {/* Mobile bottom nav */}
-      <nav className="md:hidden flex items-center justify-around bg-[#0a0e18]/95 backdrop-blur-lg border-t border-white/[0.06] py-2.5 px-2 z-20">
-        <MobileNavButton icon={Users} label="HÜTER" active={activeTab === 'characters'} onClick={() => setActiveTab('characters')} />
-        <MobileNavButton icon={Package} label="TRESOR" active={activeTab === 'vault'} onClick={() => setActiveTab('vault')} />
-        <MobileNavButton icon={Archive} label="LOADOUTS" active={activeTab === 'loadouts'} onClick={() => setActiveTab('loadouts')} />
-        <MobileNavButton icon={Mail} label="POST" active={activeTab === 'postmaster'} onClick={() => setActiveTab('postmaster')} />
-      </nav>
+      
 
       <SaveLoadoutModal isOpen={isSaveModalOpen} onClose={() => setIsSaveModalOpen(false)} onSave={handleSaveLoadout} />
     </div>
