@@ -284,7 +284,7 @@ export default function Dashboard() {
           <div className="flex items-center space-x-4">
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="md:hidden p-2 -ml-2 text-gray-400 hover:text-white transition-colors"
+              className="p-2 -ml-2 text-gray-400 hover:text-white transition-colors"
               data-testid="button-menu-toggle"
             >
               <div className="w-5 h-5 flex flex-col justify-center items-center gap-[5px]">
@@ -335,7 +335,7 @@ export default function Dashboard() {
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.3 }}
-                className="md:hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-30"
+                className="fixed inset-0 bg-black/60 backdrop-blur-sm z-30"
                 onClick={() => setIsMenuOpen(false)}
               />
               <motion.div
@@ -343,7 +343,7 @@ export default function Dashboard() {
                 animate={{ x: 0 }}
                 exit={{ x: '-100%' }}
                 transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-                className="md:hidden fixed top-0 left-0 bottom-0 w-72 bg-[#0a0e1a]/98 backdrop-blur-2xl border-r border-white/[0.08] z-40 flex flex-col"
+                className="fixed top-0 left-0 bottom-0 w-72 bg-[#0a0e1a]/98 backdrop-blur-2xl border-r border-white/[0.08] z-40 flex flex-col"
               >
                 <div className="p-6 pb-4 border-b border-white/[0.06]">
                   <div className="flex items-center justify-between">
