@@ -153,14 +153,16 @@ async function fetchManifest(): Promise<ManifestCache> {
   const items: Record<string, ManifestItem> = {};
   for (const [hash, def] of Object.entries(itemDefs) as [string, any][]) {
     if (!def.displayProperties?.name) continue;
-    const bucketHash = def.inventory?.bucketTypeHash;
-    if (!bucketHash) continue;
+    const bucketHash = def.inventory?.bucketTypeHash || 0;
 
     const isGear = !!GEAR_BUCKET_TO_SLOT[bucketHash];
     const isQuest = bucketHash === QUEST_BUCKET || bucketHash === PURSUITS_BUCKET;
     const isCurrency = !!CURRENCY_HASHES[Number(hash)];
+    const isPlug = def.plug != null;
+    const isSubclassAbility = def.itemType === 19 || (def.traitIds && def.traitIds.some((t: string) => t.includes('subclass')));
 
-    if (!isGear && !isQuest && !isCurrency && bucketHash !== POSTMASTER_BUCKET && !CONSUMABLE_BUCKETS.has(bucketHash)) continue;
+    if (!isGear && !isQuest && !isCurrency && !isPlug && !isSubclassAbility &&
+        bucketHash !== POSTMASTER_BUCKET && !CONSUMABLE_BUCKETS.has(bucketHash)) continue;
 
     items[hash] = {
       name: def.displayProperties.name,
@@ -323,6 +325,33 @@ export interface ModInfo {
   description: string;
 }
 
+export interface SocketPlugOption {
+  plugHash: number;
+  name: string;
+  icon: string;
+  description: string;
+}
+
+export interface SocketInfo {
+  socketIndex: number;
+  plugHash: number;
+  name: string;
+  icon: string;
+  description: string;
+  isEnabled: boolean;
+  reusablePlugs: SocketPlugOption[];
+}
+
+export interface ArtifactInfo {
+  artifactHash: number;
+  name: string;
+  icon: string;
+  powerBonus: number;
+  pointsUsed: number;
+  pointsAvailable: number;
+  tiers: { tierHash: number; items: { itemHash: number; name: string; icon: string; isActive: boolean }[] }[];
+}
+
 export interface InventoryItem {
   id: string;
   itemHash: number;
@@ -339,6 +368,7 @@ export interface InventoryItem {
   classType?: number;
   perks?: PerkInfo[];
   mods?: ModInfo[];
+  sockets?: SocketInfo[];
 }
 
 export interface QuestItem {
@@ -419,6 +449,7 @@ export interface ProfileState {
   currencies: CurrencyInfo[];
   collectibles: CollectibleItem[];
   records: RecordItem[];
+  artifact?: ArtifactInfo;
 }
 
 function parseGearItem(
@@ -460,6 +491,7 @@ function attachPerksAndMods(
   item: InventoryItem,
   itemPerks: any,
   itemSockets: any,
+  itemReusablePlugs: any,
   manifestData: ManifestCache
 ) {
   const perkData = itemPerks[item.id];
@@ -477,10 +509,11 @@ function attachPerksAndMods(
   }
 
   const socketData = itemSockets[item.id];
+  const reusableData = itemReusablePlugs[item.id];
   if (socketData?.sockets) {
     item.mods = socketData.sockets
       .filter((s: any) => s.plugHash && s.isEnabled)
-      .slice(0, 6)
+      .slice(0, 10)
       .map((s: any) => {
         const plugDef = manifestData.items[String(s.plugHash)];
         return {
@@ -491,6 +524,38 @@ function attachPerksAndMods(
         };
       })
       .filter((m: ModInfo) => m.name);
+
+    item.sockets = socketData.sockets
+      .map((s: any, idx: number) => {
+        if (!s.plugHash) return null;
+        const plugDef = manifestData.items[String(s.plugHash)];
+        if (!plugDef) return null;
+
+        const reusableForSocket = reusableData?.plugs?.[String(idx)] || [];
+        const reusablePlugs: SocketPlugOption[] = reusableForSocket
+          .map((rp: any) => {
+            const rpDef = manifestData.items[String(rp.plugItemHash)];
+            if (!rpDef || !rpDef.name) return null;
+            return {
+              plugHash: rp.plugItemHash,
+              name: rpDef.name,
+              icon: rpDef.icon,
+              description: rpDef.description || '',
+            };
+          })
+          .filter(Boolean);
+
+        return {
+          socketIndex: idx,
+          plugHash: s.plugHash,
+          name: plugDef.name,
+          icon: plugDef.icon,
+          description: plugDef.description || '',
+          isEnabled: s.isEnabled || false,
+          reusablePlugs,
+        };
+      })
+      .filter(Boolean) as SocketInfo[];
   }
 }
 
@@ -502,7 +567,7 @@ export async function fetchProfileState(
   const [manifestData, profileData] = await Promise.all([
     fetchManifest(),
     bungieGet(
-      `/Platform/Destiny2/${membershipType}/Profile/${membershipId}/?components=100,102,103,200,201,202,205,300,302,304,800,900`,
+      `/Platform/Destiny2/${membershipType}/Profile/${membershipId}/?components=100,102,103,104,200,201,202,205,300,302,304,305,800,900`,
       accessToken
     ),
   ]);
@@ -516,6 +581,7 @@ export async function fetchProfileState(
   const instanceDetails = response.itemComponents?.instances?.data || {};
   const itemPerks = response.itemComponents?.perks?.data || {};
   const itemSockets = response.itemComponents?.sockets?.data || {};
+  const itemReusablePlugs = response.itemComponents?.reusablePlugs?.data || {};
 
   const currencies: CurrencyInfo[] = [];
   const profileCurrencies = response.profileCurrencies?.data?.items;
@@ -552,7 +618,7 @@ export async function fetchProfileState(
         vaultBucketCount++;
         const parsed = parseGearItem(item, manifest, instanceDetails, 'vault');
         if (parsed) {
-          attachPerksAndMods(parsed, itemPerks, itemSockets, manifestData);
+          attachPerksAndMods(parsed, itemPerks, itemSockets, itemReusablePlugs, manifestData);
           vaultItems.push(parsed);
         } else {
           vaultParseFails++;
@@ -580,7 +646,7 @@ export async function fetchProfileState(
       for (const item of charEquip.items) {
         const parsed = parseGearItem(item, manifest, instanceDetails, 'equipped', charId);
         if (parsed) {
-          attachPerksAndMods(parsed, itemPerks, itemSockets, manifestData);
+          attachPerksAndMods(parsed, itemPerks, itemSockets, itemReusablePlugs, manifestData);
           equipped.push(parsed);
         }
       }
@@ -606,7 +672,7 @@ export async function fetchProfileState(
 
         const parsed = parseGearItem(item, manifest, instanceDetails, 'character', charId);
         if (parsed) {
-          attachPerksAndMods(parsed, itemPerks, itemSockets, manifestData);
+          attachPerksAndMods(parsed, itemPerks, itemSockets, itemReusablePlugs, manifestData);
           charInventory.push(parsed);
         }
       }
@@ -739,7 +805,36 @@ export async function fetchProfileState(
 
   console.log(`[bungie] collectibles: ${collectibles.length}, records: ${records.length}`);
 
-  return { characters, vaultItems, postmasterItems, currencies, collectibles, records };
+  let artifact: ArtifactInfo | undefined;
+  const profileProgression = response.profileProgression?.data;
+  if (profileProgression?.seasonalArtifact) {
+    const sa = profileProgression.seasonalArtifact;
+    const artifactDef = manifest[String(sa.artifactHash)];
+    const tiers = (sa.tiers || []).map((tier: any) => ({
+      tierHash: tier.tierHash || 0,
+      items: (tier.items || []).map((ti: any) => {
+        const tiDef = manifest[String(ti.itemHash)];
+        return {
+          itemHash: ti.itemHash,
+          name: tiDef?.name || '',
+          icon: tiDef?.icon || '',
+          isActive: ti.isActive || false,
+        };
+      }).filter((i: any) => i.name),
+    }));
+
+    artifact = {
+      artifactHash: sa.artifactHash,
+      name: artifactDef?.name || 'Seasonal Artifact',
+      icon: artifactDef?.icon || '',
+      powerBonus: sa.powerBonus || 0,
+      pointsUsed: sa.pointsUsed || 0,
+      pointsAvailable: sa.pointsAcquired || 0,
+      tiers,
+    };
+  }
+
+  return { characters, vaultItems, postmasterItems, currencies, collectibles, records, artifact };
 }
 
 export interface TransferRequest {
@@ -898,6 +993,43 @@ export async function equipItems(request: EquipItemsRequest, accessToken: string
   const data = await res.json();
   if (data.ErrorCode !== 1) {
     throw new Error(data.Message || `Batch equip failed: ${data.ErrorStatus}`);
+  }
+  return data;
+}
+
+export interface InsertPlugRequest {
+  itemInstanceId: string;
+  socketIndex: number;
+  plugItemHash: number;
+  characterId: string;
+  membershipType: number;
+}
+
+export async function insertSocketPlug(request: InsertPlugRequest, accessToken: string): Promise<any> {
+  const body = {
+    itemInstanceId: request.itemInstanceId,
+    plug: {
+      socketIndex: request.socketIndex,
+      socketArrayType: 0,
+      plugItemHash: request.plugItemHash,
+    },
+    characterId: request.characterId,
+    membershipType: request.membershipType,
+  };
+
+  const res = await fetch(`${BUNGIE_BASE}/Platform/Destiny2/Actions/Items/InsertSocketPlugFree/`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-API-Key': BUNGIE_API_KEY || '',
+      'Authorization': `Bearer ${accessToken}`,
+    },
+    body: JSON.stringify(body),
+  });
+
+  const data = await res.json();
+  if (data.ErrorCode !== 1) {
+    throw new Error(data.Message || `Insert socket plug failed: ${data.ErrorStatus}`);
   }
   return data;
 }

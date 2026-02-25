@@ -3,7 +3,7 @@ import type { Server } from "http";
 import { storage } from "./storage";
 import { api } from "@shared/routes";
 import { z } from "zod";
-import { exchangeToken, fetchMemberships, fetchProfileState, transferItem, equipItem, pullFromPostmaster, setLockState, equipItems } from "./bungie";
+import { exchangeToken, fetchMemberships, fetchProfileState, transferItem, equipItem, pullFromPostmaster, setLockState, equipItems, insertSocketPlug } from "./bungie";
 
 export async function registerRoutes(
   httpServer: Server,
@@ -126,6 +126,21 @@ export async function registerRoutes(
     } catch (err: any) {
       console.error('[bungie equip-items error]', err.message);
       res.status(502).json({ message: err.message || 'Batch equip failed' });
+    }
+  });
+
+  app.post('/api/bungie/insert-plug', async (req, res) => {
+    try {
+      const authHeader = req.headers.authorization;
+      const accessToken = authHeader?.replace('Bearer ', '') || '';
+      if (!accessToken) {
+        return res.status(401).json({ message: 'Access token required' });
+      }
+      const result = await insertSocketPlug(req.body, accessToken);
+      res.json(result);
+    } catch (err: any) {
+      console.error('[bungie insert-plug error]', err.message);
+      res.status(502).json({ message: err.message || 'Insert plug failed' });
     }
   });
 

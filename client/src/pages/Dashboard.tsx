@@ -14,8 +14,8 @@ import warlockBgImg from '@assets/IMG_0577_1772043445515.jpeg';
 
 import { useBungieAuth } from '@/hooks/use-bungie-auth';
 import { useLoadouts, useSaveLoadout, useDeleteLoadout } from '@/hooks/use-loadouts';
-import { useProfileState, type InventoryItem, type CharacterData, type CurrencyInfo, type QuestItem, type CollectibleItem, type RecordItem, type ProgressionInfo } from '@/hooks/use-profile-state';
-import { useTransferItem, useEquipItem, useSwapItem, usePullFromPostmaster, useSetLockState, useEquipItems } from '@/hooks/use-transfer';
+import { useProfileState, type InventoryItem, type CharacterData, type CurrencyInfo, type QuestItem, type CollectibleItem, type RecordItem, type ProgressionInfo, type SocketInfo, type ArtifactInfo } from '@/hooks/use-profile-state';
+import { useTransferItem, useEquipItem, useSwapItem, usePullFromPostmaster, useSetLockState, useEquipItems, useInsertPlug } from '@/hooks/use-transfer';
 
 import { DesktopNavButton, MobileNavButton, UserProfile } from '@/components/Navigation';
 import { ItemCard, EquippedSlot, type Item, type SlotInfo } from '@/components/Inventory';
@@ -630,28 +630,31 @@ export default function Dashboard() {
                             <div className="w-6 h-6 rounded-sm bg-gradient-to-br from-purple-500/20 to-violet-500/10 flex items-center justify-center">
                               <Orbit className="w-3.5 h-3.5 text-purple-400/80" />
                             </div>
-                            <h4 className="text-[11px] text-white/80 uppercase tracking-[0.25em] font-display font-semibold">Subklasse</h4>
+                            <h4 className="text-[11px] text-white/80 uppercase tracking-[0.25em] font-display font-semibold">{t('section.subclass')}</h4>
                           </div>
                           <div className="flex-1 section-divider" />
                         </div>
-                        {(() => {
-                          const subclass = selectedCharacter.equippedItems.find(i => i.slot === 'subclass');
-                          return (
-                            <EquippedSlotRow
-                              slotId="subclass"
-                              slotLabel="Super"
-                              SlotIcon={Orbit}
-                              item={subclass || null}
-                              isExpanded={slotPickerSlot === 'subclass'}
-                              onTogglePicker={() => setSlotPickerSlot(slotPickerSlot === 'subclass' ? null : 'subclass')}
-                              character={selectedCharacter}
-                              vaultItems={vaultItems}
-                              onEquip={(item) => { handleEquip(item, selectedCharacter.characterId); setSlotPickerSlot(null); }}
-                              onAddToLoadoutItem={(item) => addToLoadout(toItem(item))}
-                            />
-                          );
-                        })()}
+                        <SubclassEditor
+                          character={selectedCharacter}
+                          membershipType={destinyProfile!.membershipType}
+                        />
                       </div>
+
+                      {/* ARTEFAKT Section */}
+                      {profileState?.artifact && (
+                        <div className="px-4 md:px-6 pb-5">
+                          <div className="flex items-center gap-3 mb-3">
+                            <div className="flex items-center gap-2">
+                              <div className="w-6 h-6 rounded-sm bg-gradient-to-br from-amber-500/20 to-yellow-500/10 flex items-center justify-center">
+                                <Hexagon className="w-3.5 h-3.5 text-amber-400/80" />
+                              </div>
+                              <h4 className="text-[11px] text-white/80 uppercase tracking-[0.25em] font-display font-semibold">{t('artifact.title')}</h4>
+                            </div>
+                            <div className="flex-1 section-divider" />
+                          </div>
+                          <ArtifactDisplay artifact={profileState.artifact} />
+                        </div>
+                      )}
 
                       {/* Quests */}
                       {selectedCharacter.quests.length > 0 && (
@@ -1217,6 +1220,179 @@ function FilterBar({ filters, onChange, slotFilters, rarityFilters }: { filters:
   );
 }
 
+function SubclassEditor({ character, membershipType }: { character: CharacterData; membershipType: number }) {
+  const { t } = useI18n();
+  const { toast } = useToast();
+  const insertPlug = useInsertPlug();
+  const [expandedSocket, setExpandedSocket] = useState<number | null>(null);
+
+  const subclass = character.equippedItems.find(i => i.slot === 'subclass');
+  if (!subclass) {
+    return <p className="text-[10px] text-gray-700 uppercase tracking-widest italic">{t('item.none')}</p>;
+  }
+
+  const sockets = subclass.sockets || [];
+
+  const SOCKET_CATEGORIES: { label: string; indices: number[]; group: string }[] = [
+    { label: t('subclass.super'), indices: [0], group: 'super' },
+    { label: t('subclass.classAbility'), indices: [1], group: 'ability' },
+    { label: t('subclass.movement'), indices: [2], group: 'ability' },
+    { label: t('subclass.melee'), indices: [3], group: 'ability' },
+    { label: t('subclass.grenade'), indices: [4], group: 'ability' },
+    { label: t('subclass.aspects'), indices: [5, 6], group: 'aspect' },
+    { label: t('subclass.fragments'), indices: [7, 8, 9, 10, 11], group: 'fragment' },
+  ];
+
+  const handleSwapPlug = async (socketIndex: number, plugHash: number, plugName: string) => {
+    try {
+      await insertPlug.mutateAsync({
+        itemInstanceId: subclass.id,
+        socketIndex,
+        plugItemHash: plugHash,
+        characterId: character.characterId,
+        membershipType,
+      });
+      toast({ title: t('toast.plugSwapped'), description: `${plugName} ${t('toast.plugSwappedDesc')}` });
+      setExpandedSocket(null);
+    } catch (err: any) {
+      toast({ title: t('error.generic'), description: err.message, variant: 'destructive' });
+    }
+  };
+
+  return (
+    <div className="space-y-2">
+      <div className="flex items-center gap-3 p-3 bg-black/40 border border-white/[0.06]">
+        <div className="w-12 h-12 shrink-0 overflow-hidden ring-1 ring-purple-500/30">
+          <img src={subclass.icon} alt={subclass.name} className="w-full h-full object-cover" />
+        </div>
+        <div>
+          <p className="text-[11px] font-bold tracking-wider uppercase text-purple-300">{subclass.name}</p>
+          <p className="text-[8px] text-gray-500 uppercase tracking-wider">{subclass.type}</p>
+        </div>
+      </div>
+
+      {SOCKET_CATEGORIES.map((cat) => {
+        const catSockets = cat.indices
+          .map(idx => sockets.find(s => s.socketIndex === idx))
+          .filter(Boolean) as SocketInfo[];
+        if (catSockets.length === 0) return null;
+
+        return (
+          <div key={cat.label} className="space-y-1">
+            <p className="text-[8px] text-gray-500 uppercase tracking-[0.25em] font-medium px-1">{cat.label}</p>
+            <div className={cat.group === 'fragment' ? 'grid grid-cols-2 sm:grid-cols-3 gap-1' : 'space-y-1'}>
+              {catSockets.map((sock) => {
+                const isOpen = expandedSocket === sock.socketIndex;
+                const hasOptions = sock.reusablePlugs.length > 1;
+                return (
+                  <div key={sock.socketIndex}>
+                    <div
+                      className={`flex items-center gap-2 p-2 border transition-all duration-200 cursor-pointer ${
+                        isOpen ? 'border-purple-500/30 bg-purple-500/10' : 'border-white/[0.04] bg-black/30 hover:border-white/10 hover:bg-white/[0.02]'
+                      }`}
+                      onClick={() => hasOptions && setExpandedSocket(isOpen ? null : sock.socketIndex)}
+                      data-testid={`subclass-socket-${sock.socketIndex}`}
+                    >
+                      {sock.icon && <img src={sock.icon} alt={sock.name} className="w-8 h-8 rounded-sm ring-1 ring-white/10 shrink-0" />}
+                      <div className="flex-1 min-w-0">
+                        <p className="text-[10px] font-bold truncate tracking-wider text-white/90">{sock.name}</p>
+                        {sock.description && cat.group !== 'fragment' && (
+                          <p className="text-[8px] text-gray-500 truncate mt-0.5">{sock.description}</p>
+                        )}
+                      </div>
+                      {hasOptions && (
+                        <div className="text-gray-600 shrink-0">
+                          {isOpen ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+                        </div>
+                      )}
+                    </div>
+
+                    <AnimatePresence>
+                      {isOpen && hasOptions && (
+                        <motion.div
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: 'auto', opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          transition={{ duration: 0.2 }}
+                          className="overflow-hidden"
+                        >
+                          <div className="border-x border-b border-purple-500/15 bg-black/40 max-h-[200px] overflow-y-auto">
+                            {sock.reusablePlugs
+                              .filter(rp => rp.plugHash !== sock.plugHash)
+                              .map((rp) => (
+                                <div
+                                  key={rp.plugHash}
+                                  className="flex items-center gap-2 p-2 hover:bg-purple-500/10 cursor-pointer transition-all border-b border-white/[0.03] last:border-0"
+                                  onClick={() => handleSwapPlug(sock.socketIndex, rp.plugHash, rp.name)}
+                                  data-testid={`plug-option-${rp.plugHash}`}
+                                >
+                                  {rp.icon && <img src={rp.icon} alt={rp.name} className="w-7 h-7 rounded-sm ring-1 ring-white/10 shrink-0" />}
+                                  <div className="flex-1 min-w-0">
+                                    <p className="text-[9px] font-bold truncate text-white/80">{rp.name}</p>
+                                    {rp.description && (
+                                      <p className="text-[7px] text-gray-500 truncate">{rp.description}</p>
+                                    )}
+                                  </div>
+                                  <span className="text-[8px] text-purple-400 uppercase tracking-wider shrink-0">
+                                    {insertPlug.isPending ? t('subclass.swapping') : t('subclass.swap')}
+                                  </span>
+                                </div>
+                              ))}
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function ArtifactDisplay({ artifact }: { artifact: ArtifactInfo }) {
+  const { t } = useI18n();
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center gap-3 p-3 bg-black/40 border border-white/[0.06]">
+        {artifact.icon && <img src={artifact.icon} alt={artifact.name} className="w-12 h-12 shrink-0 ring-1 ring-amber-500/20 rounded-sm" />}
+        <div className="flex-1">
+          <p className="text-[11px] font-bold tracking-wider uppercase text-amber-300">{artifact.name}</p>
+          <div className="flex items-center gap-3 mt-0.5">
+            {artifact.powerBonus > 0 && (
+              <span className="text-[9px] text-yellow-500/80 flex items-center gap-0.5 font-medium">
+                <Sparkles className="w-2.5 h-2.5" /> +{artifact.powerBonus} {t('artifact.powerBonus')}
+              </span>
+            )}
+            <span className="text-[8px] text-gray-500">{t('artifact.points')}: {artifact.pointsUsed}/{artifact.pointsAvailable}</span>
+          </div>
+        </div>
+      </div>
+
+      {artifact.tiers.map((tier, tierIdx) => {
+        const activeItems = tier.items.filter(i => i.isActive);
+        if (activeItems.length === 0) return null;
+        return (
+          <div key={tierIdx} className="space-y-1">
+            <p className="text-[8px] text-gray-500 uppercase tracking-[0.25em] font-medium px-1">{t('artifact.tier')} {tierIdx + 1}</p>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-1">
+              {activeItems.map((item) => (
+                <div key={item.itemHash} className="flex items-center gap-2 p-2 bg-amber-500/[0.04] border border-amber-500/10">
+                  {item.icon && <img src={item.icon} alt={item.name} className="w-7 h-7 rounded-sm ring-1 ring-amber-500/20 shrink-0" />}
+                  <p className="text-[9px] text-amber-200/80 font-medium truncate">{item.name}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 function EquippedSlotRow({ slotId, slotLabel, SlotIcon, item, isExpanded, onTogglePicker, onAddToLoadout, character, vaultItems, onEquip, onAddToLoadoutItem }: {
   slotId: string;
   slotLabel: string;
@@ -1290,6 +1466,23 @@ function EquippedSlotRow({ slotId, slotLabel, SlotIcon, item, isExpanded, onTogg
                 )}
                 <span className="text-[8px] text-gray-600">{item.type}</span>
               </div>
+              {item.mods && item.mods.length > 0 && (
+                <div className="flex items-center gap-1 mt-1 flex-wrap">
+                  {item.mods.slice(0, 8).map((mod, i) => (
+                    mod.icon ? (
+                      <div key={i} className="group/perk relative">
+                        <img src={mod.icon} alt={mod.name} className="w-5 h-5 rounded-sm ring-1 ring-white/10 hover:ring-indigo-500/40 transition-all cursor-help" />
+                        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 hidden group-hover/perk:block z-50 pointer-events-none">
+                          <div className="bg-black/95 border border-white/10 rounded px-2 py-1 min-w-[120px] max-w-[200px]">
+                            <p className="text-[9px] text-white font-bold whitespace-nowrap">{mod.name}</p>
+                            {mod.description && <p className="text-[8px] text-gray-400 mt-0.5 line-clamp-3">{mod.description}</p>}
+                          </div>
+                        </div>
+                      </div>
+                    ) : null
+                  ))}
+                </div>
+              )}
             </>
           ) : (
             <p className="text-[10px] text-gray-700 uppercase tracking-widest italic">{t('item.none')}</p>

@@ -15,6 +15,40 @@ export interface ModInfo {
   description: string;
 }
 
+export interface SocketPlugOption {
+  plugHash: number;
+  name: string;
+  icon: string;
+  description: string;
+}
+
+export interface SocketInfo {
+  socketIndex: number;
+  plugHash: number;
+  name: string;
+  icon: string;
+  description: string;
+  isEnabled: boolean;
+  reusablePlugs: SocketPlugOption[];
+}
+
+export interface ArtifactTierItem {
+  itemHash: number;
+  name: string;
+  icon: string;
+  isActive: boolean;
+}
+
+export interface ArtifactInfo {
+  artifactHash: number;
+  name: string;
+  icon: string;
+  powerBonus: number;
+  pointsUsed: number;
+  pointsAvailable: number;
+  tiers: { tierHash: number; items: ArtifactTierItem[] }[];
+}
+
 export interface InventoryItem {
   id: string;
   itemHash: number;
@@ -31,6 +65,7 @@ export interface InventoryItem {
   classType?: number;
   perks?: PerkInfo[];
   mods?: ModInfo[];
+  sockets?: SocketInfo[];
 }
 
 export interface QuestItem {
@@ -111,6 +146,7 @@ export interface ProfileState {
   currencies: CurrencyInfo[];
   collectibles: CollectibleItem[];
   records: RecordItem[];
+  artifact?: ArtifactInfo;
 }
 
 export function useProfileState(membershipType?: number, membershipId?: string) {
@@ -119,7 +155,7 @@ export function useProfileState(membershipType?: number, membershipId?: string) 
     queryFn: async () => {
       const accessToken = localStorage.getItem('bungie_access_token');
       if (!accessToken || !membershipType || !membershipId) {
-        return { characters: [], vaultItems: [], postmasterItems: [], currencies: [], collectibles: [], records: [] };
+        return { characters: [], vaultItems: [], postmasterItems: [], currencies: [], collectibles: [], records: [], artifact: undefined };
       }
 
       const res = await fetch(

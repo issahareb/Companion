@@ -51,35 +51,42 @@ The project uses a three-directory monorepo layout:
 - `POST /api/bungie/equip-items` — Batch equip multiple items on a character (requires Bearer token)
 - `POST /api/bungie/pull-postmaster` — Pull item from postmaster to character inventory (requires Bearer token)
 - `POST /api/bungie/lock` — Set lock/unlock state on an item (requires Bearer token)
+- `POST /api/bungie/insert-plug` — Swap a subclass socket plug (requires Bearer token)
 - `GET /api/loadouts/:bungieMembershipId` — List saved loadouts for a user
 - `POST /api/loadouts` — Create/save a new loadout
 - `DELETE /api/loadouts/:id` — Delete a saved loadout
 - `GET /api/loadouts/share/:shareCode` — Get a loadout by its share code
 
 ### Bungie API Integration (server/bungie.ts)
-- **fetchProfileState()** — Main endpoint. Uses Bungie components 100,102,103,200,201,202,205,300,302,304,800,900 to fetch:
-  - Characters: class, race, power level, emblem, stats (Mobility/Resilience/Recovery/Discipline/Intellect/Strength), equipped items (with perks/mods), per-character inventory (with perks/mods), active quests, progressions
-  - Vault: items in bucket 138197802 (with perks/mods)
+- **fetchProfileState()** — Main endpoint. Uses Bungie components 100,102,103,104,200,201,202,205,300,302,304,305,800,900 to fetch:
+  - Characters: class, race, power level, emblem, stats (Mobility/Resilience/Recovery/Discipline/Intellect/Strength), equipped items (with perks/mods/sockets), per-character inventory (with perks/mods/sockets), active quests, progressions
+  - Vault: items in bucket 138197802 (with perks/mods/sockets)
   - Postmaster: items in bucket 215938771
   - Currencies: Glimmer, Silver, Bright Dust, Legendary Shards via component 103
   - Collectibles: from component 800, with acquired state
   - Records/Triumphs: from component 900, with objectives and completion state
+  - Seasonal Artifact: from component 104, with power bonus, points, tiers, and active perks
+  - Socket details: from component 304/305, with reusable plug options for subclass editing
 - **transferItem()** — Calls Bungie TransferItem API
 - **equipItem()** — Calls Bungie EquipItem API
 - **equipItems()** — Calls Bungie EquipItems API (batch equip)
 - **pullFromPostmaster()** — Calls Bungie PullFromPostmaster API
 - **setLockState()** — Calls Bungie SetLockState API
-- **Manifest**: Cached 24h, parses gear buckets, quest bucket (1345459588), postmaster bucket, currency hashes, collectibles, records, progressions, objectives, activities
+- **insertSocketPlug()** — Calls Bungie InsertSocketPlugFree API (swap subclass abilities/fragments/aspects)
+- **Manifest**: Cached 24h, parses gear buckets, quest bucket (1345459588), postmaster bucket, currency hashes, collectibles, records, progressions, objectives, activities, plug items (for socket lookups)
 
 ### Client Types (use-profile-state.ts)
 - **PerkInfo** — Perk hash, name, icon, description, isActive
 - **ModInfo** — Plug hash, name, icon, description
-- **InventoryItem** — Extended with optional `perks: PerkInfo[]` and `mods: ModInfo[]`
+- **SocketPlugOption** — Plug hash, name, icon, description (for reusable plug choices)
+- **SocketInfo** — Socket index, current plug hash/name/icon, isEnabled, reusablePlugs array
+- **ArtifactInfo** — Artifact hash, name, icon, power bonus, points used/available, tiers with active items
+- **InventoryItem** — Extended with optional `perks: PerkInfo[]`, `mods: ModInfo[]`, and `sockets: SocketInfo[]`
 - **CollectibleItem** — Hash, name, icon, description, acquired state, source string
 - **RecordItem** — Hash, name, icon, description, completed state, objectives with progress, scoreValue
 - **ProgressionInfo** — Hash, name, icon, level, progress, nextLevelAt, dailyProgress, currentResetCount
 - **CharacterData** — Extended with `progressions: ProgressionInfo[]`
-- **ProfileState** — Extended with `collectibles: CollectibleItem[]` and `records: RecordItem[]`
+- **ProfileState** — Extended with `collectibles: CollectibleItem[]`, `records: RecordItem[]`, and `artifact?: ArtifactInfo`
 
 ### Client Hooks
 - **useProfileState** — Fetches `/api/bungie/profile-state`, returns structured ProfileState with all data
@@ -87,6 +94,7 @@ The project uses a three-directory monorepo layout:
 - **usePullFromPostmaster** — Mutation to pull items from the postmaster
 - **useSetLockState** — Mutation to lock/unlock items
 - **useEquipItems** — Mutation for batch equipping multiple items
+- **useInsertPlug** — Mutation to swap subclass sockets (abilities, aspects, fragments) via InsertSocketPlugFree
 - **useLoadouts / useSaveLoadout / useDeleteLoadout** — Loadout CRUD operations
 
 ### i18n (client/src/lib/i18n.tsx)

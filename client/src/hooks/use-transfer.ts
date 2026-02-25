@@ -234,6 +234,37 @@ export function useSetLockState() {
   });
 }
 
+interface InsertPlugParams {
+  itemInstanceId: string;
+  socketIndex: number;
+  plugItemHash: number;
+  characterId: string;
+  membershipType: number;
+}
+
+export function useInsertPlug() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (params: InsertPlugParams) => {
+      const res = await fetch('/api/bungie/insert-plug', {
+        method: 'POST',
+        headers: makeHeaders(),
+        body: JSON.stringify(params),
+      });
+
+      if (!res.ok) {
+        const error = await res.json().catch(() => ({ message: 'Insert plug failed' }));
+        throw new Error(error.message);
+      }
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/bungie/profile-state'] });
+    },
+  });
+}
+
 export function useEquipItems() {
   const queryClient = useQueryClient();
 
