@@ -304,6 +304,13 @@ export default function Dashboard() {
         </header>
 
         <div className="flex-1 min-h-0 overflow-hidden relative">
+          {activeTab === 'characters' && selectedCharacter?.className === 'Hunter' && (
+            <>
+              <img src={hunterBgImg} alt="" className="absolute inset-0 w-full h-full object-cover opacity-[0.15] pointer-events-none z-0" />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#080b14] via-[#080b14]/50 to-transparent pointer-events-none z-0" />
+              <div className="absolute inset-0 bg-gradient-to-r from-[#080b14]/70 via-transparent to-[#080b14]/40 pointer-events-none z-0" />
+            </>
+          )}
           {isLoadingProfile ? (
             <div className="flex flex-col items-center justify-center h-full space-y-4">
               <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
@@ -322,13 +329,6 @@ export default function Dashboard() {
               {/* HÜTER TAB */}
               {activeTab === 'characters' && (
                 <motion.div key="characters" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="h-full flex flex-col relative">
-                  {selectedCharacter?.className === 'Hunter' && (
-                    <>
-                      <img src={hunterBgImg} alt="" className="absolute inset-0 w-full h-full object-cover opacity-[0.12] pointer-events-none z-0" />
-                      <div className="absolute inset-0 bg-gradient-to-t from-[#080b14] via-[#080b14]/60 to-transparent pointer-events-none z-0" />
-                      <div className="absolute inset-0 bg-gradient-to-r from-[#080b14]/80 via-transparent to-[#080b14]/50 pointer-events-none z-0" />
-                    </>
-                  )}
                   {/* Character selector */}
                   <div className="flex items-center gap-2 p-3 md:p-4 border-b border-white/[0.06] shrink-0 overflow-x-auto bg-black/20">
                     {characters.map(char => (
