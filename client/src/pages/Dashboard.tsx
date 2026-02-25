@@ -306,7 +306,7 @@ export default function Dashboard() {
         <div className="flex-1 min-h-0 overflow-hidden relative">
           {activeTab === 'characters' && selectedCharacter?.className === 'Hunter' && (
             <>
-              <img src={hunterBgImg} alt="" className="absolute inset-0 w-full h-full object-cover opacity-[0.15] pointer-events-none z-0" />
+              <img src={hunterBgImg} alt="" className="absolute inset-0 w-full h-full object-cover opacity-[0.35] pointer-events-none z-0" />
               <div className="absolute inset-0 bg-gradient-to-t from-[#080b14] via-[#080b14]/50 to-transparent pointer-events-none z-0" />
               <div className="absolute inset-0 bg-gradient-to-r from-[#080b14]/70 via-transparent to-[#080b14]/40 pointer-events-none z-0" />
             </>
@@ -361,7 +361,7 @@ export default function Dashboard() {
                       {/* Character header */}
                       <div className="relative overflow-hidden">
                         {selectedCharacter.emblemBackgroundPath && (
-                          <img src={selectedCharacter.emblemBackgroundPath} alt="" className="absolute inset-0 w-full h-full object-cover opacity-25" />
+                          <img src={selectedCharacter.emblemBackgroundPath} alt="" className="absolute inset-0 w-full h-full object-cover opacity-60" />
                         )}
                         <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-transparent" />
                         <div className="absolute inset-0 bg-gradient-to-t from-[#080b14] via-transparent to-transparent" />
