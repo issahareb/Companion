@@ -66,12 +66,13 @@ export default function Login({ onLogin, isAuthenticating, error }: LoginProps) 
           transition={{ delay: 0.6, duration: 0.8 }}
           className="relative group"
         >
-          <div className="absolute -inset-3 bg-gradient-to-r from-purple-600 via-pink-500 via-indigo-500 to-purple-600 rounded-lg blur-xl opacity-60 group-hover:opacity-80 transition duration-1000 animate-pulse-glow" />
-          <div className="absolute -inset-1 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 rounded-lg blur opacity-60 group-hover:opacity-80 transition duration-1000" />
+          <div className="relative p-[2px] overflow-hidden rounded-sm group-hover:-translate-y-1 transition-transform duration-500">
+            <div className="absolute inset-[-80%] animate-[spin_12s_linear_infinite] opacity-60 group-hover:opacity-80 transition-opacity duration-1000" style={{ background: 'conic-gradient(from 0deg, #7c3aed, #ec4899, #6366f1, transparent, transparent, #7c3aed)' }} />
+            <div className="absolute inset-0 rounded-sm blur-xl opacity-40 group-hover:opacity-60 transition-opacity duration-1000" style={{ background: 'conic-gradient(from 0deg, #7c3aed, #ec4899, #6366f1, transparent, transparent, #7c3aed)', animation: 'spin 12s linear infinite' }} />
           <button 
             onClick={onLogin}
             disabled={isAuthenticating}
-            className="relative w-full bg-[#0c1020]/60 border border-white/10 hover:border-white/40 p-6 flex items-center justify-center transition-all duration-500 backdrop-blur-xl destiny-clip group-hover:-translate-y-1"
+            className="relative w-full bg-[#0c1020] border border-white/5 p-6 flex items-center justify-center transition-all duration-500 backdrop-blur-xl"
             data-testid="button-login"
           >
             {isAuthenticating ? (
@@ -86,6 +87,7 @@ export default function Login({ onLogin, isAuthenticating, error }: LoginProps) 
               </span>
             )}
           </button>
+          </div>
         </motion.div>
         
         <motion.p 
