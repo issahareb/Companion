@@ -67,15 +67,7 @@ export default function Login({ onLogin, isAuthenticating, error }: LoginProps) 
       
       <div className="max-w-md w-full text-center z-10 flex flex-col items-center">
         <div className="relative flex flex-col items-center">
-          <motion.div
-            initial={{ y: -10, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.1, duration: 0.8 }}
-          >
-            <h1 className="text-3xl tracking-[0.3em] text-white uppercase text-shadow-glow font-display">GuardianGrid <span className="text-[#E5C76B]">(Adept)</span></h1>
-          </motion.div>
-
-          <div className="w-36 h-36 mx-auto relative flex items-center justify-center mt-10">
+          <div className="w-36 h-36 mx-auto relative flex items-center justify-center">
             <div className="absolute inset-0 border border-white/20 rotate-45 animate-[spin_15s_linear_infinite]" />
             <div className="absolute inset-2 border border-white/10 -rotate-12 animate-[spin_20s_linear_infinite_reverse]" />
             <div className="absolute inset-4 border border-indigo-500/20 rotate-180 animate-[spin_10s_linear_infinite]" />
@@ -93,6 +85,15 @@ export default function Login({ onLogin, isAuthenticating, error }: LoginProps) 
               />
             </motion.div>
           </div>
+
+          <motion.div
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.3, duration: 0.8 }}
+            className="mt-8"
+          >
+            <h1 className="text-3xl tracking-[0.3em] text-white uppercase text-shadow-glow font-display">GuardianGrid <span className="text-[#E5C76B]">(Adept)</span></h1>
+          </motion.div>
         </div>
 
         {error && (
