@@ -8,6 +8,7 @@ import {
   Plus, Sword, ShieldHalf, Orbit, Eye
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import hunterBgImg from '@assets/IMG_0576_1772037013335.jpeg';
 
 import { useBungieAuth } from '@/hooks/use-bungie-auth';
 import { useLoadouts, useSaveLoadout, useDeleteLoadout } from '@/hooks/use-loadouts';
@@ -320,7 +321,14 @@ export default function Dashboard() {
             <AnimatePresence mode="wait">
               {/* HÜTER TAB */}
               {activeTab === 'characters' && (
-                <motion.div key="characters" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="h-full flex flex-col">
+                <motion.div key="characters" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="h-full flex flex-col relative">
+                  {selectedCharacter?.className === 'Hunter' && (
+                    <>
+                      <img src={hunterBgImg} alt="" className="absolute inset-0 w-full h-full object-cover opacity-[0.12] pointer-events-none z-0" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-[#080b14] via-[#080b14]/60 to-transparent pointer-events-none z-0" />
+                      <div className="absolute inset-0 bg-gradient-to-r from-[#080b14]/80 via-transparent to-[#080b14]/50 pointer-events-none z-0" />
+                    </>
+                  )}
                   {/* Character selector */}
                   <div className="flex items-center gap-2 p-3 md:p-4 border-b border-white/[0.06] shrink-0 overflow-x-auto bg-black/20">
                     {characters.map(char => (
