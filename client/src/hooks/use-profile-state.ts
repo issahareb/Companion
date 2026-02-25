@@ -1,5 +1,20 @@
 import { useQuery } from '@tanstack/react-query';
 
+export interface PerkInfo {
+  perkHash: number;
+  name: string;
+  icon: string;
+  description: string;
+  isActive: boolean;
+}
+
+export interface ModInfo {
+  plugHash: number;
+  name: string;
+  icon: string;
+  description: string;
+}
+
 export interface InventoryItem {
   id: string;
   itemHash: number;
@@ -14,6 +29,8 @@ export interface InventoryItem {
   characterId?: string;
   description?: string;
   classType?: number;
+  perks?: PerkInfo[];
+  mods?: ModInfo[];
 }
 
 export interface QuestItem {
@@ -32,6 +49,45 @@ export interface CurrencyInfo {
   quantity: number;
 }
 
+export interface CollectibleItem {
+  collectibleHash: number;
+  name: string;
+  icon: string;
+  description: string;
+  acquired: boolean;
+  sourceString: string;
+}
+
+export interface RecordItem {
+  recordHash: number;
+  name: string;
+  icon: string;
+  description: string;
+  completed: boolean;
+  objectives: { description: string; progress: number; completionValue: number; complete: boolean }[];
+  scoreValue: number;
+}
+
+export interface ProgressionInfo {
+  progressionHash: number;
+  name: string;
+  icon: string;
+  level: number;
+  currentProgress: number;
+  nextLevelAt: number;
+  progressToNextLevel: number;
+  dailyProgress: number;
+  currentResetCount: number;
+}
+
+export interface RecentActivity {
+  activityHash: number;
+  activityName: string;
+  mode: string;
+  date: string;
+  values: Record<string, number>;
+}
+
 export interface CharacterData {
   characterId: string;
   classType: number;
@@ -45,6 +101,7 @@ export interface CharacterData {
   equippedItems: InventoryItem[];
   inventory: InventoryItem[];
   quests: QuestItem[];
+  progressions: ProgressionInfo[];
 }
 
 export interface ProfileState {
@@ -52,6 +109,8 @@ export interface ProfileState {
   vaultItems: InventoryItem[];
   postmasterItems: InventoryItem[];
   currencies: CurrencyInfo[];
+  collectibles: CollectibleItem[];
+  records: RecordItem[];
 }
 
 export function useProfileState(membershipType?: number, membershipId?: string) {
@@ -60,7 +119,7 @@ export function useProfileState(membershipType?: number, membershipId?: string) 
     queryFn: async () => {
       const accessToken = localStorage.getItem('bungie_access_token');
       if (!accessToken || !membershipType || !membershipId) {
-        return { characters: [], vaultItems: [], postmasterItems: [], currencies: [] };
+        return { characters: [], vaultItems: [], postmasterItems: [], currencies: [], collectibles: [], records: [] };
       }
 
       const res = await fetch(

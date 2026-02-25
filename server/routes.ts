@@ -3,7 +3,7 @@ import type { Server } from "http";
 import { storage } from "./storage";
 import { api } from "@shared/routes";
 import { z } from "zod";
-import { exchangeToken, fetchMemberships, fetchProfileState, transferItem, equipItem } from "./bungie";
+import { exchangeToken, fetchMemberships, fetchProfileState, transferItem, equipItem, pullFromPostmaster, setLockState, equipItems } from "./bungie";
 
 export async function registerRoutes(
   httpServer: Server,
@@ -81,6 +81,51 @@ export async function registerRoutes(
     } catch (err: any) {
       console.error('[bungie equip error]', err.message);
       res.status(502).json({ message: err.message || 'Equip failed' });
+    }
+  });
+
+  app.post('/api/bungie/pull-postmaster', async (req, res) => {
+    try {
+      const authHeader = req.headers.authorization;
+      const accessToken = authHeader?.replace('Bearer ', '') || '';
+      if (!accessToken) {
+        return res.status(401).json({ message: 'Access token required' });
+      }
+      const result = await pullFromPostmaster(req.body, accessToken);
+      res.json(result);
+    } catch (err: any) {
+      console.error('[bungie pull-postmaster error]', err.message);
+      res.status(502).json({ message: err.message || 'Pull from postmaster failed' });
+    }
+  });
+
+  app.post('/api/bungie/lock', async (req, res) => {
+    try {
+      const authHeader = req.headers.authorization;
+      const accessToken = authHeader?.replace('Bearer ', '') || '';
+      if (!accessToken) {
+        return res.status(401).json({ message: 'Access token required' });
+      }
+      const result = await setLockState(req.body, accessToken);
+      res.json(result);
+    } catch (err: any) {
+      console.error('[bungie lock error]', err.message);
+      res.status(502).json({ message: err.message || 'Lock state change failed' });
+    }
+  });
+
+  app.post('/api/bungie/equip-items', async (req, res) => {
+    try {
+      const authHeader = req.headers.authorization;
+      const accessToken = authHeader?.replace('Bearer ', '') || '';
+      if (!accessToken) {
+        return res.status(401).json({ message: 'Access token required' });
+      }
+      const result = await equipItems(req.body, accessToken);
+      res.json(result);
+    } catch (err: any) {
+      console.error('[bungie equip-items error]', err.message);
+      res.status(502).json({ message: err.message || 'Batch equip failed' });
     }
   });
 

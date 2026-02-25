@@ -42,9 +42,46 @@ const CURRENCY_HASHES: Record<number, string> = {
   3147280338: 'Silver',
 };
 
+interface CollectibleDef {
+  name: string;
+  icon: string;
+  description: string;
+  sourceString: string;
+}
+
+interface RecordDef {
+  name: string;
+  icon: string;
+  description: string;
+  scoreValue: number;
+  objectiveHashes: number[];
+}
+
+interface ProgressionDef {
+  name: string;
+  icon: string;
+  description: string;
+}
+
+interface ObjectiveDef {
+  description: string;
+  completionValue: number;
+}
+
+interface ActivityDef {
+  name: string;
+  icon: string;
+  description: string;
+}
+
 interface ManifestCache {
   version: string;
   items: Record<string, ManifestItem>;
+  collectibles: Record<string, CollectibleDef>;
+  records: Record<string, RecordDef>;
+  progressions: Record<string, ProgressionDef>;
+  objectives: Record<string, ObjectiveDef>;
+  activities: Record<string, ActivityDef>;
   fetchedAt: number;
 }
 
@@ -78,9 +115,9 @@ async function bungieGet(path: string, accessToken?: string) {
   return res.json();
 }
 
-async function fetchManifest(): Promise<Record<string, ManifestItem>> {
+async function fetchManifest(): Promise<ManifestCache> {
   if (manifestCache && Date.now() - manifestCache.fetchedAt < MANIFEST_TTL) {
-    return manifestCache.items;
+    return manifestCache;
   }
 
   console.log('[bungie] Fetching manifest...');
@@ -89,15 +126,19 @@ async function fetchManifest(): Promise<Record<string, ManifestItem>> {
 
   if (manifestCache && manifestCache.version === manifestVersion) {
     manifestCache.fetchedAt = Date.now();
-    return manifestCache.items;
+    return manifestCache;
   }
 
-  const itemDefPath = manifestData.Response.jsonWorldComponentContentPaths.en.DestinyInventoryItemDefinition;
-  const itemDefsRes = await fetch(`${BUNGIE_BASE}${itemDefPath}`);
-  if (!itemDefsRes.ok) {
-    throw new Error('Failed to fetch item definitions');
-  }
-  const itemDefs = await itemDefsRes.json();
+  const paths = manifestData.Response.jsonWorldComponentContentPaths.en;
+
+  const [itemDefs, collectibleDefs, recordDefs, progressionDefs, objectiveDefs, activityDefs] = await Promise.all([
+    fetch(`${BUNGIE_BASE}${paths.DestinyInventoryItemDefinition}`).then(r => r.json()),
+    fetch(`${BUNGIE_BASE}${paths.DestinyCollectibleDefinition}`).then(r => r.json()).catch(() => ({})),
+    fetch(`${BUNGIE_BASE}${paths.DestinyRecordDefinition}`).then(r => r.json()).catch(() => ({})),
+    fetch(`${BUNGIE_BASE}${paths.DestinyProgressionDefinition}`).then(r => r.json()).catch(() => ({})),
+    fetch(`${BUNGIE_BASE}${paths.DestinyObjectiveDefinition}`).then(r => r.json()).catch(() => ({})),
+    fetch(`${BUNGIE_BASE}${paths.DestinyActivityDefinition}`).then(r => r.json()).catch(() => ({})),
+  ]);
 
   const items: Record<string, ManifestItem> = {};
   for (const [hash, def] of Object.entries(itemDefs) as [string, any][]) {
@@ -129,9 +170,60 @@ async function fetchManifest(): Promise<Record<string, ManifestItem>> {
     };
   }
 
-  manifestCache = { version: manifestVersion, items, fetchedAt: Date.now() };
-  console.log(`[bungie] Manifest cached: ${Object.keys(items).length} relevant items`);
-  return items;
+  const collectibles: Record<string, CollectibleDef> = {};
+  for (const [hash, def] of Object.entries(collectibleDefs) as [string, any][]) {
+    if (!def.displayProperties?.name) continue;
+    collectibles[hash] = {
+      name: def.displayProperties.name,
+      icon: def.displayProperties.hasIcon ? `${BUNGIE_BASE}${def.displayProperties.icon}` : '',
+      description: def.displayProperties.description || '',
+      sourceString: def.sourceString || '',
+    };
+  }
+
+  const records: Record<string, RecordDef> = {};
+  for (const [hash, def] of Object.entries(recordDefs) as [string, any][]) {
+    if (!def.displayProperties?.name) continue;
+    records[hash] = {
+      name: def.displayProperties.name,
+      icon: def.displayProperties.hasIcon ? `${BUNGIE_BASE}${def.displayProperties.icon}` : '',
+      description: def.displayProperties.description || '',
+      scoreValue: def.completionInfo?.ScoreValue || 0,
+      objectiveHashes: def.objectiveHashes || [],
+    };
+  }
+
+  const progressions: Record<string, ProgressionDef> = {};
+  for (const [hash, def] of Object.entries(progressionDefs) as [string, any][]) {
+    if (!def.displayProperties?.name) continue;
+    progressions[hash] = {
+      name: def.displayProperties.name,
+      icon: def.displayProperties.hasIcon ? `${BUNGIE_BASE}${def.displayProperties.icon}` : '',
+      description: def.displayProperties.description || '',
+    };
+  }
+
+  const objectives: Record<string, ObjectiveDef> = {};
+  for (const [hash, def] of Object.entries(objectiveDefs) as [string, any][]) {
+    objectives[hash] = {
+      description: def.progressDescription || def.displayProperties?.description || '',
+      completionValue: def.completionValue || 0,
+    };
+  }
+
+  const activities: Record<string, ActivityDef> = {};
+  for (const [hash, def] of Object.entries(activityDefs) as [string, any][]) {
+    if (!def.displayProperties?.name) continue;
+    activities[hash] = {
+      name: def.displayProperties.name,
+      icon: def.displayProperties.hasIcon ? `${BUNGIE_BASE}${def.displayProperties.icon}` : '',
+      description: def.displayProperties.description || '',
+    };
+  }
+
+  manifestCache = { version: manifestVersion, items, collectibles, records, progressions, objectives, activities, fetchedAt: Date.now() };
+  console.log(`[bungie] Manifest cached: ${Object.keys(items).length} items, ${Object.keys(collectibles).length} collectibles, ${Object.keys(records).length} records`);
+  return manifestCache;
 }
 
 const BUNGIE_CLIENT_ID = '51625';
@@ -206,6 +298,21 @@ const RACE_NAMES: Record<number, string> = {
   2: 'Exo',
 };
 
+export interface PerkInfo {
+  perkHash: number;
+  name: string;
+  icon: string;
+  description: string;
+  isActive: boolean;
+}
+
+export interface ModInfo {
+  plugHash: number;
+  name: string;
+  icon: string;
+  description: string;
+}
+
 export interface InventoryItem {
   id: string;
   itemHash: number;
@@ -220,6 +327,8 @@ export interface InventoryItem {
   characterId?: string;
   description?: string;
   classType?: number;
+  perks?: PerkInfo[];
+  mods?: ModInfo[];
 }
 
 export interface QuestItem {
@@ -238,6 +347,45 @@ export interface CurrencyInfo {
   quantity: number;
 }
 
+export interface CollectibleItem {
+  collectibleHash: number;
+  name: string;
+  icon: string;
+  description: string;
+  acquired: boolean;
+  sourceString: string;
+}
+
+export interface RecordItem {
+  recordHash: number;
+  name: string;
+  icon: string;
+  description: string;
+  completed: boolean;
+  objectives: { description: string; progress: number; completionValue: number; complete: boolean }[];
+  scoreValue: number;
+}
+
+export interface ProgressionInfo {
+  progressionHash: number;
+  name: string;
+  icon: string;
+  level: number;
+  currentProgress: number;
+  nextLevelAt: number;
+  progressToNextLevel: number;
+  dailyProgress: number;
+  currentResetCount: number;
+}
+
+export interface RecentActivity {
+  activityHash: number;
+  activityName: string;
+  mode: string;
+  date: string;
+  values: Record<string, number>;
+}
+
 export interface CharacterData {
   characterId: string;
   classType: number;
@@ -251,6 +399,7 @@ export interface CharacterData {
   equippedItems: InventoryItem[];
   inventory: InventoryItem[];
   quests: QuestItem[];
+  progressions: ProgressionInfo[];
 }
 
 export interface ProfileState {
@@ -258,6 +407,8 @@ export interface ProfileState {
   vaultItems: InventoryItem[];
   postmasterItems: InventoryItem[];
   currencies: CurrencyInfo[];
+  collectibles: CollectibleItem[];
+  records: RecordItem[];
 }
 
 function parseGearItem(
@@ -295,25 +446,66 @@ function parseGearItem(
   };
 }
 
+function attachPerksAndMods(
+  item: InventoryItem,
+  itemPerks: any,
+  itemSockets: any,
+  manifestData: ManifestCache
+) {
+  const perkData = itemPerks[item.id];
+  if (perkData?.perks) {
+    item.perks = perkData.perks
+      .filter((p: any) => p.visible)
+      .slice(0, 8)
+      .map((p: any) => ({
+        perkHash: p.perkHash,
+        name: p.displayProperties?.name || '',
+        icon: p.displayProperties?.hasIcon ? `${BUNGIE_BASE}${p.displayProperties.icon}` : '',
+        description: p.displayProperties?.description || '',
+        isActive: p.isActive || false,
+      }));
+  }
+
+  const socketData = itemSockets[item.id];
+  if (socketData?.sockets) {
+    item.mods = socketData.sockets
+      .filter((s: any) => s.plugHash && s.isEnabled)
+      .slice(0, 6)
+      .map((s: any) => {
+        const plugDef = manifestData.items[String(s.plugHash)];
+        return {
+          plugHash: s.plugHash,
+          name: plugDef?.name || '',
+          icon: plugDef?.icon || '',
+          description: plugDef?.description || '',
+        };
+      })
+      .filter((m: ModInfo) => m.name);
+  }
+}
+
 export async function fetchProfileState(
   membershipType: string,
   membershipId: string,
   accessToken: string
 ): Promise<ProfileState> {
-  const [manifest, profileData] = await Promise.all([
+  const [manifestData, profileData] = await Promise.all([
     fetchManifest(),
     bungieGet(
-      `/Platform/Destiny2/${membershipType}/Profile/${membershipId}/?components=100,102,103,200,201,205,300`,
+      `/Platform/Destiny2/${membershipType}/Profile/${membershipId}/?components=100,102,103,200,201,202,205,300,302,304,800,900`,
       accessToken
     ),
   ]);
 
+  const manifest = manifestData.items;
   const response = profileData.Response;
   if (!response) {
     throw new Error('No profile data returned from Bungie');
   }
 
   const instanceDetails = response.itemComponents?.instances?.data || {};
+  const itemPerks = response.itemComponents?.perks?.data || {};
+  const itemSockets = response.itemComponents?.sockets?.data || {};
 
   const currencies: CurrencyInfo[] = [];
   const profileCurrencies = response.profileCurrencies?.data?.items;
@@ -349,8 +541,10 @@ export async function fetchProfileState(
       if (item.bucketHash === VAULT_BUCKET || manifestItem.bucketHash === VAULT_BUCKET) {
         vaultBucketCount++;
         const parsed = parseGearItem(item, manifest, instanceDetails, 'vault');
-        if (parsed) vaultItems.push(parsed);
-        else {
+        if (parsed) {
+          attachPerksAndMods(parsed, itemPerks, itemSockets, manifestData);
+          vaultItems.push(parsed);
+        } else {
           vaultParseFails++;
           const slot = GEAR_BUCKET_TO_SLOT[manifestItem.bucketHash];
           if (vaultParseFails <= 5) {
@@ -367,13 +561,18 @@ export async function fetchProfileState(
   const characterInventories = response.characterInventories?.data || {};
   const characterEquipment = response.characterEquipment?.data || {};
 
+  const characterProgressions = response.characterProgressions?.data || {};
+
   for (const [charId, charInfo] of Object.entries(characterData) as [string, any][]) {
     const equipped: InventoryItem[] = [];
     const charEquip = characterEquipment[charId];
     if (charEquip?.items) {
       for (const item of charEquip.items) {
         const parsed = parseGearItem(item, manifest, instanceDetails, 'equipped', charId);
-        if (parsed) equipped.push(parsed);
+        if (parsed) {
+          attachPerksAndMods(parsed, itemPerks, itemSockets, manifestData);
+          equipped.push(parsed);
+        }
       }
     }
 
@@ -396,7 +595,10 @@ export async function fetchProfileState(
         }
 
         const parsed = parseGearItem(item, manifest, instanceDetails, 'character', charId);
-        if (parsed) charInventory.push(parsed);
+        if (parsed) {
+          attachPerksAndMods(parsed, itemPerks, itemSockets, manifestData);
+          charInventory.push(parsed);
+        }
       }
     }
 
@@ -437,6 +639,26 @@ export async function fetchProfileState(
       }
     }
 
+    const charProgs: ProgressionInfo[] = [];
+    const progData = characterProgressions[charId]?.progressions;
+    if (progData) {
+      for (const [progHash, prog] of Object.entries(progData) as [string, any][]) {
+        const progDef = manifestData.progressions[progHash];
+        if (!progDef || !progDef.name) continue;
+        charProgs.push({
+          progressionHash: Number(progHash),
+          name: progDef.name,
+          icon: progDef.icon,
+          level: prog.level || 0,
+          currentProgress: prog.currentProgress || 0,
+          nextLevelAt: prog.nextLevelAt || 0,
+          progressToNextLevel: prog.progressToNextLevel || 0,
+          dailyProgress: prog.dailyProgress || 0,
+          currentResetCount: prog.currentResetCount || 0,
+        });
+      }
+    }
+
     characters.push({
       characterId: charId,
       classType: charInfo.classType,
@@ -450,13 +672,64 @@ export async function fetchProfileState(
       equippedItems: equipped,
       inventory: charInventory.sort((a, b) => b.power - a.power),
       quests,
+      progressions: charProgs.filter(p => p.nextLevelAt > 0).sort((a, b) => b.currentProgress - a.currentProgress),
     });
   }
 
   characters.sort((a, b) => new Date(b.dateLastPlayed).getTime() - new Date(a.dateLastPlayed).getTime());
   vaultItems.sort((a, b) => b.power - a.power);
 
-  return { characters, vaultItems, postmasterItems, currencies };
+  const collectibles: CollectibleItem[] = [];
+  const profileCollectibles = response.profileCollectibles?.data?.collectibles;
+  if (profileCollectibles) {
+    for (const [hash, state] of Object.entries(profileCollectibles) as [string, any][]) {
+      const def = manifestData.collectibles[hash];
+      if (!def || !def.name) continue;
+      const notAcquired = (state.state & 1) !== 0;
+      collectibles.push({
+        collectibleHash: Number(hash),
+        name: def.name,
+        icon: def.icon,
+        description: def.description,
+        acquired: !notAcquired,
+        sourceString: def.sourceString,
+      });
+    }
+  }
+
+  const records: RecordItem[] = [];
+  const profileRecords = response.profileRecords?.data?.records;
+  if (profileRecords) {
+    for (const [hash, state] of Object.entries(profileRecords) as [string, any][]) {
+      const def = manifestData.records[hash];
+      if (!def || !def.name) continue;
+
+      const objectives = (state.objectives || []).map((obj: any) => {
+        const objDef = manifestData.objectives[String(obj.objectiveHash)];
+        return {
+          description: objDef?.description || '',
+          progress: obj.progress || 0,
+          completionValue: obj.completionValue || objDef?.completionValue || 0,
+          complete: obj.complete || false,
+        };
+      });
+
+      const isComplete = (state.state & 1) !== 0;
+      records.push({
+        recordHash: Number(hash),
+        name: def.name,
+        icon: def.icon,
+        description: def.description,
+        completed: isComplete,
+        objectives,
+        scoreValue: def.scoreValue,
+      });
+    }
+  }
+
+  console.log(`[bungie] collectibles: ${collectibles.length}, records: ${records.length}`);
+
+  return { characters, vaultItems, postmasterItems, currencies, collectibles, records };
 }
 
 export interface TransferRequest {
@@ -520,6 +793,101 @@ export async function equipItem(request: EquipRequest, accessToken: string): Pro
   const data = await res.json();
   if (data.ErrorCode !== 1) {
     throw new Error(data.Message || `Equip failed: ${data.ErrorStatus}`);
+  }
+  return data;
+}
+
+export interface PullPostmasterRequest {
+  itemReferenceHash: number;
+  itemId: string;
+  characterId: string;
+  membershipType: number;
+}
+
+export async function pullFromPostmaster(request: PullPostmasterRequest, accessToken: string): Promise<any> {
+  const body = {
+    itemReferenceHash: request.itemReferenceHash,
+    itemId: request.itemId,
+    characterId: request.characterId,
+    membershipType: request.membershipType,
+    stackSize: 1,
+  };
+
+  const res = await fetch(`${BUNGIE_BASE}/Platform/Destiny2/Actions/Items/PullFromPostmaster/`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-API-Key': BUNGIE_API_KEY || '',
+      'Authorization': `Bearer ${accessToken}`,
+    },
+    body: JSON.stringify(body),
+  });
+
+  const data = await res.json();
+  if (data.ErrorCode !== 1) {
+    throw new Error(data.Message || `Pull from postmaster failed: ${data.ErrorStatus}`);
+  }
+  return data;
+}
+
+export interface SetLockStateRequest {
+  itemId: string;
+  characterId: string;
+  membershipType: number;
+  state: boolean;
+}
+
+export async function setLockState(request: SetLockStateRequest, accessToken: string): Promise<any> {
+  const body = {
+    itemId: request.itemId,
+    characterId: request.characterId,
+    membershipType: request.membershipType,
+    state: request.state,
+  };
+
+  const res = await fetch(`${BUNGIE_BASE}/Platform/Destiny2/Actions/Items/SetLockState/`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-API-Key': BUNGIE_API_KEY || '',
+      'Authorization': `Bearer ${accessToken}`,
+    },
+    body: JSON.stringify(body),
+  });
+
+  const data = await res.json();
+  if (data.ErrorCode !== 1) {
+    throw new Error(data.Message || `Lock state change failed: ${data.ErrorStatus}`);
+  }
+  return data;
+}
+
+export interface EquipItemsRequest {
+  itemIds: string[];
+  characterId: string;
+  membershipType: number;
+}
+
+export async function equipItems(request: EquipItemsRequest, accessToken: string): Promise<any> {
+  const body = {
+    itemIds: request.itemIds,
+    characterId: request.characterId,
+    membershipType: request.membershipType,
+  };
+
+  const res = await fetch(`${BUNGIE_BASE}/Platform/Destiny2/Actions/Items/EquipItems/`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-API-Key': BUNGIE_API_KEY || '',
+      'Authorization': `Bearer ${accessToken}`,
+    },
+    body: JSON.stringify(body),
+  });
+
+  const data = await res.json();
+  if (data.ErrorCode !== 1) {
+    throw new Error(data.Message || `Batch equip failed: ${data.ErrorStatus}`);
   }
   return data;
 }

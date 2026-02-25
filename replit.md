@@ -2,7 +2,7 @@
 
 ## Overview
 
-**Forge** is a Destiny 2 loadout manager web application. It allows players to authenticate via Bungie's OAuth2 system, browse their real game inventory separated by location (character, vault, postmaster), assemble custom loadouts by assigning items to equipment slots, save loadouts to a database, and share them via unique share codes/links. The UI is themed with a dark, Destiny-inspired aesthetic using custom clip-paths, animations, and a gold/indigo color palette.
+**GuardianGrid (Adept)** is a Destiny 2 loadout manager web application. It allows players to authenticate via Bungie's OAuth2 system, browse their real game inventory separated by location (character, vault, postmaster), assemble custom loadouts by assigning items to equipment slots, save loadouts to a database, and share them via unique share codes/links. Additional features include browsing collections, triumphs/records, and season progressions. The UI is themed with a dark, Destiny-inspired aesthetic using custom clip-paths, animations, and a gold/indigo color palette. Supports German, English, and French i18n.
 
 ## User Preferences
 
@@ -23,11 +23,19 @@ The project uses a three-directory monorepo layout:
 - **State/Data Fetching:** TanStack React Query for server state management
 - **UI Components:** shadcn/ui (new-york style) with Radix UI primitives, Tailwind CSS for styling
 - **Animations:** Framer Motion for page transitions and item card interactions
+- **Fonts:** Protest Strike (display/headings), Plus Jakarta Sans (body), JetBrains Mono (code)
 - **Path aliases:** `@/` → `client/src/`, `@shared/` → `shared/`, `@assets/` → `attached_assets/`
 
 **Key pages:**
 - `/` — Home/Login: Handles Bungie OAuth flow, redirects to dashboard on auth
-- `/dashboard` — Main app with four tabs: Hüter (character overview with organized equipment sections: Waffen/Rüstung/Subklasse, per-slot swap picker popup, stats, quests), Tresor (vault items with advanced filters), Loadouts (saved loadouts with load/share/delete), Postmeister (postmaster items)
+- `/dashboard` — Main app with seven tabs:
+  - Hüter (character overview with organized equipment sections: Waffen/Rüstung/Subklasse, per-slot swap picker popup, stats, quests)
+  - Tresor (vault items with advanced filters by slot/rarity/power)
+  - Loadouts (saved loadouts with load/share/delete)
+  - Postmeister (postmaster items with pull-from-postmaster action)
+  - Sammlung/Collections (collectibles grid with acquired/not-acquired state and search)
+  - Triumphe/Triumphs (records with progress bars, objectives, completion state)
+  - Saison/Season (progressions/reputation ranks with progress bars)
 - `/share/:shareCode` — Shared loadout view with adoption flow (best-match logic for missing items)
 
 ### Backend (server/)
@@ -37,28 +45,53 @@ The project uses a three-directory monorepo layout:
 - **Build:** Custom build script (`script/build.ts`) uses esbuild for server and Vite for client
 
 **API Routes (all under `/api/`):**
-- `GET /api/bungie/profile-state/:membershipType/:membershipId` — Fetch comprehensive profile state: characters (with stats, equipped, inventory, quests), vault items, postmaster items, currencies
+- `GET /api/bungie/profile-state/:membershipType/:membershipId` — Fetch comprehensive profile state: characters (with stats, equipped, inventory, quests, progressions, perks/mods), vault items, postmaster items, currencies, collectibles, records
 - `POST /api/bungie/transfer` — Transfer item between vault and character (requires Bearer token)
-- `POST /api/bungie/equip` — Equip an item on a character (requires Bearer token)
+- `POST /api/bungie/equip` — Equip a single item on a character (requires Bearer token)
+- `POST /api/bungie/equip-items` — Batch equip multiple items on a character (requires Bearer token)
+- `POST /api/bungie/pull-postmaster` — Pull item from postmaster to character inventory (requires Bearer token)
+- `POST /api/bungie/lock` — Set lock/unlock state on an item (requires Bearer token)
 - `GET /api/loadouts/:bungieMembershipId` — List saved loadouts for a user
 - `POST /api/loadouts` — Create/save a new loadout
 - `DELETE /api/loadouts/:id` — Delete a saved loadout
 - `GET /api/loadouts/share/:shareCode` — Get a loadout by its share code
 
 ### Bungie API Integration (server/bungie.ts)
-- **fetchProfileState()** — Main endpoint. Uses Bungie components 100,102,103,200,201,205,300 to fetch:
-  - Characters: class, race, power level, emblem, stats (Mobility/Resilience/Recovery/Discipline/Intellect/Strength), equipped items, per-character inventory, active quests
-  - Vault: items in bucket 138197802
+- **fetchProfileState()** — Main endpoint. Uses Bungie components 100,102,103,200,201,202,205,300,302,304,800,900 to fetch:
+  - Characters: class, race, power level, emblem, stats (Mobility/Resilience/Recovery/Discipline/Intellect/Strength), equipped items (with perks/mods), per-character inventory (with perks/mods), active quests, progressions
+  - Vault: items in bucket 138197802 (with perks/mods)
   - Postmaster: items in bucket 215938771
   - Currencies: Glimmer, Silver, Bright Dust, Legendary Shards via component 103
+  - Collectibles: from component 800, with acquired state
+  - Records/Triumphs: from component 900, with objectives and completion state
 - **transferItem()** — Calls Bungie TransferItem API
 - **equipItem()** — Calls Bungie EquipItem API
-- **Manifest**: Cached 24h, parses gear buckets, quest bucket (1345459588), postmaster bucket, currency hashes
+- **equipItems()** — Calls Bungie EquipItems API (batch equip)
+- **pullFromPostmaster()** — Calls Bungie PullFromPostmaster API
+- **setLockState()** — Calls Bungie SetLockState API
+- **Manifest**: Cached 24h, parses gear buckets, quest bucket (1345459588), postmaster bucket, currency hashes, collectibles, records, progressions, objectives, activities
+
+### Client Types (use-profile-state.ts)
+- **PerkInfo** — Perk hash, name, icon, description, isActive
+- **ModInfo** — Plug hash, name, icon, description
+- **InventoryItem** — Extended with optional `perks: PerkInfo[]` and `mods: ModInfo[]`
+- **CollectibleItem** — Hash, name, icon, description, acquired state, source string
+- **RecordItem** — Hash, name, icon, description, completed state, objectives with progress, scoreValue
+- **ProgressionInfo** — Hash, name, icon, level, progress, nextLevelAt, dailyProgress, currentResetCount
+- **CharacterData** — Extended with `progressions: ProgressionInfo[]`
+- **ProfileState** — Extended with `collectibles: CollectibleItem[]` and `records: RecordItem[]`
 
 ### Client Hooks
-- **useProfileState** — Fetches `/api/bungie/profile-state`, returns structured ProfileState with characters, vault, postmaster, currencies
+- **useProfileState** — Fetches `/api/bungie/profile-state`, returns structured ProfileState with all data
 - **useTransferItem / useEquipItem / useSwapItem** — Mutations for item management. useSwapItem orchestrates multi-step transfer+equip flows
+- **usePullFromPostmaster** — Mutation to pull items from the postmaster
+- **useSetLockState** — Mutation to lock/unlock items
+- **useEquipItems** — Mutation for batch equipping multiple items
 - **useLoadouts / useSaveLoadout / useDeleteLoadout** — Loadout CRUD operations
+
+### i18n (client/src/lib/i18n.tsx)
+- Three languages: German (de, default), English (en), French (fr)
+- Covers all UI strings including nav, actions, toasts, filters, and new tab labels (Sammlung, Triumphe, Saison)
 
 ### Shared Layer (shared/)
 - **`schema.ts`** — Drizzle ORM table definitions and Zod schemas (using `drizzle-zod`)
@@ -83,7 +116,7 @@ The project uses a three-directory monorepo layout:
 ## External Dependencies
 
 ### Third-Party Services
-- **Bungie.net API** — OAuth2 authentication and real inventory data fetching via server-side proxy (`server/bungie.ts`). The server fetches the Destiny 2 manifest (cached 24h) and player inventory/characters/vault/currencies, mapping items to the app's slot system. API key stored in `BUNGIE_API_KEY` environment variable.
+- **Bungie.net API** — OAuth2 authentication and real inventory data fetching via server-side proxy (`server/bungie.ts`). The server fetches the Destiny 2 manifest (cached 24h) and player inventory/characters/vault/currencies/collectibles/records, mapping items to the app's slot system. API key stored in `BUNGIE_API_KEY` environment variable.
 - **PostgreSQL** — Primary database, connected via `DATABASE_URL` environment variable. Must be provisioned before the app can run.
 
 ### Key NPM Packages
@@ -100,3 +133,11 @@ The project uses a three-directory monorepo layout:
 ### Replit-Specific Plugins
 - `@replit/vite-plugin-runtime-error-modal` — Error overlay in dev
 - `@replit/vite-plugin-cartographer` and `@replit/vite-plugin-dev-banner` — Dev-only Replit integrations (conditionally loaded)
+
+## Design Notes
+- Branding: "GuardianGrid (Adept)" — "(Adept)" in gold (#E5C76B)
+- Login background: IMG_0553 JPEG (static)
+- Hunter tab: IMG_0576 JPEG at 35% opacity in fixed container with gradient overlays
+- Login button glow: 3 absolute divs with purple/fuchsia/pink/indigo gradients, 18-25% normal / 35-45% hover opacity
+- Hamburger menu: all screen sizes, AnimatePresence slide-out panel with 7 nav items
+- Desktop sidebar: visible on md+ screens with nav buttons and currency display

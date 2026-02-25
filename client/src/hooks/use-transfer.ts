@@ -25,8 +25,35 @@ interface SwapParams {
   membershipType: number;
 }
 
+interface PullPostmasterParams {
+  itemReferenceHash: number;
+  itemId: string;
+  characterId: string;
+  membershipType: number;
+}
+
+interface SetLockStateParams {
+  itemId: string;
+  characterId: string;
+  membershipType: number;
+  state: boolean;
+}
+
+interface EquipItemsParams {
+  itemIds: string[];
+  characterId: string;
+  membershipType: number;
+}
+
 function getAccessToken() {
   return localStorage.getItem('bungie_access_token') || '';
+}
+
+function makeHeaders() {
+  return {
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${getAccessToken()}`,
+  };
 }
 
 export function useTransferItem() {
@@ -36,10 +63,7 @@ export function useTransferItem() {
     mutationFn: async (params: TransferParams) => {
       const res = await fetch('/api/bungie/transfer', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${getAccessToken()}`,
-        },
+        headers: makeHeaders(),
         body: JSON.stringify(params),
       });
 
@@ -62,10 +86,7 @@ export function useEquipItem() {
     mutationFn: async (params: EquipParams) => {
       const res = await fetch('/api/bungie/equip', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${getAccessToken()}`,
-        },
+        headers: makeHeaders(),
         body: JSON.stringify(params),
       });
 
@@ -87,10 +108,7 @@ export function useSwapItem() {
   return useMutation({
     mutationFn: async (params: SwapParams) => {
       const { item, targetCharacterId, membershipType } = params;
-      const headers = {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${getAccessToken()}`,
-      };
+      const headers = makeHeaders();
 
       if (item.location === 'vault') {
         await fetch('/api/bungie/transfer', {
@@ -163,6 +181,75 @@ export function useSwapItem() {
       }
 
       return { success: true };
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/bungie/profile-state'] });
+    },
+  });
+}
+
+export function usePullFromPostmaster() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (params: PullPostmasterParams) => {
+      const res = await fetch('/api/bungie/pull-postmaster', {
+        method: 'POST',
+        headers: makeHeaders(),
+        body: JSON.stringify(params),
+      });
+
+      if (!res.ok) {
+        const error = await res.json().catch(() => ({ message: 'Pull from postmaster failed' }));
+        throw new Error(error.message);
+      }
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/bungie/profile-state'] });
+    },
+  });
+}
+
+export function useSetLockState() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (params: SetLockStateParams) => {
+      const res = await fetch('/api/bungie/lock', {
+        method: 'POST',
+        headers: makeHeaders(),
+        body: JSON.stringify(params),
+      });
+
+      if (!res.ok) {
+        const error = await res.json().catch(() => ({ message: 'Lock state change failed' }));
+        throw new Error(error.message);
+      }
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/bungie/profile-state'] });
+    },
+  });
+}
+
+export function useEquipItems() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (params: EquipItemsParams) => {
+      const res = await fetch('/api/bungie/equip-items', {
+        method: 'POST',
+        headers: makeHeaders(),
+        body: JSON.stringify(params),
+      });
+
+      if (!res.ok) {
+        const error = await res.json().catch(() => ({ message: 'Batch equip failed' }));
+        throw new Error(error.message);
+      }
+      return res.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/bungie/profile-state'] });

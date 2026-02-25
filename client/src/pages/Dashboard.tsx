@@ -5,15 +5,16 @@ import {
   Sparkles, Activity, Loader2, AlertTriangle, RefreshCw,
   Users, ArrowRightLeft, Trash2, X, Package, Mail,
   ChevronDown, ChevronUp, Filter, SlidersHorizontal, Coins,
-  Plus, Sword, ShieldHalf, Orbit, Eye, ScrollText
+  Plus, Sword, ShieldHalf, Orbit, Eye, ScrollText,
+  BookOpen, Trophy, TrendingUp, Lock, Unlock, Download
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import hunterBgImg from '@assets/IMG_0576_1772037013335.jpeg';
 
 import { useBungieAuth } from '@/hooks/use-bungie-auth';
 import { useLoadouts, useSaveLoadout, useDeleteLoadout } from '@/hooks/use-loadouts';
-import { useProfileState, type InventoryItem, type CharacterData, type CurrencyInfo, type QuestItem } from '@/hooks/use-profile-state';
-import { useTransferItem, useEquipItem, useSwapItem } from '@/hooks/use-transfer';
+import { useProfileState, type InventoryItem, type CharacterData, type CurrencyInfo, type QuestItem, type CollectibleItem, type RecordItem, type ProgressionInfo } from '@/hooks/use-profile-state';
+import { useTransferItem, useEquipItem, useSwapItem, usePullFromPostmaster, useSetLockState, useEquipItems } from '@/hooks/use-transfer';
 
 import { DesktopNavButton, MobileNavButton, UserProfile } from '@/components/Navigation';
 import { ItemCard, EquippedSlot, type Item, type SlotInfo } from '@/components/Inventory';
@@ -21,7 +22,7 @@ import { SaveLoadoutModal } from '@/components/SaveLoadoutModal';
 import { useToast } from '@/hooks/use-toast';
 import { useI18n } from '@/lib/i18n';
 
-type TabType = 'characters' | 'vault' | 'loadouts' | 'postmaster';
+type TabType = 'characters' | 'vault' | 'loadouts' | 'postmaster' | 'collections' | 'triumphs' | 'season';
 
 function toItem(inv: InventoryItem): Item {
   return {
@@ -75,6 +76,9 @@ export default function Dashboard() {
   const transferMutation = useTransferItem();
   const equipMutation = useEquipItem();
   const swapMutation = useSwapItem();
+  const pullPostmasterMutation = usePullFromPostmaster();
+  const lockStateMutation = useSetLockState();
+  const equipItemsMutation = useEquipItems();
   const { toast } = useToast();
   const { t } = useI18n();
 
@@ -118,11 +122,17 @@ export default function Dashboard() {
   const [vaultFilters, setVaultFilters] = useState<FilterState>({ search: '', slot: 'all', rarity: 'all', minPower: '', maxPower: '' });
   const [slotPickerSlot, setSlotPickerSlot] = useState<string | null>(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [collectionsSearch, setCollectionsSearch] = useState('');
+  const [collectionsFilter, setCollectionsFilter] = useState<'all' | 'acquired' | 'notAcquired'>('all');
+  const [triumphsSearch, setTriumphsSearch] = useState('');
+  const [triumphsFilter, setTriumphsFilter] = useState<'all' | 'completed' | 'incomplete'>('all');
 
   const characters = profileState?.characters || [];
   const vaultItems = profileState?.vaultItems || [];
   const postmasterItems = profileState?.postmasterItems || [];
   const currencies = profileState?.currencies || [];
+  const collectibles = profileState?.collectibles || [];
+  const records = profileState?.records || [];
 
   const selectedCharacter = characters.find(c => c.characterId === selectedCharacterId) || null;
 
@@ -144,6 +154,45 @@ export default function Dashboard() {
   }, []);
 
   const filteredVaultItems = useItemFilter(vaultItems, vaultFilters);
+
+  const filteredCollectibles = useMemo(() => {
+    return collectibles.filter(c => {
+      if (collectionsSearch) {
+        const q = collectionsSearch.toLowerCase();
+        if (!c.name.toLowerCase().includes(q) && !c.description.toLowerCase().includes(q)) return false;
+      }
+      if (collectionsFilter === 'acquired' && !c.acquired) return false;
+      if (collectionsFilter === 'notAcquired' && c.acquired) return false;
+      return true;
+    });
+  }, [collectibles, collectionsSearch, collectionsFilter]);
+
+  const filteredRecords = useMemo(() => {
+    return records.filter(r => {
+      if (triumphsSearch) {
+        const q = triumphsSearch.toLowerCase();
+        if (!r.name.toLowerCase().includes(q) && !r.description.toLowerCase().includes(q)) return false;
+      }
+      if (triumphsFilter === 'completed' && !r.completed) return false;
+      if (triumphsFilter === 'incomplete' && r.completed) return false;
+      return true;
+    });
+  }, [records, triumphsSearch, triumphsFilter]);
+
+  const handlePullPostmaster = async (item: InventoryItem) => {
+    if (!destinyProfile || !item.characterId) return;
+    try {
+      await pullPostmasterMutation.mutateAsync({
+        itemReferenceHash: item.itemHash,
+        itemId: item.id,
+        characterId: item.characterId,
+        membershipType: destinyProfile.membershipType,
+      });
+      toast({ title: t('toast.pulled'), description: `${item.name} ${t('toast.pulledDesc')}` });
+    } catch (err: any) {
+      toast({ title: t('error.generic'), description: err.message, variant: "destructive" });
+    }
+  };
 
   const addToLoadout = (item: Item) => {
     setLoadout(prev => {
@@ -239,6 +288,9 @@ export default function Dashboard() {
     vault: t('nav.vault'),
     loadouts: t('nav.loadouts'),
     postmaster: t('nav.postmaster'),
+    collections: t('nav.collections'),
+    triumphs: t('nav.triumphs'),
+    season: t('nav.season'),
   };
 
   return (
@@ -274,6 +326,10 @@ export default function Dashboard() {
           <DesktopNavButton icon={Package} label="TRESOR" active={activeTab === 'vault'} onClick={() => setActiveTab('vault')} />
           <DesktopNavButton icon={Archive} label="LOADOUTS" active={activeTab === 'loadouts'} onClick={() => setActiveTab('loadouts')} />
           <DesktopNavButton icon={Mail} label="POSTMEISTER" active={activeTab === 'postmaster'} onClick={() => setActiveTab('postmaster')} />
+          <div className="h-px bg-white/[0.06] my-2" />
+          <DesktopNavButton icon={BookOpen} label={t('nav.collections').toUpperCase()} active={activeTab === 'collections'} onClick={() => setActiveTab('collections')} />
+          <DesktopNavButton icon={Trophy} label={t('nav.triumphs').toUpperCase()} active={activeTab === 'triumphs'} onClick={() => setActiveTab('triumphs')} />
+          <DesktopNavButton icon={TrendingUp} label={t('nav.season').toUpperCase()} active={activeTab === 'season'} onClick={() => setActiveTab('season')} />
         </nav>
         <UserProfile profile={destinyProfile} onLogout={logout} />
       </aside>
@@ -348,10 +404,13 @@ export default function Dashboard() {
                 </div>
                 <nav className="flex-1 py-4 px-3">
                   {[
-                    { key: 'guardian', id: 'characters' as TabType, icon: Users, label: t('nav.guardian') },
+                    { key: 'guardian', id: 'characters' as TabType, icon: Users, label: t('nav.characters') },
                     { key: 'vault', id: 'vault' as TabType, icon: Package, label: t('nav.vault') },
+                    { key: 'loadouts', id: 'loadouts' as TabType, icon: Archive, label: t('nav.loadouts') },
                     { key: 'postmaster', id: 'postmaster' as TabType, icon: Mail, label: t('nav.postmaster') },
-                    { key: 'quests', id: 'characters' as TabType, icon: ScrollText, label: 'Quests' },
+                    { key: 'collections', id: 'collections' as TabType, icon: BookOpen, label: t('nav.collections') },
+                    { key: 'triumphs', id: 'triumphs' as TabType, icon: Trophy, label: t('nav.triumphs') },
+                    { key: 'season', id: 'season' as TabType, icon: TrendingUp, label: t('nav.season') },
                   ].map((item, i) => (
                     <motion.button
                       key={item.key}
@@ -360,15 +419,15 @@ export default function Dashboard() {
                       transition={{ delay: 0.05 + i * 0.06, duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
                       onClick={() => { setActiveTab(item.id); setIsMenuOpen(false); }}
                       className={`w-full flex items-center gap-4 px-4 py-3.5 mb-1 rounded-lg transition-all duration-300 ${
-                        (item.key === 'guardian' && activeTab === 'characters') || (item.key !== 'guardian' && item.key !== 'quests' && activeTab === item.id)
+                        activeTab === item.id
                           ? 'bg-white/[0.08] text-white'
                           : 'text-gray-500 hover:text-white hover:bg-white/[0.04]'
                       }`}
                       data-testid={`menu-item-${item.key}`}
                     >
-                      <item.icon className={`w-5 h-5 ${(item.key === 'guardian' && activeTab === 'characters') || (item.key !== 'guardian' && item.key !== 'quests' && activeTab === item.id) ? 'text-indigo-400' : ''}`} />
+                      <item.icon className={`w-5 h-5 ${activeTab === item.id ? 'text-indigo-400' : ''}`} />
                       <span className="text-sm font-display tracking-[0.15em] uppercase">{item.label}</span>
-                      {((item.key === 'guardian' && activeTab === 'characters') || (item.key !== 'guardian' && item.key !== 'quests' && activeTab === item.id)) && (
+                      {activeTab === item.id && (
                         <motion.div
                           layoutId="menu-indicator"
                           className="ml-auto w-1.5 h-1.5 rounded-full bg-indigo-400"
@@ -627,7 +686,7 @@ export default function Dashboard() {
                           data-testid="input-search-vault"
                         />
                       </div>
-                      <FilterBar filters={vaultFilters} onChange={setVaultFilters} />
+                      <FilterBar filters={vaultFilters} onChange={setVaultFilters} slotFilters={SLOT_FILTERS} rarityFilters={RARITY_FILTERS} />
                       <p className="text-[10px] text-gray-600 tracking-widest uppercase">{filteredVaultItems.length} Gegenstände</p>
                     </div>
 
@@ -752,7 +811,7 @@ export default function Dashboard() {
                       <p className="text-[10px] text-gray-500 uppercase tracking-widest mb-4">{postmasterItems.length} Gegenstände beim Postmeister</p>
                       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
                         {postmasterItems.map(item => (
-                          <div key={item.id} className="bg-gradient-to-b from-amber-500/[0.03] to-transparent border border-amber-500/15 overflow-hidden destiny-clip-sm hover:border-amber-500/30 transition-all duration-300" data-testid={`card-postmaster-${item.id}`}>
+                          <div key={item.id} className="bg-gradient-to-b from-amber-500/[0.03] to-transparent border border-amber-500/15 overflow-hidden destiny-clip-sm hover:border-amber-500/30 transition-all duration-300 group" data-testid={`card-postmaster-${item.id}`}>
                             <div className="h-[2px] w-full bg-amber-500/60" />
                             <div className="aspect-[4/3] relative overflow-hidden bg-black/80">
                               <img src={item.screenshot || item.icon} alt={item.name} className="w-full h-full object-cover brightness-90" />
@@ -761,15 +820,291 @@ export default function Dashboard() {
                             <div className="px-2.5 py-2">
                               <h4 className="text-[9px] font-bold truncate tracking-wider uppercase text-amber-400">{item.name}</h4>
                               <p className="text-[8px] text-gray-500 mt-0.5 uppercase tracking-widest">{item.type}</p>
-                              {item.power > 0 && (
-                                <p className="text-[9px] text-gray-400 flex items-center gap-1 mt-1">
-                                  <Sparkles className="w-2.5 h-2.5 text-[#E5C76B]" /> {item.power}
-                                </p>
+                              <div className="flex items-center justify-between mt-1">
+                                {item.power > 0 && (
+                                  <p className="text-[9px] text-gray-400 flex items-center gap-1">
+                                    <Sparkles className="w-2.5 h-2.5 text-[#E5C76B]" /> {item.power}
+                                  </p>
+                                )}
+                                <button
+                                  onClick={() => handlePullPostmaster(item)}
+                                  disabled={pullPostmasterMutation.isPending}
+                                  className="flex items-center gap-1 px-2 py-1 text-[8px] uppercase tracking-widest text-amber-400 hover:text-white bg-amber-500/10 hover:bg-amber-500/30 border border-amber-500/20 transition-all opacity-0 group-hover:opacity-100"
+                                  data-testid={`button-pull-${item.id}`}
+                                >
+                                  <Download className="w-3 h-3" /> {t('action.pullPostmaster')}
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </motion.div>
+              )}
+
+              {/* COLLECTIONS TAB */}
+              {activeTab === 'collections' && (
+                <motion.div key="collections" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="h-full flex flex-col">
+                  <div className="p-4 md:p-6 pb-2 shrink-0 space-y-3">
+                    <div className="relative group">
+                      <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 group-focus-within:text-indigo-400 transition-colors" />
+                      <input
+                        type="text"
+                        placeholder={t('collections.search')}
+                        value={collectionsSearch}
+                        onChange={(e) => setCollectionsSearch(e.target.value)}
+                        className="w-full bg-[#0a0e18]/80 border border-white/[0.08] text-white pl-10 pr-4 py-3 text-sm focus:outline-none focus:border-indigo-500/40 transition-all font-light tracking-wider destiny-clip-sm"
+                        data-testid="input-search-collections"
+                      />
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {(['all', 'acquired', 'notAcquired'] as const).map(f => (
+                        <button
+                          key={f}
+                          onClick={() => setCollectionsFilter(f)}
+                          className={`px-3 py-1.5 text-[9px] uppercase tracking-widest border transition-all ${
+                            collectionsFilter === f
+                              ? 'bg-indigo-600/30 border-indigo-500/50 text-white'
+                              : 'bg-white/5 border-white/5 text-gray-500 hover:text-white'
+                          }`}
+                          data-testid={`filter-collections-${f}`}
+                        >
+                          {f === 'all' ? t('collections.all') : f === 'acquired' ? t('collections.acquired') : t('collections.notAcquired')}
+                        </button>
+                      ))}
+                      <span className="text-[10px] text-gray-600 ml-2">
+                        {filteredCollectibles.filter(c => c.acquired).length}/{filteredCollectibles.length} {t('collections.acquired').toLowerCase()}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="flex-1 overflow-y-auto p-4 md:p-6 pt-2">
+                    {filteredCollectibles.length === 0 ? (
+                      <div className="flex flex-col items-center justify-center h-64 space-y-4">
+                        <BookOpen className="w-12 h-12 text-gray-700" />
+                        <p className="text-sm text-gray-500">{t('item.noneAvailable')}</p>
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-8 gap-2">
+                        {filteredCollectibles.slice(0, 200).map(c => (
+                          <div
+                            key={c.collectibleHash}
+                            className={`group relative border transition-all duration-300 destiny-clip-sm ${
+                              c.acquired
+                                ? 'bg-gradient-to-b from-white/[0.04] to-transparent border-white/[0.08] hover:border-indigo-500/30'
+                                : 'bg-black/40 border-white/[0.04] opacity-40 grayscale hover:opacity-70'
+                            }`}
+                            data-testid={`collectible-${c.collectibleHash}`}
+                          >
+                            <div className={`h-[2px] w-full ${c.acquired ? 'bg-indigo-500/60' : 'bg-gray-700/40'}`} />
+                            <div className="aspect-square relative overflow-hidden bg-black/60 flex items-center justify-center p-2">
+                              {c.icon ? (
+                                <img src={c.icon} alt={c.name} className="w-full h-full object-contain" loading="lazy" />
+                              ) : (
+                                <BookOpen className="w-8 h-8 text-gray-700" />
+                              )}
+                              {c.acquired && (
+                                <div className="absolute top-1 right-1 w-4 h-4 bg-green-500/80 rounded-full flex items-center justify-center">
+                                  <Check className="w-2.5 h-2.5 text-white" />
+                                </div>
+                              )}
+                            </div>
+                            <div className="px-2 py-1.5">
+                              <p className="text-[8px] font-bold truncate tracking-wider uppercase text-white">{c.name}</p>
+                              {c.sourceString && (
+                                <p className="text-[7px] text-gray-600 truncate mt-0.5">{c.sourceString}</p>
                               )}
                             </div>
                           </div>
                         ))}
                       </div>
+                    )}
+                  </div>
+                </motion.div>
+              )}
+
+              {/* TRIUMPHS TAB */}
+              {activeTab === 'triumphs' && (
+                <motion.div key="triumphs" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="h-full flex flex-col">
+                  <div className="p-4 md:p-6 pb-2 shrink-0 space-y-3">
+                    <div className="relative group">
+                      <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 group-focus-within:text-indigo-400 transition-colors" />
+                      <input
+                        type="text"
+                        placeholder={t('triumphs.search')}
+                        value={triumphsSearch}
+                        onChange={(e) => setTriumphsSearch(e.target.value)}
+                        className="w-full bg-[#0a0e18]/80 border border-white/[0.08] text-white pl-10 pr-4 py-3 text-sm focus:outline-none focus:border-indigo-500/40 transition-all font-light tracking-wider destiny-clip-sm"
+                        data-testid="input-search-triumphs"
+                      />
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {(['all', 'completed', 'incomplete'] as const).map(f => (
+                        <button
+                          key={f}
+                          onClick={() => setTriumphsFilter(f)}
+                          className={`px-3 py-1.5 text-[9px] uppercase tracking-widest border transition-all ${
+                            triumphsFilter === f
+                              ? 'bg-indigo-600/30 border-indigo-500/50 text-white'
+                              : 'bg-white/5 border-white/5 text-gray-500 hover:text-white'
+                          }`}
+                          data-testid={`filter-triumphs-${f}`}
+                        >
+                          {f === 'all' ? t('triumphs.all') : f === 'completed' ? t('triumphs.completed') : t('triumphs.incomplete')}
+                        </button>
+                      ))}
+                      <span className="text-[10px] text-gray-600 ml-2">
+                        {t('triumphs.score')}: {filteredRecords.filter(r => r.completed).reduce((sum, r) => sum + r.scoreValue, 0).toLocaleString()}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="flex-1 overflow-y-auto p-4 md:p-6 pt-2">
+                    {filteredRecords.length === 0 ? (
+                      <div className="flex flex-col items-center justify-center h-64 space-y-4">
+                        <Trophy className="w-12 h-12 text-gray-700" />
+                        <p className="text-sm text-gray-500">{t('item.noneAvailable')}</p>
+                      </div>
+                    ) : (
+                      <div className="space-y-2">
+                        {filteredRecords.slice(0, 100).map(record => (
+                          <div
+                            key={record.recordHash}
+                            className={`border transition-all duration-300 p-3 ${
+                              record.completed
+                                ? 'bg-gradient-to-r from-[#E5C76B]/[0.06] to-transparent border-[#E5C76B]/20 hover:border-[#E5C76B]/40'
+                                : 'bg-gradient-to-r from-white/[0.02] to-transparent border-white/[0.06] hover:border-white/15'
+                            }`}
+                            data-testid={`record-${record.recordHash}`}
+                          >
+                            <div className="flex items-start gap-3">
+                              <div className={`w-10 h-10 shrink-0 flex items-center justify-center overflow-hidden ring-1 ${
+                                record.completed ? 'ring-[#E5C76B]/30' : 'ring-white/10'
+                              }`}>
+                                {record.icon ? (
+                                  <img src={record.icon} alt="" className="w-full h-full object-cover" loading="lazy" />
+                                ) : (
+                                  <Trophy className={`w-5 h-5 ${record.completed ? 'text-[#E5C76B]' : 'text-gray-600'}`} />
+                                )}
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2">
+                                  <h4 className={`text-[10px] font-bold tracking-wider uppercase truncate ${
+                                    record.completed ? 'text-[#E5C76B]' : 'text-white'
+                                  }`}>{record.name}</h4>
+                                  {record.completed && (
+                                    <div className="shrink-0 w-4 h-4 bg-green-500/80 rounded-full flex items-center justify-center">
+                                      <Check className="w-2.5 h-2.5 text-white" />
+                                    </div>
+                                  )}
+                                  {record.scoreValue > 0 && (
+                                    <span className="text-[8px] text-[#E5C76B]/60 shrink-0">{record.scoreValue} pts</span>
+                                  )}
+                                </div>
+                                {record.description && (
+                                  <p className="text-[9px] text-gray-500 mt-0.5 line-clamp-2">{record.description}</p>
+                                )}
+                                {record.objectives.length > 0 && !record.completed && (
+                                  <div className="mt-2 space-y-1.5">
+                                    {record.objectives.map((obj, i) => {
+                                      const pct = obj.completionValue > 0 ? Math.min(100, (obj.progress / obj.completionValue) * 100) : 0;
+                                      return (
+                                        <div key={i}>
+                                          <div className="flex items-center justify-between mb-0.5">
+                                            <span className="text-[8px] text-gray-500 truncate flex-1">{obj.description || t('triumphs.progress')}</span>
+                                            <span className="text-[8px] text-gray-400 shrink-0 ml-2">
+                                              {obj.progress.toLocaleString()}/{obj.completionValue.toLocaleString()}
+                                            </span>
+                                          </div>
+                                          <div className="h-1 bg-white/[0.06] rounded-full overflow-hidden">
+                                            <div
+                                              className={`h-full rounded-full transition-all duration-500 ${
+                                                obj.complete ? 'bg-green-500' : 'bg-indigo-500'
+                                              }`}
+                                              style={{ width: `${pct}%` }}
+                                            />
+                                          </div>
+                                        </div>
+                                      );
+                                    })}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </motion.div>
+              )}
+
+              {/* SEASON TAB */}
+              {activeTab === 'season' && (
+                <motion.div key="season" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="h-full overflow-y-auto p-4 md:p-8">
+                  {selectedCharacter ? (
+                    <div className="space-y-6">
+                      <div>
+                        <div className="flex items-center gap-3 mb-4">
+                          <div className="w-6 h-6 rounded-sm bg-gradient-to-br from-indigo-500/20 to-purple-500/10 flex items-center justify-center">
+                            <TrendingUp className="w-3.5 h-3.5 text-indigo-400/80" />
+                          </div>
+                          <h4 className="text-[11px] text-white/80 uppercase tracking-[0.25em] font-display font-semibold">{t('season.progressions')}</h4>
+                          <div className="flex-1 section-divider" />
+                        </div>
+                        {(selectedCharacter.progressions || []).length === 0 ? (
+                          <div className="flex flex-col items-center justify-center h-32 text-gray-600">
+                            <TrendingUp className="w-8 h-8 opacity-20 mb-2" />
+                            <p className="text-[10px] uppercase tracking-widest">{t('item.noneAvailable')}</p>
+                          </div>
+                        ) : (
+                          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
+                            {selectedCharacter.progressions.slice(0, 30).map(prog => {
+                              const pct = prog.nextLevelAt > 0 ? Math.min(100, (prog.progressToNextLevel / prog.nextLevelAt) * 100) : 100;
+                              return (
+                                <div
+                                  key={prog.progressionHash}
+                                  className="bg-gradient-to-r from-white/[0.03] to-transparent border border-white/[0.06] p-3 hover:border-indigo-500/20 transition-all duration-300"
+                                  data-testid={`progression-${prog.progressionHash}`}
+                                >
+                                  <div className="flex items-center gap-3 mb-2">
+                                    {prog.icon ? (
+                                      <img src={prog.icon} alt="" className="w-8 h-8 ring-1 ring-white/10" />
+                                    ) : (
+                                      <div className="w-8 h-8 bg-indigo-500/10 flex items-center justify-center ring-1 ring-white/10">
+                                        <TrendingUp className="w-4 h-4 text-indigo-400/50" />
+                                      </div>
+                                    )}
+                                    <div className="flex-1 min-w-0">
+                                      <p className="text-[10px] font-bold truncate tracking-wider uppercase text-white">{prog.name}</p>
+                                      <div className="flex items-center gap-2 mt-0.5">
+                                        <span className="text-[9px] text-indigo-400">{t('season.level')} {prog.level}</span>
+                                        {prog.currentResetCount > 0 && (
+                                          <span className="text-[8px] text-[#E5C76B]">{t('season.resets')}: {prog.currentResetCount}</span>
+                                        )}
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <div className="h-1.5 bg-white/[0.06] rounded-full overflow-hidden">
+                                    <div
+                                      className="h-full bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full transition-all duration-500"
+                                      style={{ width: `${pct}%` }}
+                                    />
+                                  </div>
+                                  <p className="text-[8px] text-gray-600 mt-1 text-right">
+                                    {prog.progressToNextLevel.toLocaleString()}/{prog.nextLevelAt > 0 ? prog.nextLevelAt.toLocaleString() : '—'}
+                                  </p>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center justify-center h-64 text-gray-500 space-y-4">
+                      <TrendingUp className="w-12 h-12 opacity-10" />
+                      <p className="text-sm">{t('item.noneAvailable')}</p>
                     </div>
                   )}
                 </motion.div>
@@ -839,11 +1174,11 @@ export default function Dashboard() {
 
 /* ---- SUB COMPONENTS ---- */
 
-function FilterBar({ filters, onChange }: { filters: FilterState; onChange: (f: FilterState) => void }) {
+function FilterBar({ filters, onChange, slotFilters, rarityFilters }: { filters: FilterState; onChange: (f: FilterState) => void; slotFilters: { id: string; label: string }[]; rarityFilters: { id: string; label: string }[] }) {
   return (
     <div className="flex flex-wrap items-center gap-2">
       <div className="flex items-center gap-1 overflow-x-auto">
-        {SLOT_FILTERS.map(sf => (
+        {slotFilters.map(sf => (
           <button key={sf.id} onClick={() => onChange({ ...filters, slot: sf.id })}
             className={`px-2.5 py-1 text-[9px] uppercase tracking-widest border transition-all shrink-0 ${
               filters.slot === sf.id ? 'bg-indigo-600/30 border-indigo-500/50 text-white' : 'bg-white/5 border-white/5 text-gray-500 hover:text-white'
@@ -853,7 +1188,7 @@ function FilterBar({ filters, onChange }: { filters: FilterState; onChange: (f: 
         ))}
       </div>
       <div className="flex items-center gap-1">
-        {RARITY_FILTERS.map(rf => (
+        {rarityFilters.map(rf => (
           <button key={rf.id} onClick={() => onChange({ ...filters, rarity: rf.id })}
             className={`px-2.5 py-1 text-[9px] uppercase tracking-widest border transition-all shrink-0 ${
               filters.rarity === rf.id ? 'bg-indigo-600/30 border-indigo-500/50 text-white' : 'bg-white/5 border-white/5 text-gray-500 hover:text-white'
