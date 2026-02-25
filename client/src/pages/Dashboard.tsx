@@ -303,10 +303,15 @@ export default function Dashboard() {
       </div>
 
       {/* DESKTOP SIDEBAR */}
-      <aside className="hidden md:flex flex-col w-64 bg-sidebar backdrop-blur-xl border-r border-white/[0.06] shrink-0 z-20 shadow-2xl relative">
-        <div className="p-6 pb-2">
+      <aside className="hidden md:flex flex-col w-64 bg-sidebar backdrop-blur-xl border-r border-white/[0.06] shrink-0 z-20 shadow-2xl relative overflow-hidden">
+        <div className="absolute -top-20 -left-10 w-40 h-40 bg-indigo-600/10 blur-[80px] rounded-full animate-pulse-glow pointer-events-none" />
+        <div className="absolute -bottom-16 -right-10 w-36 h-36 bg-purple-600/8 blur-[70px] rounded-full pointer-events-none" style={{ animationDelay: '2s' }} />
+        <div className="p-6 pb-2 relative">
           <div className="flex items-center space-x-3 mb-6">
-            <Hexagon className="w-8 h-8 text-white shadow-[0_0_20px_rgba(255,255,255,0.2)]" strokeWidth={1.5} />
+            <div className="relative">
+              <Hexagon className="w-8 h-8 text-white" strokeWidth={1.5} />
+              <div className="absolute inset-0 w-8 h-8 bg-indigo-400/20 blur-md rounded-full animate-pulse-glow" />
+            </div>
             <span className="font-display font-light text-lg tracking-[0.2em] text-white">GUARDIANGRID <span className="text-[#E5C76B] text-sm">(Adept)</span></span>
           </div>
         </div>
