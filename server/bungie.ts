@@ -26,6 +26,7 @@ const GENERAL_SLOTS = ['ghost', 'emblem', 'ship', 'sparrow', 'emote'];
 
 const VAULT_BUCKET = 138197802;
 const POSTMASTER_BUCKET = 215938771;
+const POSTMASTER_LOST_ITEMS_BUCKET = 215593132;
 const QUEST_BUCKET = 1345459588;
 const PURSUITS_BUCKET = 1345459588;
 
@@ -714,13 +715,15 @@ export async function fetchProfileState(
 
     const charInventory: InventoryItem[] = [];
     const charInv = characterInventories[charId];
+    const bucketCounts: Record<number, number> = {};
     if (charInv?.items) {
       for (const item of charInv.items) {
+        bucketCounts[item.bucketHash] = (bucketCounts[item.bucketHash] || 0) + 1;
         const hashStr = String(item.itemHash);
         const manifestItem = manifest[hashStr];
         if (!manifestItem) continue;
 
-        if (item.bucketHash === POSTMASTER_BUCKET) {
+        if (item.bucketHash === POSTMASTER_BUCKET || item.bucketHash === POSTMASTER_LOST_ITEMS_BUCKET) {
           const parsed = parseGearItem(item, manifest, instanceDetails, 'postmaster', charId);
           if (parsed) {
             console.log(`[bungie] postmaster item found for char ${charId}: "${parsed.name}" (hash=${item.itemHash})`);
@@ -742,6 +745,8 @@ export async function fetchProfileState(
         }
       }
     }
+
+    console.log(`[bungie] char ${charId} bucket distribution:`, JSON.stringify(bucketCounts));
 
     const quests: QuestItem[] = [];
     if (charInv?.items) {
