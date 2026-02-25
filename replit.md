@@ -2,7 +2,7 @@
 
 ## Overview
 
-**GuardianGrid (Adept)** is a Destiny 2 loadout manager web application. It allows players to authenticate via Bungie's OAuth2 system, browse their real game inventory separated by location (character, vault, postmaster), assemble custom loadouts by assigning items to equipment slots, save loadouts to a database, and share them via unique share codes/links. Additional features include browsing collections, triumphs/records, and season progressions. The UI is themed with a dark, Destiny-inspired aesthetic using custom clip-paths, animations, and a gold/indigo color palette. Supports German, English, and French i18n.
+**GuardianGrid (Adept)** is a Destiny 2 loadout manager web application. It allows players to authenticate via Bungie's OAuth2 system, browse their real game inventory separated by location (character, vault, postmaster), assemble custom loadouts by assigning items to equipment slots, save loadouts to a database, and share them via unique share codes/links. Additional features include browsing collections, triumphs/records, season progressions, in-game loadout management (equip/snapshot/clear), subclass editing, and seasonal artifact display. The UI is themed with a dark, Destiny-inspired aesthetic using custom clip-paths, animations, and a gold/indigo color palette. Supports German, English, and French i18n.
 
 ## User Preferences
 
@@ -45,20 +45,23 @@ The project uses a three-directory monorepo layout:
 - **Build:** Custom build script (`script/build.ts`) uses esbuild for server and Vite for client
 
 **API Routes (all under `/api/`):**
-- `GET /api/bungie/profile-state/:membershipType/:membershipId` — Fetch comprehensive profile state: characters (with stats, equipped, inventory, quests, progressions, perks/mods), vault items, postmaster items, currencies, collectibles, records
+- `GET /api/bungie/profile-state/:membershipType/:membershipId` — Fetch comprehensive profile state: characters (with stats, equipped, inventory, quests, progressions, perks/mods), vault items, postmaster items, currencies, collectibles, records, in-game loadouts
 - `POST /api/bungie/transfer` — Transfer item between vault and character (requires Bearer token)
 - `POST /api/bungie/equip` — Equip a single item on a character (requires Bearer token)
 - `POST /api/bungie/equip-items` — Batch equip multiple items on a character (requires Bearer token)
 - `POST /api/bungie/pull-postmaster` — Pull item from postmaster to character inventory (requires Bearer token)
 - `POST /api/bungie/lock` — Set lock/unlock state on an item (requires Bearer token)
 - `POST /api/bungie/insert-plug` — Swap a subclass socket plug (requires Bearer token)
+- `POST /api/bungie/equip-loadout` — Equip an in-game loadout on a character (requires Bearer token)
+- `POST /api/bungie/snapshot-loadout` — Snapshot current equipment as an in-game loadout (requires Bearer token)
+- `POST /api/bungie/clear-loadout` — Clear an in-game loadout slot (requires Bearer token)
 - `GET /api/loadouts/:bungieMembershipId` — List saved loadouts for a user
 - `POST /api/loadouts` — Create/save a new loadout
 - `DELETE /api/loadouts/:id` — Delete a saved loadout
 - `GET /api/loadouts/share/:shareCode` — Get a loadout by its share code
 
 ### Bungie API Integration (server/bungie.ts)
-- **fetchProfileState()** — Main endpoint. Uses Bungie components 100,102,103,104,200,201,202,205,300,302,304,305,800,900 to fetch:
+- **fetchProfileState()** — Main endpoint. Uses Bungie components 100,102,103,104,200,201,202,205,300,302,304,305,800,900,4000 to fetch:
   - Characters: class, race, power level, emblem, stats (Mobility/Resilience/Recovery/Discipline/Intellect/Strength), equipped items (with perks/mods/sockets), per-character inventory (with perks/mods/sockets), active quests, progressions
   - Vault: items in bucket 138197802 (with perks/mods/sockets)
   - Postmaster: items in bucket 215938771
@@ -67,13 +70,17 @@ The project uses a three-directory monorepo layout:
   - Records/Triumphs: from component 900, with objectives and completion state
   - Seasonal Artifact: from component 104, with power bonus, points, tiers, and active perks
   - Socket details: from component 304/305, with reusable plug options for subclass editing
+  - In-Game Loadouts: from component 4000, with name/color/icon from manifest definitions
 - **transferItem()** — Calls Bungie TransferItem API
 - **equipItem()** — Calls Bungie EquipItem API
 - **equipItems()** — Calls Bungie EquipItems API (batch equip)
 - **pullFromPostmaster()** — Calls Bungie PullFromPostmaster API
 - **setLockState()** — Calls Bungie SetLockState API
 - **insertSocketPlug()** — Calls Bungie InsertSocketPlugFree API (swap subclass abilities/fragments/aspects)
-- **Manifest**: Cached 24h, parses gear buckets, quest bucket (1345459588), postmaster bucket, currency hashes, collectibles, records, progressions, objectives, activities, plug items (for socket lookups)
+- **equipLoadout()** — Calls Bungie EquipLoadout API (equip in-game loadout)
+- **snapshotLoadout()** — Calls Bungie SnapshotLoadout API (save current equipment as loadout)
+- **clearLoadout()** — Calls Bungie ClearLoadout API (clear a loadout slot)
+- **Manifest**: Cached 24h, parses gear buckets (weapons, armor, ghost, emblem, ship, sparrow, emote), quest bucket (1345459588), postmaster bucket, currency hashes, collectibles, records, progressions, objectives, activities, plug items (for socket lookups), loadout names/colors/icons (DestinyLoadoutNameDefinition, DestinyLoadoutColorDefinition, DestinyLoadoutIconDefinition)
 
 ### Client Types (use-profile-state.ts)
 - **PerkInfo** — Perk hash, name, icon, description, isActive
@@ -85,8 +92,10 @@ The project uses a three-directory monorepo layout:
 - **CollectibleItem** — Hash, name, icon, description, acquired state, source string
 - **RecordItem** — Hash, name, icon, description, completed state, objectives with progress, scoreValue
 - **ProgressionInfo** — Hash, name, icon, level, progress, nextLevelAt, dailyProgress, currentResetCount
+- **InGameLoadoutItem** — Instance ID, item hash, name, icon, slot
+- **InGameLoadout** — Index, nameHash, colorHash, iconHash, name, icon, colorImagePath, items array
 - **CharacterData** — Extended with `progressions: ProgressionInfo[]`
-- **ProfileState** — Extended with `collectibles: CollectibleItem[]`, `records: RecordItem[]`, and `artifact?: ArtifactInfo`
+- **ProfileState** — Extended with `collectibles: CollectibleItem[]`, `records: RecordItem[]`, `artifact?: ArtifactInfo`, `inGameLoadouts: Record<string, InGameLoadout[]>`
 
 ### Client Hooks
 - **useProfileState** — Fetches `/api/bungie/profile-state`, returns structured ProfileState with all data
@@ -95,11 +104,14 @@ The project uses a three-directory monorepo layout:
 - **useSetLockState** — Mutation to lock/unlock items
 - **useEquipItems** — Mutation for batch equipping multiple items
 - **useInsertPlug** — Mutation to swap subclass sockets (abilities, aspects, fragments) via InsertSocketPlugFree
+- **useEquipLoadout** — Mutation to equip an in-game loadout on a character
+- **useSnapshotLoadout** — Mutation to save current equipment as an in-game loadout
+- **useClearLoadout** — Mutation to clear an in-game loadout slot
 - **useLoadouts / useSaveLoadout / useDeleteLoadout** — Loadout CRUD operations
 
 ### i18n (client/src/lib/i18n.tsx)
 - Three languages: German (de, default), English (en), French (fr)
-- Covers all UI strings including nav, actions, toasts, filters, and new tab labels (Sammlung, Triumphe, Saison)
+- Covers all UI strings including nav, actions, toasts, filters, tab labels (Sammlung, Triumphe, Saison), in-game loadout actions, general slots (ghost/emblem/ship/sparrow/emote), and section labels
 
 ### Shared Layer (shared/)
 - **`schema.ts`** — Drizzle ORM table definitions and Zod schemas (using `drizzle-zod`)
@@ -124,7 +136,7 @@ The project uses a three-directory monorepo layout:
 ## External Dependencies
 
 ### Third-Party Services
-- **Bungie.net API** — OAuth2 authentication and real inventory data fetching via server-side proxy (`server/bungie.ts`). The server fetches the Destiny 2 manifest (cached 24h) and player inventory/characters/vault/currencies/collectibles/records, mapping items to the app's slot system. API key stored in `BUNGIE_API_KEY` environment variable.
+- **Bungie.net API** — OAuth2 authentication and real inventory data fetching via server-side proxy (`server/bungie.ts`). The server fetches the Destiny 2 manifest (cached 24h) and player inventory/characters/vault/currencies/collectibles/records/in-game loadouts, mapping items to the app's slot system. API key stored in `BUNGIE_API_KEY` environment variable.
 - **PostgreSQL** — Primary database, connected via `DATABASE_URL` environment variable. Must be provisioned before the app can run.
 
 ### Key NPM Packages
@@ -150,3 +162,4 @@ The project uses a three-directory monorepo layout:
 - Login button glow: 3 absolute divs with purple/fuchsia/pink/indigo gradients, 18-25% normal / 35-45% hover opacity
 - Hamburger menu: all screen sizes, AnimatePresence slide-out panel with 7 nav items
 - Desktop sidebar: visible on md+ screens with nav buttons and currency display
+- Gear bucket slots: weapons (kinetic/energy/power), armor (helmet/arms/chest/legs/class), general (ghost/emblem/ship/sparrow/emote), subclass

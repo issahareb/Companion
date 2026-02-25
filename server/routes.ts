@@ -3,7 +3,7 @@ import type { Server } from "http";
 import { storage } from "./storage";
 import { api } from "@shared/routes";
 import { z } from "zod";
-import { exchangeToken, fetchMemberships, fetchProfileState, transferItem, equipItem, pullFromPostmaster, setLockState, equipItems, insertSocketPlug } from "./bungie";
+import { exchangeToken, fetchMemberships, fetchProfileState, transferItem, equipItem, pullFromPostmaster, setLockState, equipItems, insertSocketPlug, equipLoadout, snapshotLoadout, clearLoadout } from "./bungie";
 
 export async function registerRoutes(
   httpServer: Server,
@@ -141,6 +141,51 @@ export async function registerRoutes(
     } catch (err: any) {
       console.error('[bungie insert-plug error]', err.message);
       res.status(502).json({ message: err.message || 'Insert plug failed' });
+    }
+  });
+
+  app.post('/api/bungie/equip-loadout', async (req, res) => {
+    try {
+      const authHeader = req.headers.authorization;
+      const accessToken = authHeader?.replace('Bearer ', '') || '';
+      if (!accessToken) {
+        return res.status(401).json({ message: 'Access token required' });
+      }
+      const result = await equipLoadout(req.body, accessToken);
+      res.json(result);
+    } catch (err: any) {
+      console.error('[bungie equip-loadout error]', err.message);
+      res.status(502).json({ message: err.message || 'Equip loadout failed' });
+    }
+  });
+
+  app.post('/api/bungie/snapshot-loadout', async (req, res) => {
+    try {
+      const authHeader = req.headers.authorization;
+      const accessToken = authHeader?.replace('Bearer ', '') || '';
+      if (!accessToken) {
+        return res.status(401).json({ message: 'Access token required' });
+      }
+      const result = await snapshotLoadout(req.body, accessToken);
+      res.json(result);
+    } catch (err: any) {
+      console.error('[bungie snapshot-loadout error]', err.message);
+      res.status(502).json({ message: err.message || 'Snapshot loadout failed' });
+    }
+  });
+
+  app.post('/api/bungie/clear-loadout', async (req, res) => {
+    try {
+      const authHeader = req.headers.authorization;
+      const accessToken = authHeader?.replace('Bearer ', '') || '';
+      if (!accessToken) {
+        return res.status(401).json({ message: 'Access token required' });
+      }
+      const result = await clearLoadout(req.body, accessToken);
+      res.json(result);
+    } catch (err: any) {
+      console.error('[bungie clear-loadout error]', err.message);
+      res.status(502).json({ message: err.message || 'Clear loadout failed' });
     }
   });
 

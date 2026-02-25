@@ -15,7 +15,14 @@ const GEAR_BUCKET_TO_SLOT: Record<number, string> = {
   20886954: 'legs',
   1585787867: 'class',
   3284755031: 'subclass',
+  4023194814: 'ghost',
+  4274335291: 'emblem',
+  2849688127: 'ship',
+  2025709351: 'sparrow',
+  335592533: 'emote',
 };
+
+const GENERAL_SLOTS = ['ghost', 'emblem', 'ship', 'sparrow', 'emote'];
 
 const VAULT_BUCKET = 138197802;
 const POSTMASTER_BUCKET = 215938771;
@@ -84,6 +91,18 @@ interface ActivityDef {
   description: string;
 }
 
+interface LoadoutNameDef {
+  name: string;
+}
+
+interface LoadoutColorDef {
+  colorImagePath: string;
+}
+
+interface LoadoutIconDef {
+  iconImagePath: string;
+}
+
 interface ManifestCache {
   version: string;
   items: Record<string, ManifestItem>;
@@ -92,6 +111,9 @@ interface ManifestCache {
   progressions: Record<string, ProgressionDef>;
   objectives: Record<string, ObjectiveDef>;
   activities: Record<string, ActivityDef>;
+  loadoutNames: Record<string, LoadoutNameDef>;
+  loadoutColors: Record<string, LoadoutColorDef>;
+  loadoutIcons: Record<string, LoadoutIconDef>;
   fetchedAt: number;
 }
 
@@ -141,13 +163,16 @@ async function fetchManifest(): Promise<ManifestCache> {
 
   const paths = manifestData.Response.jsonWorldComponentContentPaths.en;
 
-  const [itemDefs, collectibleDefs, recordDefs, progressionDefs, objectiveDefs, activityDefs] = await Promise.all([
+  const [itemDefs, collectibleDefs, recordDefs, progressionDefs, objectiveDefs, activityDefs, loadoutNameDefs, loadoutColorDefs, loadoutIconDefs] = await Promise.all([
     fetch(`${BUNGIE_BASE}${paths.DestinyInventoryItemDefinition}`).then(r => r.json()),
     fetch(`${BUNGIE_BASE}${paths.DestinyCollectibleDefinition}`).then(r => r.json()).catch(() => ({})),
     fetch(`${BUNGIE_BASE}${paths.DestinyRecordDefinition}`).then(r => r.json()).catch(() => ({})),
     fetch(`${BUNGIE_BASE}${paths.DestinyProgressionDefinition}`).then(r => r.json()).catch(() => ({})),
     fetch(`${BUNGIE_BASE}${paths.DestinyObjectiveDefinition}`).then(r => r.json()).catch(() => ({})),
     fetch(`${BUNGIE_BASE}${paths.DestinyActivityDefinition}`).then(r => r.json()).catch(() => ({})),
+    paths.DestinyLoadoutNameDefinition ? fetch(`${BUNGIE_BASE}${paths.DestinyLoadoutNameDefinition}`).then(r => r.json()).catch(() => ({})) : Promise.resolve({}),
+    paths.DestinyLoadoutColorDefinition ? fetch(`${BUNGIE_BASE}${paths.DestinyLoadoutColorDefinition}`).then(r => r.json()).catch(() => ({})) : Promise.resolve({}),
+    paths.DestinyLoadoutIconDefinition ? fetch(`${BUNGIE_BASE}${paths.DestinyLoadoutIconDefinition}`).then(r => r.json()).catch(() => ({})) : Promise.resolve({}),
   ]);
 
   const items: Record<string, ManifestItem> = {};
@@ -233,8 +258,23 @@ async function fetchManifest(): Promise<ManifestCache> {
     };
   }
 
-  manifestCache = { version: manifestVersion, items, collectibles, records, progressions, objectives, activities, fetchedAt: Date.now() };
-  console.log(`[bungie] Manifest cached: ${Object.keys(items).length} items, ${Object.keys(collectibles).length} collectibles, ${Object.keys(records).length} records`);
+  const loadoutNames: Record<string, LoadoutNameDef> = {};
+  for (const [hash, def] of Object.entries(loadoutNameDefs) as [string, any][]) {
+    loadoutNames[hash] = { name: def.name || '' };
+  }
+
+  const loadoutColors: Record<string, LoadoutColorDef> = {};
+  for (const [hash, def] of Object.entries(loadoutColorDefs) as [string, any][]) {
+    loadoutColors[hash] = { colorImagePath: def.colorImagePath ? `${BUNGIE_BASE}${def.colorImagePath}` : '' };
+  }
+
+  const loadoutIcons: Record<string, LoadoutIconDef> = {};
+  for (const [hash, def] of Object.entries(loadoutIconDefs) as [string, any][]) {
+    loadoutIcons[hash] = { iconImagePath: def.iconImagePath ? `${BUNGIE_BASE}${def.iconImagePath}` : '' };
+  }
+
+  manifestCache = { version: manifestVersion, items, collectibles, records, progressions, objectives, activities, loadoutNames, loadoutColors, loadoutIcons, fetchedAt: Date.now() };
+  console.log(`[bungie] Manifest cached: ${Object.keys(items).length} items, ${Object.keys(collectibles).length} collectibles, ${Object.keys(records).length} records, ${Object.keys(loadoutNames).length} loadout names`);
   return manifestCache;
 }
 
@@ -442,6 +482,25 @@ export interface CharacterData {
   progressions: ProgressionInfo[];
 }
 
+export interface InGameLoadoutItem {
+  itemInstanceId: string;
+  itemHash: number;
+  name: string;
+  icon: string;
+  slot: string;
+}
+
+export interface InGameLoadout {
+  index: number;
+  nameHash: number;
+  colorHash: number;
+  iconHash: number;
+  name: string;
+  icon: string;
+  colorImagePath: string;
+  items: InGameLoadoutItem[];
+}
+
 export interface ProfileState {
   characters: CharacterData[];
   vaultItems: InventoryItem[];
@@ -450,6 +509,7 @@ export interface ProfileState {
   collectibles: CollectibleItem[];
   records: RecordItem[];
   artifact?: ArtifactInfo;
+  inGameLoadouts: Record<string, InGameLoadout[]>;
 }
 
 function parseGearItem(
@@ -567,7 +627,7 @@ export async function fetchProfileState(
   const [manifestData, profileData] = await Promise.all([
     fetchManifest(),
     bungieGet(
-      `/Platform/Destiny2/${membershipType}/Profile/${membershipId}/?components=100,102,103,104,200,201,202,205,300,302,304,305,800,900`,
+      `/Platform/Destiny2/${membershipType}/Profile/${membershipId}/?components=100,102,103,104,200,201,202,205,300,302,304,305,800,900,4000`,
       accessToken
     ),
   ]);
@@ -834,7 +894,46 @@ export async function fetchProfileState(
     };
   }
 
-  return { characters, vaultItems, postmasterItems, currencies, collectibles, records, artifact };
+  const inGameLoadouts: Record<string, InGameLoadout[]> = {};
+  const characterLoadouts = response.characterLoadouts?.data || {};
+  for (const [charId, loadoutData] of Object.entries(characterLoadouts) as [string, any][]) {
+    const charLoadouts: InGameLoadout[] = [];
+    const loadouts = loadoutData.loadouts || [];
+    for (let idx = 0; idx < loadouts.length; idx++) {
+      const lo = loadouts[idx];
+      const nameDef = manifestData.loadoutNames[String(lo.nameHash)];
+      const colorDef = manifestData.loadoutColors[String(lo.colorHash)];
+      const iconDef = manifestData.loadoutIcons[String(lo.iconHash)];
+
+      const loItems: InGameLoadoutItem[] = (lo.items || [])
+        .filter((li: any) => li.itemInstanceId && li.itemInstanceId !== '0')
+        .map((li: any) => {
+          const itemDef = manifest[String(li.itemHash)];
+          return {
+            itemInstanceId: li.itemInstanceId,
+            itemHash: li.itemHash,
+            name: itemDef?.name || '',
+            icon: itemDef?.icon || '',
+            slot: itemDef ? (GEAR_BUCKET_TO_SLOT[itemDef.bucketHash] || 'unknown') : 'unknown',
+          };
+        })
+        .filter((li: InGameLoadoutItem) => li.name);
+
+      charLoadouts.push({
+        index: idx,
+        nameHash: lo.nameHash || 0,
+        colorHash: lo.colorHash || 0,
+        iconHash: lo.iconHash || 0,
+        name: nameDef?.name || `Loadout ${idx + 1}`,
+        icon: iconDef?.iconImagePath || '',
+        colorImagePath: colorDef?.colorImagePath || '',
+        items: loItems,
+      });
+    }
+    inGameLoadouts[charId] = charLoadouts.filter(l => l.items.length > 0);
+  }
+
+  return { characters, vaultItems, postmasterItems, currencies, collectibles, records, artifact, inGameLoadouts };
 }
 
 export interface TransferRequest {
@@ -1030,6 +1129,102 @@ export async function insertSocketPlug(request: InsertPlugRequest, accessToken: 
   const data = await res.json();
   if (data.ErrorCode !== 1) {
     throw new Error(data.Message || `Insert socket plug failed: ${data.ErrorStatus}`);
+  }
+  return data;
+}
+
+export interface EquipLoadoutRequest {
+  loadoutIndex: number;
+  characterId: string;
+  membershipType: number;
+}
+
+export async function equipLoadout(request: EquipLoadoutRequest, accessToken: string): Promise<any> {
+  const body = {
+    loadoutIndex: request.loadoutIndex,
+    characterId: request.characterId,
+    membershipType: request.membershipType,
+  };
+
+  const res = await fetch(`${BUNGIE_BASE}/Platform/Destiny2/Actions/Loadouts/EquipLoadout/`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-API-Key': BUNGIE_API_KEY || '',
+      'Authorization': `Bearer ${accessToken}`,
+    },
+    body: JSON.stringify(body),
+  });
+
+  const data = await res.json();
+  if (data.ErrorCode !== 1) {
+    throw new Error(data.Message || `Equip loadout failed: ${data.ErrorStatus}`);
+  }
+  return data;
+}
+
+export interface SnapshotLoadoutRequest {
+  loadoutIndex: number;
+  characterId: string;
+  membershipType: number;
+  nameHash?: number;
+  colorHash?: number;
+  iconHash?: number;
+}
+
+export async function snapshotLoadout(request: SnapshotLoadoutRequest, accessToken: string): Promise<any> {
+  const body: any = {
+    loadoutIndex: request.loadoutIndex,
+    characterId: request.characterId,
+    membershipType: request.membershipType,
+  };
+  if (request.nameHash) body.nameHash = request.nameHash;
+  if (request.colorHash) body.colorHash = request.colorHash;
+  if (request.iconHash) body.iconHash = request.iconHash;
+
+  const res = await fetch(`${BUNGIE_BASE}/Platform/Destiny2/Actions/Loadouts/SnapshotLoadout/`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-API-Key': BUNGIE_API_KEY || '',
+      'Authorization': `Bearer ${accessToken}`,
+    },
+    body: JSON.stringify(body),
+  });
+
+  const data = await res.json();
+  if (data.ErrorCode !== 1) {
+    throw new Error(data.Message || `Snapshot loadout failed: ${data.ErrorStatus}`);
+  }
+  return data;
+}
+
+export interface ClearLoadoutRequest {
+  loadoutIndex: number;
+  characterId: string;
+  membershipType: number;
+}
+
+export async function clearLoadout(request: ClearLoadoutRequest, accessToken: string): Promise<any> {
+  const body = {
+    loadoutIndex: request.loadoutIndex,
+    characterId: request.characterId,
+    membershipType: request.membershipType,
+  };
+
+  const res = await fetch(`${BUNGIE_BASE}/Platform/Destiny2/Actions/Loadouts/ClearLoadout/`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-API-Key': BUNGIE_API_KEY || '',
+      'Authorization': `Bearer ${accessToken}`,
+    },
+    body: JSON.stringify(body),
+  });
+
+  const data = await res.json();
+  if (data.ErrorCode !== 1) {
+    throw new Error(data.Message || `Clear loadout failed: ${data.ErrorStatus}`);
   }
   return data;
 }

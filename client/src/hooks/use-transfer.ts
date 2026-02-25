@@ -265,6 +265,96 @@ export function useInsertPlug() {
   });
 }
 
+interface EquipLoadoutParams {
+  loadoutIndex: number;
+  characterId: string;
+  membershipType: number;
+}
+
+interface SnapshotLoadoutParams {
+  loadoutIndex: number;
+  characterId: string;
+  membershipType: number;
+  nameHash?: number;
+  colorHash?: number;
+  iconHash?: number;
+}
+
+interface ClearLoadoutParams {
+  loadoutIndex: number;
+  characterId: string;
+  membershipType: number;
+}
+
+export function useEquipLoadout() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (params: EquipLoadoutParams) => {
+      const res = await fetch('/api/bungie/equip-loadout', {
+        method: 'POST',
+        headers: makeHeaders(),
+        body: JSON.stringify(params),
+      });
+
+      if (!res.ok) {
+        const error = await res.json().catch(() => ({ message: 'Equip loadout failed' }));
+        throw new Error(error.message);
+      }
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/bungie/profile-state'] });
+    },
+  });
+}
+
+export function useSnapshotLoadout() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (params: SnapshotLoadoutParams) => {
+      const res = await fetch('/api/bungie/snapshot-loadout', {
+        method: 'POST',
+        headers: makeHeaders(),
+        body: JSON.stringify(params),
+      });
+
+      if (!res.ok) {
+        const error = await res.json().catch(() => ({ message: 'Snapshot loadout failed' }));
+        throw new Error(error.message);
+      }
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/bungie/profile-state'] });
+    },
+  });
+}
+
+export function useClearLoadout() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (params: ClearLoadoutParams) => {
+      const res = await fetch('/api/bungie/clear-loadout', {
+        method: 'POST',
+        headers: makeHeaders(),
+        body: JSON.stringify(params),
+      });
+
+      if (!res.ok) {
+        const error = await res.json().catch(() => ({ message: 'Clear loadout failed' }));
+        throw new Error(error.message);
+      }
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/bungie/profile-state'] });
+    },
+  });
+}
+
 export function useEquipItems() {
   const queryClient = useQueryClient();
 

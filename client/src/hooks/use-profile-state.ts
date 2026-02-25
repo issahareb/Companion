@@ -139,6 +139,25 @@ export interface CharacterData {
   progressions: ProgressionInfo[];
 }
 
+export interface InGameLoadoutItem {
+  itemInstanceId: string;
+  itemHash: number;
+  name: string;
+  icon: string;
+  slot: string;
+}
+
+export interface InGameLoadout {
+  index: number;
+  nameHash: number;
+  colorHash: number;
+  iconHash: number;
+  name: string;
+  icon: string;
+  colorImagePath: string;
+  items: InGameLoadoutItem[];
+}
+
 export interface ProfileState {
   characters: CharacterData[];
   vaultItems: InventoryItem[];
@@ -147,6 +166,7 @@ export interface ProfileState {
   collectibles: CollectibleItem[];
   records: RecordItem[];
   artifact?: ArtifactInfo;
+  inGameLoadouts: Record<string, InGameLoadout[]>;
 }
 
 export function useProfileState(membershipType?: number, membershipId?: string) {
@@ -155,7 +175,7 @@ export function useProfileState(membershipType?: number, membershipId?: string) 
     queryFn: async () => {
       const accessToken = localStorage.getItem('bungie_access_token');
       if (!accessToken || !membershipType || !membershipId) {
-        return { characters: [], vaultItems: [], postmasterItems: [], currencies: [], collectibles: [], records: [], artifact: undefined };
+        return { characters: [], vaultItems: [], postmasterItems: [], currencies: [], collectibles: [], records: [], artifact: undefined, inGameLoadouts: {} };
       }
 
       const res = await fetch(
