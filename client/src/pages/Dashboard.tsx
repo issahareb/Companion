@@ -551,12 +551,26 @@ export default function Dashboard() {
                                 'Intellect': 'https://www.bungie.net/common/destiny2_content/icons/59732534ce7060dba681c1a4c3a3ccba.png',
                                 'Strength': 'https://www.bungie.net/common/destiny2_content/icons/c7eefc8abbaa586eeab79e962a79d6ad.png',
                               };
+                              const pct = Math.min((val / 200) * 100, 100);
+                              const barColor = val >= 200 ? 'from-[#E5C76B] to-[#D4A843]'
+                                : val >= 100 ? 'from-purple-500 to-violet-400'
+                                : val >= 60 ? 'from-emerald-600 to-green-400'
+                                : val >= 20 ? 'from-yellow-600 to-amber-400'
+                                : 'from-red-700 to-red-400';
+                              const numColor = val >= 200 ? 'text-[#E5C76B]'
+                                : val >= 100 ? 'text-purple-300'
+                                : val >= 60 ? 'text-emerald-300'
+                                : val >= 20 ? 'text-amber-300'
+                                : 'text-red-400';
                               return (
-                                <div key={name} className="bg-black/40 backdrop-blur-sm border border-white/[0.08] p-2.5 flex items-center gap-2.5 group/stat hover:border-white/20 transition-all duration-300">
-                                  <img src={statIcons[name]} alt={name} className="w-5 h-5 opacity-70 group-hover/stat:opacity-100 transition-opacity" />
-                                  <div className="flex flex-col min-w-0">
-                                    <p className="text-sm font-display text-white font-light group-hover/stat:text-indigo-300 transition-colors leading-none" data-testid={`text-stat-${name.toLowerCase()}`}>{val}</p>
-                                    <p className="text-[7px] text-gray-400 uppercase tracking-[0.15em] mt-0.5 group-hover/stat:text-gray-300 transition-colors truncate">{name}</p>
+                                <div key={name} className="bg-black/40 backdrop-blur-sm border border-white/[0.08] p-2 group/stat hover:border-white/20 transition-all duration-300">
+                                  <div className="flex items-center gap-2 mb-1.5">
+                                    <img src={statIcons[name]} alt={name} className="w-4 h-4 opacity-70 group-hover/stat:opacity-100 transition-opacity" />
+                                    <p className="text-[7px] text-gray-400 uppercase tracking-[0.15em] group-hover/stat:text-gray-300 transition-colors truncate flex-1">{name}</p>
+                                    <p className={`text-sm font-display font-light leading-none ${numColor}`} data-testid={`text-stat-${name.toLowerCase()}`}>{val}</p>
+                                  </div>
+                                  <div className="w-full h-1.5 bg-white/[0.06] rounded-full overflow-hidden">
+                                    <div className={`h-full rounded-full bg-gradient-to-r ${barColor} transition-all duration-500`} style={{ width: `${pct}%` }} />
                                   </div>
                                 </div>
                               );
