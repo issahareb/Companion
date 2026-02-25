@@ -25,6 +25,16 @@ const PURSUITS_BUCKET = 1345459588;
 const WEAPON_SLOTS = ['kinetic', 'energy', 'power'];
 const ARMOR_SLOTS = ['helmet', 'arms', 'chest', 'legs', 'class'];
 
+const CONSUMABLE_BUCKETS = new Set([
+  1469714392,  // Consumables
+  3313201758,  // Modifications
+  2973005342,  // Shaders
+  4274335291,  // Emblems
+  1585787867,  // Class Items
+  375726501,   // Engrams
+  3054419239,  // Materials
+]);
+
 const TIER_TO_RARITY: Record<string, 'common' | 'uncommon' | 'rare' | 'legendary' | 'exotic'> = {
   Common: 'common',
   Basic: 'common',
@@ -150,7 +160,7 @@ async function fetchManifest(): Promise<ManifestCache> {
     const isQuest = bucketHash === QUEST_BUCKET || bucketHash === PURSUITS_BUCKET;
     const isCurrency = !!CURRENCY_HASHES[Number(hash)];
 
-    if (!isGear && !isQuest && !isCurrency && bucketHash !== POSTMASTER_BUCKET) continue;
+    if (!isGear && !isQuest && !isCurrency && bucketHash !== POSTMASTER_BUCKET && !CONSUMABLE_BUCKETS.has(bucketHash)) continue;
 
     items[hash] = {
       name: def.displayProperties.name,
@@ -423,7 +433,7 @@ function parseGearItem(
   if (!manifestItem) return null;
 
   const slot = GEAR_BUCKET_TO_SLOT[manifestItem.bucketHash];
-  if (!slot) return null;
+  if (!slot && location !== 'postmaster') return null;
 
   const rarity = TIER_TO_RARITY[manifestItem.tierTypeName] || 'common';
 
@@ -435,7 +445,7 @@ function parseGearItem(
     itemHash: item.itemHash,
     name: manifestItem.name,
     type: manifestItem.type,
-    slot,
+    slot: slot || 'unknown',
     rarity,
     power: instance?.primaryStat?.value || 0,
     icon: manifestItem.icon,

@@ -138,6 +138,7 @@ The project uses a three-directory monorepo layout:
 - Branding: "GuardianGrid (Adept)" — "(Adept)" in gold (#E5C76B)
 - Login background: IMG_0553 JPEG (static)
 - Hunter tab: IMG_0576 JPEG at 35% opacity in fixed container with gradient overlays
+- Warlock tab: IMG_0577 JPEG at 35% opacity in fixed container with gradient overlays
 - Login button glow: 3 absolute divs with purple/fuchsia/pink/indigo gradients, 18-25% normal / 35-45% hover opacity
 - Hamburger menu: all screen sizes, AnimatePresence slide-out panel with 7 nav items
 - Desktop sidebar: visible on md+ screens with nav buttons and currency display

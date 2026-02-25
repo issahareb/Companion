@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import hunterBgImg from '@assets/IMG_0576_1772037013335.jpeg';
+import warlockBgImg from '@assets/IMG_0577_1772043445515.jpeg';
 
 import { useBungieAuth } from '@/hooks/use-bungie-auth';
 import { useLoadouts, useSaveLoadout, useDeleteLoadout } from '@/hooks/use-loadouts';
@@ -457,6 +458,13 @@ export default function Dashboard() {
           {activeTab === 'characters' && selectedCharacter?.className === 'Hunter' && (
             <>
               <img src={hunterBgImg} alt="" className="absolute inset-0 w-full h-full object-cover opacity-[0.35] pointer-events-none z-0" />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#080b14] via-[#080b14]/50 to-transparent pointer-events-none z-0" />
+              <div className="absolute inset-0 bg-gradient-to-r from-[#080b14]/70 via-transparent to-[#080b14]/40 pointer-events-none z-0" />
+            </>
+          )}
+          {activeTab === 'characters' && selectedCharacter?.className === 'Warlock' && (
+            <>
+              <img src={warlockBgImg} alt="" className="absolute inset-0 w-full h-full object-cover opacity-[0.35] pointer-events-none z-0" />
               <div className="absolute inset-0 bg-gradient-to-t from-[#080b14] via-[#080b14]/50 to-transparent pointer-events-none z-0" />
               <div className="absolute inset-0 bg-gradient-to-r from-[#080b14]/70 via-transparent to-[#080b14]/40 pointer-events-none z-0" />
             </>
