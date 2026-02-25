@@ -10,7 +10,7 @@ export const LANGUAGES: { id: Language; label: string; flag: string }[] = [
 
 const translations: Record<Language, Record<string, string>> = {
   de: {
-    'login.subtitle': 'Schnittstelle_Initialisierung',
+    'login.subtitle': 'Authenticate via Bungie.net to gain access between Shaxx\'s legs',
     'login.button': 'LOGIN VIA BUNGIE.NET',
     'login.connecting': 'VERBINDE...',
     'login.error': 'Authentifizierungs-Fehler',
@@ -83,7 +83,7 @@ const translations: Record<Language, Record<string, string>> = {
     'loadouts.empty': 'Gehe zum Tresor oder Hüter-Inventar, stelle ein Loadout zusammen und speichere es hier.',
   },
   en: {
-    'login.subtitle': 'Interface_Initialization',
+    'login.subtitle': 'Authenticate via Bungie.net to gain access between Shaxx\'s legs',
     'login.button': 'LOGIN VIA BUNGIE.NET',
     'login.connecting': 'CONNECTING...',
     'login.error': 'Authentication Error',
@@ -156,7 +156,7 @@ const translations: Record<Language, Record<string, string>> = {
     'loadouts.empty': 'Go to the Vault or Guardian inventory, build a loadout, and save it here.',
   },
   fr: {
-    'login.subtitle': 'Interface_Initialisation',
+    'login.subtitle': 'Authenticate via Bungie.net to gain access between Shaxx\'s legs',
     'login.button': 'CONNEXION VIA BUNGIE.NET',
     'login.connecting': 'CONNEXION...',
     'login.error': "Erreur d'authentification",
