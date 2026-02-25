@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { Loader2, ExternalLink, AlertTriangle, Globe, ChevronDown } from 'lucide-react';
 import { motion } from 'framer-motion';
 import ghostImg from '@assets/IMG_0547_1772026484289.gif';
-import bgImg from '@assets/IMG_0553_1772027873435.jpeg';
+import bgImg from '@assets/IMG_0561_1772031160367.gif';
 import { useI18n, LANGUAGES } from '@/lib/i18n';
 
 interface LoginProps {

@@ -24,10 +24,10 @@
     --input: 240 3.7% 15.9%;
     --ring: 240 4.9% 83.9%;
     --radius: 0.5rem;
-    --font-sans: 'Space Grotesk', 'Inter', system-ui, sans-serif;
+    --font-sans: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
     --font-serif: 'Source Serif 4', Georgia, serif;
     --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
-    --font-display: 'Oxanium', 'Space Grotesk', sans-serif;
+    --font-display: 'Montserrat', 'Plus Jakarta Sans', sans-serif;
   }
 }
 
