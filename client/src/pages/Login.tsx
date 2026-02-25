@@ -1,6 +1,7 @@
 import { Loader2, ExternalLink, AlertTriangle } from 'lucide-react';
 import { motion } from 'framer-motion';
 import ghostImg from '@assets/IMG_0547_1772026484289.gif';
+import bgImg from '@assets/IMG_0551_1772027294000.jpeg';
 
 interface LoginProps {
   onLogin: () => void;
@@ -10,10 +11,10 @@ interface LoginProps {
 
 export default function Login({ onLogin, isAuthenticating, error }: LoginProps) {
   return (
-    <div className="min-h-screen bg-app text-gray-200 flex flex-col items-center justify-center p-6 relative overflow-hidden">
-      <div className="absolute inset-0 bg-app-overlay z-0" />
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_40%,_rgba(59,45,120,0.15)_0%,_transparent_70%)] z-0" />
-      <div className="absolute top-0 left-0 w-full h-1/2 bg-gradient-to-b from-indigo-900/10 to-transparent blur-3xl z-0" />
+    <div className="min-h-screen text-gray-200 flex flex-col items-center justify-center p-6 relative overflow-hidden">
+      <img src={bgImg} alt="" className="absolute inset-0 w-full h-full object-cover z-0" />
+      <div className="absolute inset-0 bg-black/50 z-0" />
+      <div className="absolute inset-0 bg-gradient-to-t from-[#080b14] via-transparent to-[#080b14]/80 z-0" />
       
       <div className="max-w-md w-full space-y-12 text-center z-10">
         <div className="space-y-8 relative">
@@ -66,8 +67,8 @@ export default function Login({ onLogin, isAuthenticating, error }: LoginProps) 
           transition={{ delay: 0.6, duration: 0.8 }}
           className="relative group"
         >
-          <div className="absolute -inset-3 bg-gradient-to-r from-purple-600 via-pink-500 via-indigo-500 to-purple-600 rounded-lg blur-xl opacity-60 group-hover:opacity-80 transition duration-1000 animate-pulse-glow" />
-          <div className="absolute -inset-1 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 rounded-lg blur opacity-60 group-hover:opacity-80 transition duration-1000" />
+          <div className="absolute -inset-3 bg-gradient-to-r from-purple-600 via-pink-500 via-indigo-500 to-purple-600 rounded-lg blur-xl opacity-[0.48] group-hover:opacity-[0.68] transition duration-1000 animate-pulse-glow" />
+          <div className="absolute -inset-1 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 rounded-lg blur opacity-[0.48] group-hover:opacity-[0.68] transition duration-1000" />
           <button 
             onClick={onLogin}
             disabled={isAuthenticating}
