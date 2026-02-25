@@ -6,7 +6,7 @@ import {
   Users, ArrowRightLeft, Trash2, X, Package, Mail,
   ChevronDown, ChevronUp, Filter, SlidersHorizontal, Coins,
   Plus, Sword, ShieldHalf, Orbit, Eye, ScrollText,
-  BookOpen, Trophy, TrendingUp, Lock, Unlock, Download
+  BookOpen, Trophy, TrendingUp, Lock, Unlock, Download, LogOut
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import hunterBgImg from '@assets/IMG_0576_1772037013335.jpeg';
@@ -449,6 +449,16 @@ export default function Dashboard() {
                     </div>
                   </div>
                 )}
+                <div className="px-3 pb-4 border-t border-white/[0.06] pt-3">
+                  <button
+                    onClick={() => { setIsMenuOpen(false); logout(); }}
+                    className="w-full flex items-center gap-4 px-4 py-3.5 rounded-lg text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-all duration-300"
+                    data-testid="menu-item-logout"
+                  >
+                    <LogOut className="w-5 h-5" />
+                    <span className="text-sm font-display tracking-[0.15em] uppercase">{t('nav.logout')}</span>
+                  </button>
+                </div>
               </motion.div>
             </>
           )}
