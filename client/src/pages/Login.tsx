@@ -90,7 +90,7 @@ export default function Login({ onLogin, isAuthenticating, error }: LoginProps) 
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.3, duration: 0.8 }}
-            className="mt-8"
+            className="mt-2"
           >
             <h1 className="text-3xl tracking-[0.3em] text-white uppercase text-shadow-glow font-display">GuardianGrid <span className="text-[#E5C76B]">(Adept)</span></h1>
           </motion.div>
