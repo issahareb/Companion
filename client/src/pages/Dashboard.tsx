@@ -457,14 +457,14 @@ export default function Dashboard() {
         <div className="flex-1 min-h-0 overflow-hidden relative">
           {activeTab === 'characters' && selectedCharacter?.className === 'Hunter' && (
             <>
-              <img src={hunterBgImg} alt="" className="absolute inset-0 w-full h-full object-cover opacity-[0.35] pointer-events-none z-0" />
+              <img src={hunterBgImg} alt="" className="absolute inset-0 w-full h-full object-cover opacity-[0.25] pointer-events-none z-0" />
               <div className="absolute inset-0 bg-gradient-to-t from-[#080b14] via-[#080b14]/50 to-transparent pointer-events-none z-0" />
               <div className="absolute inset-0 bg-gradient-to-r from-[#080b14]/70 via-transparent to-[#080b14]/40 pointer-events-none z-0" />
             </>
           )}
           {activeTab === 'characters' && selectedCharacter?.className === 'Warlock' && (
             <>
-              <img src={warlockBgImg} alt="" className="absolute inset-0 w-full h-full object-cover opacity-[0.35] pointer-events-none z-0" />
+              <img src={warlockBgImg} alt="" className="absolute inset-0 w-full h-full object-cover opacity-[0.25] pointer-events-none z-0" />
               <div className="absolute inset-0 bg-gradient-to-t from-[#080b14] via-[#080b14]/50 to-transparent pointer-events-none z-0" />
               <div className="absolute inset-0 bg-gradient-to-r from-[#080b14]/70 via-transparent to-[#080b14]/40 pointer-events-none z-0" />
             </>
@@ -530,10 +530,10 @@ export default function Dashboard() {
                           </div>
                           <div className="text-right">
                             <div className="flex items-center gap-2.5 justify-end">
-                              <Sparkles className="w-5 h-5 text-[#E5C76B] animate-pulse-glow" />
-                              <span className="text-4xl font-display font-light text-white text-shadow-glow" data-testid="text-power-level">{selectedCharacter.light}</span>
+                              <img src="https://www.bungie.net/common/destiny2_content/icons/c81de78390f1b7f2b759c33e9a8b9938.png" alt="Power" className="w-5 h-5 brightness-150" />
+                              <span className="text-4xl font-display font-light text-[#E5C76B] text-shadow-glow" data-testid="text-power-level">{selectedCharacter.light}</span>
                             </div>
-                            <p className="text-[9px] text-gray-500 uppercase tracking-[0.25em] mt-1.5">{t('power.label')}</p>
+                            <p className="text-[9px] text-gray-400 uppercase tracking-[0.25em] mt-1.5">{t('power.label')}</p>
                           </div>
                         </div>
                       </div>
@@ -542,12 +542,25 @@ export default function Dashboard() {
                       {Object.keys(selectedCharacter.stats).length > 0 && (
                         <div className="px-4 md:px-6 pb-5">
                           <div className="grid grid-cols-3 md:grid-cols-6 gap-1.5">
-                            {Object.entries(selectedCharacter.stats).map(([name, val]) => (
-                              <div key={name} className="bg-gradient-to-b from-white/[0.04] to-transparent border border-white/[0.06] p-2.5 text-center group/stat hover:border-indigo-500/20 transition-all duration-300">
-                                <p className="text-[8px] text-gray-600 uppercase tracking-[0.2em] mb-1 group-hover/stat:text-gray-400 transition-colors">{name}</p>
-                                <p className="text-base font-display text-white font-light group-hover/stat:text-indigo-300 transition-colors" data-testid={`text-stat-${name.toLowerCase()}`}>{val}</p>
-                              </div>
-                            ))}
+                            {Object.entries(selectedCharacter.stats).map(([name, val]) => {
+                              const statIcons: Record<string, string> = {
+                                'Mobility': 'https://www.bungie.net/common/destiny2_content/icons/e26e0e93a9daf4fdd21bf64eb9246340.png',
+                                'Resilience': 'https://www.bungie.net/common/destiny2_content/icons/202ecc1c6f346f24e3e3765ce62e06ba.png',
+                                'Recovery': 'https://www.bungie.net/common/destiny2_content/icons/128eee4ee7fc127851ab32eac6ca617f.png',
+                                'Discipline': 'https://www.bungie.net/common/destiny2_content/icons/79be1d1a141c3e0c2f33e40ddff7e834.png',
+                                'Intellect': 'https://www.bungie.net/common/destiny2_content/icons/59732534ce7060dba681c1a4c3a3ccba.png',
+                                'Strength': 'https://www.bungie.net/common/destiny2_content/icons/c7eefc8abbaa586eeab79e962a79d6ad.png',
+                              };
+                              return (
+                                <div key={name} className="bg-black/40 backdrop-blur-sm border border-white/[0.08] p-2.5 flex items-center gap-2.5 group/stat hover:border-white/20 transition-all duration-300">
+                                  <img src={statIcons[name]} alt={name} className="w-5 h-5 opacity-70 group-hover/stat:opacity-100 transition-opacity" />
+                                  <div className="flex flex-col min-w-0">
+                                    <p className="text-sm font-display text-white font-light group-hover/stat:text-indigo-300 transition-colors leading-none" data-testid={`text-stat-${name.toLowerCase()}`}>{val}</p>
+                                    <p className="text-[7px] text-gray-400 uppercase tracking-[0.15em] mt-0.5 group-hover/stat:text-gray-300 transition-colors truncate">{name}</p>
+                                  </div>
+                                </div>
+                              );
+                            })}
                           </div>
                         </div>
                       )}
