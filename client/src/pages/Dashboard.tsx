@@ -252,7 +252,7 @@ export default function Dashboard() {
         <div className="p-6 pb-2">
           <div className="flex items-center space-x-3 mb-6">
             <Hexagon className="w-8 h-8 text-white shadow-[0_0_20px_rgba(255,255,255,0.2)]" strokeWidth={1.5} />
-            <span className="font-display font-light text-xl tracking-[0.3em] text-white">FORGE</span>
+            <span className="font-display font-light text-lg tracking-[0.2em] text-white">GUARDIANGRID <span className="text-[#E5C76B] text-sm">(Adept)</span></span>
           </div>
         </div>
 

@@ -91,7 +91,7 @@ export default function Login({ onLogin, isAuthenticating, error }: LoginProps) 
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.3, duration: 0.8 }}
           >
-            <h1 className="text-4xl font-light tracking-[0.4em] text-white uppercase text-shadow-glow">Forge</h1>
+            <h1 className="text-3xl font-light tracking-[0.3em] text-white uppercase text-shadow-glow">GuardianGrid <span className="text-[#E5C76B]">(Adept)</span></h1>
             <p className="text-[10px] text-[#E5C76B] font-mono tracking-[0.3em] mt-4 uppercase opacity-70">{t('login.subtitle')}</p>
           </motion.div>
         </div>
