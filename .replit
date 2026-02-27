@@ -43,3 +43,6 @@ waitForPort = 5000
 
 [userenv.shared]
 BUNGIE_API_KEY = "c95aec1b858f4122a4b1451c89b591ab"
+
+[agent]
+integrations = ["javascript_openai_ai_integrations:2.0.0"]

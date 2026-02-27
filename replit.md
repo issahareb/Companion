@@ -19,11 +19,11 @@ The project uses a monorepo with `client/` (React frontend), `server/` (Express 
 -   **State Management**: TanStack React Query.
 -   **UI**: shadcn/ui with Radix UI, Tailwind CSS.
 -   **Animations**: Framer Motion.
--   **Key Pages**: Home/Login, Dashboard (with tabs for characters, vault, loadouts, postmaster, collections, triumphs, season progression), and a loadout sharing page.
+-   **Key Pages**: Home/Login, Dashboard (with tabs for characters, vault, loadouts, postmaster, collections, triumphs, season progression, AI playstyle analysis), and a loadout sharing page.
 
 ### Dashboard Component Architecture
 -   **Dashboard.tsx** (~670 lines): Main layout shell, state management, action handlers, tab routing.
--   **`client/src/components/dashboard/`**: 15 focused component files:
+-   **`client/src/components/dashboard/`**: 16 focused component files:
     -   `shared.ts` — TabType, FilterState, toItem helper, useItemFilter hook
     -   `BungieStatus.tsx` — BungieAutoRetry countdown + OfflineBanner
     -   `FilterBar.tsx` — Slot/rarity/power filter bar
@@ -39,6 +39,7 @@ The project uses a monorepo with `client/` (React frontend), `server/` (Express 
     -   `CollectionsPanel.tsx` — Collections search, filter, collectibles grid
     -   `TriumphsPanel.tsx` — Triumphs search, filter, records with progress bars
     -   `SeasonPanel.tsx` — Season progression cards with level/reset info
+    -   `PlaystylePanel.tsx` — AI playstyle analysis with rating ring, strengths/weaknesses/synergies/tips
 
 ### Backend (server/)
 -   **Framework**: Express 5 on Node.js.
@@ -51,6 +52,12 @@ The project uses a monorepo with `client/` (React frontend), `server/` (Express 
 -   **Retry Logic**: `bungieRequestWithRetry` wrapper with exponential backoff (max 3 attempts), 15s timeout via AbortController, handles HTTP 429 rate limits, 503/521/522 maintenance, and Bungie-specific throttle/maintenance error codes.
 -   **Profile Cache**: Server-side 30s TTL in-memory cache for profile state responses. Bypass with `?fresh=true` query param. Cache invalidated on write operations.
 -   **Error Classification**: `BungieApiError` class with typed errors (`rate_limit`, `maintenance`, `auth`, `timeout`, `network`, `api`) passed to frontend for appropriate UI handling.
+
+### AI Playstyle Analysis
+-   **Module**: `server/ai.ts` — OpenAI GPT-4o integration via Replit AI Integrations (env vars: `AI_INTEGRATIONS_OPENAI_API_KEY`, `AI_INTEGRATIONS_OPENAI_BASE_URL`).
+-   **Endpoint**: POST `/api/ai/analyze-playstyle` — Protected by `requireAuth` + rate limited (10/15min). Accepts character data + language, returns structured analysis JSON.
+-   **Analysis Output**: `{ playstyle, summary, rating (1-10), strengths[], weaknesses[], synergies[], tips[] }`.
+-   **Frontend**: `PlaystylePanel.tsx` with animated rating ring, staggered list reveals, and re-analyze button. Results cached in component state.
 
 ### Client-Side Data Management
 -   Extensive type definitions for game entities like perks, mods, sockets, artifacts, inventory items, collectibles, records, and progressions.

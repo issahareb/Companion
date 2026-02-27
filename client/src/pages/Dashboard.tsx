@@ -4,7 +4,7 @@ import {
   Users, X, Package, Mail,
   Sparkles,
   BookOpen, Trophy, TrendingUp, LogOut,
-  ServerCrash, Clock, Menu, Archive,
+  ServerCrash, Clock, Menu, Archive, Brain,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import hunterBgImg from '@assets/IMG_0576_1772037013335.jpeg';
@@ -36,6 +36,7 @@ import { PostmasterPanel } from '@/components/dashboard/PostmasterPanel';
 import { CollectionsPanel } from '@/components/dashboard/CollectionsPanel';
 import { TriumphsPanel } from '@/components/dashboard/TriumphsPanel';
 import { SeasonPanel } from '@/components/dashboard/SeasonPanel';
+import { PlaystylePanel } from '@/components/dashboard/PlaystylePanel';
 
 export default function Dashboard() {
   const { destinyProfile, logout, isAuthenticated, isFetchingProfile } = useBungieAuth();
@@ -92,7 +93,7 @@ export default function Dashboard() {
     { id: 'rare', label: t('filter.rare') },
   ];
 
-  const TAB_ORDER: TabType[] = ['characters', 'vault', 'loadouts', 'postmaster', 'collections', 'triumphs', 'season'];
+  const TAB_ORDER: TabType[] = ['characters', 'vault', 'loadouts', 'postmaster', 'collections', 'triumphs', 'season', 'playstyle'];
   const [activeTab, setActiveTabRaw] = useState<TabType>('characters');
   const [tabDirection, setTabDirection] = useState(0);
   const setActiveTab = (newTab: TabType) => {
@@ -278,6 +279,7 @@ export default function Dashboard() {
     collections: t('nav.collections'),
     triumphs: t('nav.triumphs'),
     season: t('nav.season'),
+    playstyle: t('nav.playstyle'),
   };
 
   if (isFetchingProfile) {
@@ -321,6 +323,8 @@ export default function Dashboard() {
           <DesktopNavButton icon={BookOpen} label={t('nav.collections').toUpperCase()} active={activeTab === 'collections'} onClick={() => setActiveTab('collections')} />
           <DesktopNavButton icon={Trophy} label={t('nav.triumphs').toUpperCase()} active={activeTab === 'triumphs'} onClick={() => setActiveTab('triumphs')} />
           <DesktopNavButton icon={TrendingUp} label={t('nav.season').toUpperCase()} active={activeTab === 'season'} onClick={() => setActiveTab('season')} />
+          <div className="h-px bg-white/[0.06] my-2" />
+          <DesktopNavButton icon={Brain} label={t('nav.playstyle').toUpperCase()} active={activeTab === 'playstyle'} onClick={() => setActiveTab('playstyle')} />
         </nav>
         <UserProfile profile={destinyProfile} onLogout={logout} />
       </aside>
@@ -404,6 +408,7 @@ export default function Dashboard() {
                     { key: 'collections', id: 'collections' as TabType, icon: BookOpen, label: t('nav.collections') },
                     { key: 'triumphs', id: 'triumphs' as TabType, icon: Trophy, label: t('nav.triumphs') },
                     { key: 'season', id: 'season' as TabType, icon: TrendingUp, label: t('nav.season') },
+                    { key: 'playstyle', id: 'playstyle' as TabType, icon: Brain, label: t('nav.playstyle') },
                   ].map((item, i) => (
                     <motion.button
                       key={item.key}
@@ -611,6 +616,14 @@ export default function Dashboard() {
                 <SeasonPanel
                   tabDirection={tabDirection}
                   selectedCharacter={selectedCharacter}
+                />
+              )}
+
+              {activeTab === 'playstyle' && (
+                <PlaystylePanel
+                  tabDirection={tabDirection}
+                  selectedCharacter={selectedCharacter}
+                  artifact={profileState?.artifact}
                 />
               )}
             </AnimatePresence>

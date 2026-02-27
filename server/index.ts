@@ -110,6 +110,16 @@ const writeLimiter = rateLimit({
 });
 
 app.use('/api/', globalLimiter);
+const aiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { message: 'Too many AI analysis requests. Please try again later.' },
+  validate: { trustProxy: false, xForwardedForHeader: false },
+  keyGenerator: (req) => getClientIp(req),
+});
+
 app.use('/api/bungie/token', authLimiter);
 app.use('/api/bungie/transfer', writeLimiter);
 app.use('/api/bungie/equip', writeLimiter);
@@ -118,6 +128,7 @@ app.use('/api/bungie/pull-postmaster', writeLimiter);
 app.use('/api/bungie/set-lock', writeLimiter);
 app.use('/api/bungie/insert-plug', writeLimiter);
 app.use('/api/loadouts', writeLimiter);
+app.use('/api/ai/', aiLimiter);
 
 app.use((req: Request, res: Response, next: NextFunction) => {
   const ua = req.headers['user-agent'];

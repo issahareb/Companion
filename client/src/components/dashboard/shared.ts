@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import type { InventoryItem } from '@/hooks/use-profile-state';
 import type { Item } from '@/components/Inventory';
 
-export type TabType = 'characters' | 'vault' | 'loadouts' | 'postmaster' | 'collections' | 'triumphs' | 'season';
+export type TabType = 'characters' | 'vault' | 'loadouts' | 'postmaster' | 'collections' | 'triumphs' | 'season' | 'playstyle';
 
 export interface FilterState {
   search: string;

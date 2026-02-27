@@ -32,3 +32,5 @@ export const sessions = pgTable("sessions", {
 
 export type Session = typeof sessions.$inferSelect;
 export type InsertSession = typeof sessions.$inferInsert;
+
+export * from "./models/chat";

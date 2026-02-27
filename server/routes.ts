@@ -463,6 +463,28 @@ export async function registerRoutes(
     res.json(loadout);
   });
 
+  app.post('/api/ai/analyze-playstyle', requireAuth, async (req: Request, res: Response) => {
+    try {
+      const { analyzePlaystyle, characterAnalysisInputSchema } = await import('./ai');
+      const { characterData, language } = req.body;
+
+      const parseResult = characterAnalysisInputSchema.safeParse(characterData);
+      if (!parseResult.success) {
+        return res.status(400).json({ message: 'Invalid character data', errors: parseResult.error.flatten().fieldErrors });
+      }
+
+      const lang = ['de', 'en', 'fr'].includes(language) ? language : 'de';
+      const result = await analyzePlaystyle(parseResult.data, lang);
+      res.json(result);
+    } catch (err: any) {
+      console.error('[ai] Playstyle analysis failed:', err.message);
+      if (err.status === 429 || err.code === 'rate_limit_exceeded') {
+        return res.status(429).json({ message: 'AI rate limit exceeded. Please try again later.' });
+      }
+      res.status(500).json({ message: 'AI analysis failed. Please try again.' });
+    }
+  });
+
   setInterval(() => {
     storage.deleteExpiredSessions().catch(err => {
       console.error('[auth] Failed to clean expired sessions:', err);
