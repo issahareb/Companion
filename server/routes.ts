@@ -5,15 +5,58 @@ import { api } from "@shared/routes";
 import { z } from "zod";
 import { exchangeToken, fetchMemberships, fetchProfileState, transferItem, equipItem, pullFromPostmaster, setLockState, equipItems, insertSocketPlug, equipLoadout, snapshotLoadout, clearLoadout } from "./bungie";
 
+async function verifyTurnstileToken(token: string): Promise<boolean> {
+  const secret = process.env.TURNSTILE_SECRET_KEY;
+  if (!secret) return true;
+  try {
+    const response = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({ secret, response: token }),
+    });
+    const data = await response.json() as { success: boolean };
+    return data.success === true;
+  } catch {
+    return false;
+  }
+}
+
 export async function registerRoutes(
   httpServer: Server,
   app: Express
 ): Promise<Server> {
+  app.get('/api/config/turnstile', (_req, res) => {
+    const siteKey = process.env.TURNSTILE_SITE_KEY || '';
+    res.json({ enabled: !!siteKey, siteKey });
+  });
+
+  app.post('/api/verify-turnstile', async (req, res) => {
+    try {
+      const { token } = req.body;
+      if (!token) {
+        return res.status(400).json({ success: false, message: 'Token required' });
+      }
+      const valid = await verifyTurnstileToken(token);
+      res.json({ success: valid });
+    } catch {
+      res.status(500).json({ success: false, message: 'Verification failed' });
+    }
+  });
+
   app.post('/api/bungie/token', async (req, res) => {
     try {
-      const { code } = req.body;
+      const { code, turnstileToken } = req.body;
       if (!code) {
         return res.status(400).json({ message: 'Authorization code required' });
+      }
+      if (process.env.TURNSTILE_SECRET_KEY) {
+        if (!turnstileToken) {
+          return res.status(403).json({ message: 'CAPTCHA verification required' });
+        }
+        const valid = await verifyTurnstileToken(turnstileToken);
+        if (!valid) {
+          return res.status(403).json({ message: 'CAPTCHA verification failed' });
+        }
       }
       const tokenData = await exchangeToken(code);
       res.json(tokenData);

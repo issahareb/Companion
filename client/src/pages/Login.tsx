@@ -1,10 +1,71 @@
-import { useState, useRef, useEffect } from 'react';
-import { Loader2, ExternalLink, AlertTriangle, Globe, ChevronDown } from 'lucide-react';
+import { useState, useRef, useEffect, useCallback } from 'react';
+import { Loader2, ExternalLink, AlertTriangle, Globe, ChevronDown, ShieldCheck } from 'lucide-react';
 import { motion } from 'framer-motion';
 import ghostImg from '@assets/IMG_0547_1772026484289.gif';
 import bgImg from '@assets/IMG_0553_1772027873435.jpeg';
 import logoImg from '@assets/IMG_0604_1772050774054.png';
 import { useI18n, LANGUAGES } from '@/lib/i18n';
+
+interface TurnstileConfig {
+  enabled: boolean;
+  siteKey: string;
+}
+
+function useTurnstile() {
+  const [config, setConfig] = useState<TurnstileConfig>({ enabled: false, siteKey: '' });
+  const [token, setToken] = useState<string | null>(null);
+  const [loaded, setLoaded] = useState(false);
+  const widgetRef = useRef<HTMLDivElement>(null);
+  const widgetIdRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    fetch('/api/config/turnstile')
+      .then(r => r.json())
+      .then((data: TurnstileConfig) => setConfig(data))
+      .catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    if (!config.enabled || !config.siteKey) return;
+
+    const scriptId = 'turnstile-script';
+    if (!document.getElementById(scriptId)) {
+      const script = document.createElement('script');
+      script.id = scriptId;
+      script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?onload=onTurnstileLoad';
+      script.async = true;
+      (window as any).onTurnstileLoad = () => setLoaded(true);
+      document.head.appendChild(script);
+    } else if ((window as any).turnstile) {
+      setLoaded(true);
+    }
+  }, [config]);
+
+  useEffect(() => {
+    if (!loaded || !config.siteKey || !widgetRef.current) return;
+    if (widgetIdRef.current) return;
+
+    const turnstile = (window as any).turnstile;
+    if (!turnstile) return;
+
+    widgetIdRef.current = turnstile.render(widgetRef.current, {
+      sitekey: config.siteKey,
+      theme: 'dark',
+      callback: (t: string) => setToken(t),
+      'expired-callback': () => setToken(null),
+      'error-callback': () => setToken(null),
+    });
+  }, [loaded, config.siteKey]);
+
+  const reset = useCallback(() => {
+    setToken(null);
+    if (widgetIdRef.current && (window as any).turnstile) {
+      (window as any).turnstile.reset(widgetIdRef.current);
+    }
+  }, []);
+
+  return { config, token, widgetRef, reset, isVerified: !config.enabled || !!token };
+}
 
 interface LoginProps {
   onLogin: () => void;
@@ -16,6 +77,7 @@ export default function Login({ onLogin, isAuthenticating, error }: LoginProps) 
   const { t, language, setLanguage } = useI18n();
   const [langOpen, setLangOpen] = useState(false);
   const langRef = useRef<HTMLDivElement>(null);
+  const { config: turnstileConfig, token: turnstileToken, widgetRef: turnstileWidgetRef, isVerified } = useTurnstile();
 
   useEffect(() => {
     function handleClick(e: MouseEvent) {
@@ -122,6 +184,27 @@ export default function Login({ onLogin, isAuthenticating, error }: LoginProps) 
           <p className="text-[11px] text-[#E5C76B] font-mono tracking-[0.25em] uppercase leading-relaxed drop-shadow-[0_2px_6px_rgba(0,0,0,0.9)] [text-shadow:0_0_8px_rgba(0,0,0,0.8),0_1px_3px_rgba(0,0,0,0.9)]">{t('login.subtitle')}</p>
         </motion.div>
 
+        {turnstileConfig.enabled && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5, duration: 0.6 }}
+            className="mt-4 mb-2 w-full flex flex-col items-center"
+          >
+            <div ref={turnstileWidgetRef} data-testid="turnstile-widget" />
+            {isVerified && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="flex items-center gap-2 mt-2 text-emerald-400/80"
+              >
+                <ShieldCheck className="w-3.5 h-3.5" />
+                <span className="text-[9px] uppercase tracking-[0.2em]">{t('login.verified')}</span>
+              </motion.div>
+            )}
+          </motion.div>
+        )}
+
         <motion.div 
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
@@ -133,8 +216,8 @@ export default function Login({ onLogin, isAuthenticating, error }: LoginProps) 
           <div className="absolute -inset-1 bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 rounded-lg blur-md opacity-[0.18] group-hover:opacity-[0.35] transition duration-1000" />
           <button 
             onClick={onLogin}
-            disabled={isAuthenticating}
-            className="relative w-full bg-[#0c1020]/60 border border-white/10 hover:border-white/40 p-6 flex items-center justify-center transition-all duration-500 backdrop-blur-xl destiny-clip group-hover:-translate-y-1"
+            disabled={isAuthenticating || !isVerified}
+            className={`relative w-full bg-[#0c1020]/60 border border-white/10 hover:border-white/40 p-6 flex items-center justify-center transition-all duration-500 backdrop-blur-xl destiny-clip group-hover:-translate-y-1 ${!isVerified ? 'opacity-40 cursor-not-allowed' : ''}`}
             data-testid="button-login"
           >
             {isAuthenticating ? (

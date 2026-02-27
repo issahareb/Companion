@@ -47,6 +47,16 @@ The project uses a monorepo with `client/` (React frontend), `server/` (Express 
 
 ### Authentication
 -   **Bungie OAuth2**: Client-side public OAuth flow. Access tokens are stored in `localStorage`. The server relies on `bungieMembershipId` from the client for API requests.
+-   **Cloudflare Turnstile CAPTCHA**: Optional CAPTCHA on login page. Requires `TURNSTILE_SITE_KEY` and `TURNSTILE_SECRET_KEY` env vars. Auto-detects if keys are set; if not, login works without CAPTCHA.
+
+### Security
+-   **Helmet**: Full security headers (CSP, HSTS, X-Frame-Options: DENY, X-Content-Type-Options: nosniff, Referrer-Policy).
+-   **Rate Limiting**: Global API limit (200/15min), auth endpoints (15/15min), write endpoints (60/15min). Uses `cf-connecting-ip` header for Cloudflare compatibility.
+-   **CORS**: Locked to guardiangrid.net, www.guardiangrid.net, and Replit dev domains. Blocks unauthorized cross-origin requests.
+-   **Bot Protection**: Blocks API requests without valid User-Agent headers.
+-   **Request Size Limits**: JSON and URL-encoded bodies capped at 1MB.
+-   **Trust Proxy**: Configured for Cloudflare proxy (reads real client IPs from CF headers).
+-   **Cloudflare Integration**: App is ready for Cloudflare proxy. Set DNS to "Proxied" (orange cloud) in Cloudflare dashboard for DDoS protection, WAF, and SSL.
 
 ### Storage Pattern
 -   Uses a swappable `IStorage` interface, currently implemented with PostgreSQL (`DatabaseStorage`).
@@ -73,3 +83,6 @@ The project uses a monorepo with `client/` (React frontend), `server/` (Express 
 -   **shadcn/ui**: UI component library built on Radix UI and Tailwind CSS.
 -   **zod**: Schema validation.
 -   **nanoid**: Unique ID generation.
+-   **helmet**: Security headers middleware.
+-   **express-rate-limit**: API rate limiting.
+-   **cors**: Cross-origin resource sharing control.
