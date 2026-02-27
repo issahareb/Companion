@@ -200,7 +200,7 @@ export function rateWeaponRoll(
   }
 
   let rating: RollRating;
-  if (sPerks.length >= 2) {
+  if (sPerks.length >= 3 || (sPerks.length >= 2 && aPerks.length >= 1)) {
     rating = 'META';
   } else if (sPerks.length >= 1 || aPerks.length >= 2) {
     rating = 'GOOD';
