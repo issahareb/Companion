@@ -710,14 +710,14 @@ export default function DemoDashboard() {
                               : 'text-red-400';
                             return (
                               <motion.div key={stat.name} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 + statIdx * 0.06, duration: 0.4, ease: 'easeOut' }}
-                                className={`bg-black/40 backdrop-blur-sm border p-2 group/stat hover:border-white/20 transition-all duration-300 ${isMax ? 'border-[#E5C76B]/30 shadow-[0_0_12px_rgba(229,199,107,0.15)] animate-[shimmer_3s_ease-in-out_infinite]' : 'border-white/[0.08]'}`} title={stat.description}>
-                                <div className="flex items-center gap-2 mb-1.5">
-                                  {stat.icon && <img src={stat.icon} alt={stat.name} className={`w-4 h-4 transition-opacity ${isMax ? 'opacity-100 drop-shadow-[0_0_4px_rgba(229,199,107,0.6)]' : 'opacity-70 group-hover/stat:opacity-100'}`} />}
-                                  <p className={`text-[7px] uppercase tracking-[0.15em] transition-colors truncate flex-1 ${isMax ? 'text-[#E5C76B]/70' : 'text-gray-400 group-hover/stat:text-gray-300'}`}>{stat.name}</p>
-                                  <p className={`text-sm font-display font-light leading-none ${numColor} ${isMax ? 'drop-shadow-[0_0_6px_rgba(229,199,107,0.5)]' : ''}`}>{val}</p>
+                                className={`bg-black/30 border p-2 hover:border-white/15 transition-all duration-300 ${isMax ? 'border-[#E5C76B]/25' : 'border-white/[0.06]'}`} title={stat.description}>
+                                <div className="flex items-center gap-1.5 mb-1.5">
+                                  {stat.icon && <img src={stat.icon} alt={stat.name} className="w-4 h-4 opacity-70" />}
+                                  <p className={`text-[9px] uppercase tracking-[0.12em] truncate flex-1 ${isMax ? 'text-[#E5C76B]/60' : 'text-gray-500'}`}>{stat.name}</p>
+                                  <p className={`text-sm font-display font-light leading-none ${numColor}`}>{val}</p>
                                 </div>
-                                <div className="w-full h-1.5 bg-white/[0.06] rounded-full overflow-hidden">
-                                  <div className={`h-full rounded-full bg-gradient-to-r ${barColor} transition-all duration-500 ${isMax ? 'shadow-[0_0_8px_rgba(229,199,107,0.4)]' : ''}`} style={{ width: `${pct}%` }} />
+                                <div className="w-full h-1 bg-white/[0.06] rounded-full overflow-hidden">
+                                  <div className={`h-full rounded-full bg-gradient-to-r ${barColor} transition-all duration-500`} style={{ width: `${pct}%` }} />
                                 </div>
                               </motion.div>
                             );
@@ -727,14 +727,10 @@ export default function DemoDashboard() {
                     )}
 
                     <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3, duration: 0.5, ease: 'easeOut' }} className="px-4 md:px-6 pb-5">
-                      <div className="flex items-center gap-3 mb-3">
-                        <div className="flex items-center gap-2">
-                          <div className="w-6 h-6 rounded-sm bg-gradient-to-br from-red-500/20 to-orange-500/10 flex items-center justify-center">
-                            <Crosshair className="w-3.5 h-3.5 text-red-400/80" />
-                          </div>
-                          <h4 className="text-[11px] text-white/80 uppercase tracking-[0.25em] font-display font-semibold">{t('section.weapons')}</h4>
-                        </div>
-                        <div className="flex-1 section-divider" />
+                      <div className="flex items-center gap-2 mb-3">
+                        <Crosshair className="w-3.5 h-3.5 text-red-400/70" />
+                        <h4 className="text-[10px] text-white/70 uppercase tracking-[0.2em] font-display">{t('section.weapons')}</h4>
+                        <div className="flex-1 h-px bg-white/[0.06]" />
                       </div>
                       <div className="space-y-1">
                         {(['kinetic', 'energy', 'power'] as const).map(slotId => {
@@ -774,7 +770,7 @@ export default function DemoDashboard() {
                                 {equipped.perks && equipped.perks.filter(p => p.isActive).length > 0 && (
                                   <div className="flex items-center gap-1 mt-1 flex-wrap">
                                     {equipped.perks.filter(p => p.isActive).map((perk, i) => (
-                                      <span key={i} className="text-[7px] px-1.5 py-0.5 bg-white/5 border border-white/10 text-gray-400 rounded-sm uppercase tracking-wider">{perk.name}</span>
+                                      <span key={i} className="text-[8px] px-1.5 py-0.5 bg-white/5 border border-white/10 text-gray-400 rounded-sm uppercase tracking-wider">{perk.name}</span>
                                     ))}
                                   </div>
                                 )}
@@ -789,14 +785,10 @@ export default function DemoDashboard() {
                     </motion.div>
 
                     <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.45, duration: 0.5, ease: 'easeOut' }} className="px-4 md:px-6 pb-5">
-                      <div className="flex items-center gap-3 mb-3">
-                        <div className="flex items-center gap-2">
-                          <div className="w-6 h-6 rounded-sm bg-gradient-to-br from-blue-500/20 to-indigo-500/10 flex items-center justify-center">
-                            <Shield className="w-3.5 h-3.5 text-blue-400/80" />
-                          </div>
-                          <h4 className="text-[11px] text-white/80 uppercase tracking-[0.25em] font-display font-semibold">{t('section.armor')}</h4>
-                        </div>
-                        <div className="flex-1 section-divider" />
+                      <div className="flex items-center gap-2 mb-3">
+                        <Shield className="w-3.5 h-3.5 text-blue-400/70" />
+                        <h4 className="text-[10px] text-white/70 uppercase tracking-[0.2em] font-display">{t('section.armor')}</h4>
+                        <div className="flex-1 h-px bg-white/[0.06]" />
                       </div>
                       <div className="space-y-1">
                         {(['helmet', 'arms', 'chest', 'legs', 'class'] as const).map(slotId => {
@@ -829,14 +821,10 @@ export default function DemoDashboard() {
 
                     {selectedCharacter.quests.length > 0 && (
                       <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.55, duration: 0.5, ease: 'easeOut' }} className="px-4 md:px-6 pb-6">
-                        <div className="flex items-center gap-3 mb-3">
-                          <div className="flex items-center gap-2">
-                            <div className="w-6 h-6 rounded-sm bg-gradient-to-br from-green-500/20 to-emerald-500/10 flex items-center justify-center">
-                              <Activity className="w-3.5 h-3.5 text-green-400/80" />
-                            </div>
-                            <h4 className="text-[11px] text-white/80 uppercase tracking-[0.25em] font-display font-semibold">Aktive Quests</h4>
-                          </div>
-                          <div className="flex-1 section-divider" />
+                        <div className="flex items-center gap-2 mb-3">
+                          <Activity className="w-3.5 h-3.5 text-green-400/70" />
+                          <h4 className="text-[10px] text-white/70 uppercase tracking-[0.2em] font-display">Aktive Quests</h4>
+                          <div className="flex-1 h-px bg-white/[0.06]" />
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
                           {selectedCharacter.quests.map(quest => (
@@ -958,7 +946,7 @@ export default function DemoDashboard() {
                         </div>
                         <div className="px-2 py-1.5">
                           <p className="text-[8px] font-bold truncate tracking-wider uppercase text-white">{c.name}</p>
-                          {c.sourceString && <p className="text-[7px] text-gray-600 truncate mt-0.5">{c.sourceString}</p>}
+                          {c.sourceString && <p className="text-[8px] text-gray-600 truncate mt-0.5">{c.sourceString}</p>}
                         </div>
                       </div>
                     ))}
@@ -1022,12 +1010,10 @@ export default function DemoDashboard() {
               <motion.div key="season" initial={{ opacity: 0, x: tabDirection * 30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: tabDirection * -30 }} transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }} className="h-full overflow-y-auto p-4 md:p-8">
                 <div className="space-y-6">
                   <div>
-                    <div className="flex items-center gap-3 mb-4">
-                      <div className="w-6 h-6 rounded-sm bg-gradient-to-br from-indigo-500/20 to-purple-500/10 flex items-center justify-center">
-                        <TrendingUp className="w-3.5 h-3.5 text-indigo-400/80" />
-                      </div>
-                      <h4 className="text-[11px] text-white/80 uppercase tracking-[0.25em] font-display font-semibold">{t('season.progressions')}</h4>
-                      <div className="flex-1 section-divider" />
+                    <div className="flex items-center gap-2 mb-4">
+                      <TrendingUp className="w-3.5 h-3.5 text-indigo-400/70" />
+                      <h4 className="text-[10px] text-white/70 uppercase tracking-[0.2em] font-display">{t('season.progressions')}</h4>
+                      <div className="flex-1 h-px bg-white/[0.06]" />
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
                       {DEMO_PROGRESSIONS.map(prog => {
@@ -1120,7 +1106,7 @@ function DemoRollBadge({ result }: { result: RollResult }) {
 
   return (
     <div className="group/roll relative">
-      <span className={`inline-flex items-center gap-0.5 px-1.5 py-0.5 text-[7px] font-bold uppercase tracking-wider border rounded-sm ${badgeStyle} ${rating === 'META' ? 'animate-[shimmer_3s_ease-in-out_infinite]' : ''}`}>
+      <span className={`inline-flex items-center gap-0.5 px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-wider border rounded-sm ${badgeStyle}`}>
         {rating === 'META' && <Sparkles className="w-2.5 h-2.5" />}
         {label}
       </span>
@@ -1129,13 +1115,13 @@ function DemoRollBadge({ result }: { result: RollResult }) {
           <div className="bg-black/95 border border-white/10 rounded px-2.5 py-2 min-w-[140px] max-w-[220px]">
             {sPerks.length > 0 && (
               <div className="mb-1">
-                <p className="text-[7px] text-[#E5C76B]/70 uppercase tracking-widest mb-0.5">{t('roll.sPerks')}</p>
+                <p className="text-[8px] text-[#E5C76B]/70 uppercase tracking-widest mb-0.5">{t('roll.sPerks')}</p>
                 {sPerks.map(p => <p key={p} className="text-[8px] text-[#E5C76B]">{p}</p>)}
               </div>
             )}
             {aPerks.length > 0 && (
               <div>
-                <p className="text-[7px] text-purple-400/70 uppercase tracking-widest mb-0.5">{t('roll.aPerks')}</p>
+                <p className="text-[8px] text-purple-400/70 uppercase tracking-widest mb-0.5">{t('roll.aPerks')}</p>
                 {aPerks.map(p => <p key={p} className="text-[8px] text-purple-300">{p}</p>)}
               </div>
             )}

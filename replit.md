@@ -62,10 +62,13 @@ The project uses a monorepo with `client/` (React frontend), `server/` (Express 
 -   Uses a swappable `IStorage` interface, currently implemented with PostgreSQL (`DatabaseStorage`).
 
 ### UI/UX Decisions
--   **Theming**: Dark, Destiny-inspired with a gold/indigo color palette, custom clip-paths, and animations.
--   **Typography**: Protest Strike (headings), Plus Jakarta Sans (body), JetBrains Mono (code).
--   **Animations**: Framer Motion for page transitions, item interactions, staggered entrances, and specific UI element animations (e.g., exotic item glow, max stats shimmer).
--   **Branding**: "GuardianGrid (Adept)" with "(Adept)" in gold.
+-   **Theming**: Dark, Destiny-inspired with a gold/indigo color palette, custom clip-paths, and subtle animations.
+-   **Typography**: Protest Strike (headings), Plus Jakarta Sans (body), JetBrains Mono (code). Minimum text size: 8px.
+-   **Animations**: Framer Motion for page transitions, item interactions, staggered entrances. Exotic glow is subtle (4s cycle). No shimmer on stat cards.
+-   **Layout**: Single consolidated header bar (no double header). Clean tab-style character selector with bottom border indicator.
+-   **Section Headers**: Minimal style — icon + label + subtle line divider (no gradient icon containers).
+-   **Background**: Subtle static blur orbs (no pulse animations on background elements).
+-   **Branding**: "GuardianGrid (Adept)" with "(Adept)" in gold. Currencies shown in header only (not duplicated in sidebar/mobile menu).
 -   **Responsive Design**: Hamburger menu for all screen sizes, desktop sidebar for larger screens.
 
 ## External Dependencies

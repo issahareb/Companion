@@ -308,35 +308,18 @@ export default function Dashboard() {
   return (
     <div className="h-screen bg-app text-gray-300 font-sans selection:bg-indigo-500/30 flex flex-col md:flex-row overflow-hidden relative">
       <div className="fixed inset-0 pointer-events-none z-0 bg-app-overlay">
-        <div className="absolute top-[-15%] left-[-5%] w-[45%] h-[45%] bg-indigo-900/15 blur-[150px] rounded-full animate-pulse-glow" />
-        <div className="absolute bottom-[-15%] right-[-5%] w-[40%] h-[40%] bg-purple-900/10 blur-[130px] rounded-full" />
-        <div className="absolute top-[30%] right-[20%] w-[25%] h-[25%] bg-blue-900/8 blur-[100px] rounded-full" />
+        <div className="absolute top-[-15%] left-[-5%] w-[45%] h-[45%] bg-indigo-900/10 blur-[150px] rounded-full" />
+        <div className="absolute bottom-[-15%] right-[-5%] w-[40%] h-[40%] bg-purple-900/8 blur-[130px] rounded-full" />
       </div>
 
       {/* DESKTOP SIDEBAR */}
       <aside className="hidden md:flex flex-col w-64 bg-sidebar backdrop-blur-xl border-r border-white/[0.06] shrink-0 z-20 shadow-2xl relative overflow-hidden">
-        <div className="absolute -top-20 -left-10 w-40 h-40 bg-indigo-600/10 blur-[80px] rounded-full animate-pulse-glow pointer-events-none" />
-        <div className="absolute -bottom-16 -right-10 w-36 h-36 bg-purple-600/8 blur-[70px] rounded-full pointer-events-none" style={{ animationDelay: '2s' }} />
-        <div className="p-6 pb-2 relative">
-          <div className="flex items-center space-x-3 mb-6">
-            <div className="relative">
-              <Hexagon className="w-8 h-8 text-white" strokeWidth={1.5} />
-              <div className="absolute inset-0 w-8 h-8 bg-indigo-400/20 blur-md rounded-full animate-pulse-glow" />
-            </div>
-            <span className="font-display font-light text-lg tracking-[0.2em] text-white">GUARDIANGRID <span className="text-[#E5C76B] text-sm">(Adept)</span></span>
+        <div className="p-6 pb-4 relative">
+          <div className="flex items-center space-x-3">
+            <Hexagon className="w-7 h-7 text-indigo-400" strokeWidth={1.5} />
+            <span className="font-display font-light text-base tracking-[0.2em] text-white">GUARDIANGRID <span className="text-[#E5C76B] text-sm">(Adept)</span></span>
           </div>
         </div>
-
-        {currencies.length > 0 && (
-          <div className="px-4 pb-4 flex flex-wrap gap-2">
-            {currencies.slice(0, 4).map(c => (
-              <div key={c.itemHash} className="flex items-center gap-1.5 bg-white/5 rounded px-2 py-1" title={c.name}>
-                {c.icon && <img src={c.icon} alt="" className="w-4 h-4" />}
-                <span className="text-[10px] text-gray-400 font-mono">{c.quantity.toLocaleString('de-DE')}</span>
-              </div>
-            ))}
-          </div>
-        )}
 
         <nav className="flex-1 py-2 flex flex-col space-y-1.5 px-3">
           <DesktopNavButton icon={Users} label="HÜTER" active={activeTab === 'characters'} onClick={() => setActiveTab('characters')} />
@@ -352,18 +335,8 @@ export default function Dashboard() {
       </aside>
 
       <main className="flex-1 flex flex-col h-full relative overflow-hidden z-10">
-        {/* LOGO BAR */}
-        <div className="h-10 border-b border-white/[0.06] bg-[#060a14] flex items-center px-4 md:px-8 shrink-0 z-10">
-          <div className="flex items-center gap-2.5">
-            <img src={ggLogoImg} alt="GG" className="h-6 mix-blend-screen" data-testid="img-gg-logo" />
-            <span className="font-display text-[13px] tracking-[0.15em] text-white/80 uppercase">
-              <span className="text-[#E5C76B] text-[15px]">G</span>uardian<span className="text-[#7CB9E8] text-[15px]">G</span>rid <span className="text-[#E5C76B]/70 text-[11px] tracking-[0.2em]">(adept)</span>
-            </span>
-          </div>
-        </div>
-        {/* HEADER */}
-        <header className="h-14 md:h-16 border-b border-white/[0.06] bg-header backdrop-blur-xl flex items-center justify-between px-4 md:px-8 shrink-0 z-10">
-          <div className="flex items-center space-x-4">
+        <header className="h-14 border-b border-white/[0.06] bg-header backdrop-blur-xl flex items-center justify-between px-4 md:px-6 shrink-0 z-10">
+          <div className="flex items-center gap-3">
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
               className="p-2 -ml-1 text-white hover:text-indigo-400 transition-colors"
@@ -372,31 +345,34 @@ export default function Dashboard() {
               <AnimatePresence mode="wait">
                 {isMenuOpen ? (
                   <motion.div key="close" initial={{ rotate: -90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: 90, opacity: 0 }} transition={{ duration: 0.2 }}>
-                    <X className="w-6 h-6" />
+                    <X className="w-5 h-5" />
                   </motion.div>
                 ) : (
                   <motion.div key="menu" initial={{ rotate: 90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: -90, opacity: 0 }} transition={{ duration: 0.2 }}>
-                    <Menu className="w-6 h-6" />
+                    <Menu className="w-5 h-5" />
                   </motion.div>
                 )}
               </AnimatePresence>
             </button>
+            <div className="md:hidden flex items-center gap-2">
+              <img src={ggLogoImg} alt="GG" className="h-5 mix-blend-screen" data-testid="img-gg-logo" />
+            </div>
             <h2 className="font-display font-light text-sm tracking-[0.2em] text-white/90 uppercase" data-testid="text-header-title">
               {tabTitles[activeTab]}
             </h2>
           </div>
           <div className="flex items-center gap-3">
             {currencies.length > 0 && (
-              <div className="hidden md:flex items-center gap-3">
+              <div className="hidden sm:flex items-center gap-3">
                 {currencies.slice(0, 3).map(c => (
-                  <div key={c.itemHash} className="flex items-center gap-1" title={c.name}>
+                  <div key={c.itemHash} className="flex items-center gap-1.5" title={c.name}>
                     {c.icon && <img src={c.icon} alt="" className="w-4 h-4 opacity-70" />}
                     <span className="text-[10px] text-gray-400 font-mono">{c.quantity.toLocaleString('de-DE')}</span>
                   </div>
                 ))}
               </div>
             )}
-            <button onClick={() => refetchProfile()} className="p-2 text-gray-500 hover:text-white transition-all bg-white/5 rounded-full hover:bg-white/10" data-testid="button-refresh">
+            <button onClick={() => refetchProfile()} className="p-2 text-gray-500 hover:text-white transition-all hover:bg-white/5 rounded" data-testid="button-refresh">
               <RefreshCw className="w-4 h-4" />
             </button>
           </div>
@@ -462,18 +438,6 @@ export default function Dashboard() {
                     </motion.button>
                   ))}
                 </nav>
-                {currencies.length > 0 && (
-                  <div className="px-6 py-4 border-t border-white/[0.06]">
-                    <div className="flex items-center gap-4">
-                      {currencies.slice(0, 3).map(c => (
-                        <div key={c.itemHash} className="flex items-center gap-1.5" title={c.name}>
-                          {c.icon && <img src={c.icon} alt="" className="w-4 h-4 opacity-70" />}
-                          <span className="text-[10px] text-gray-400 font-mono">{c.quantity.toLocaleString('de-DE')}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
                 <div className="px-3 pb-4 border-t border-white/[0.06] pt-3">
                   <button
                     onClick={() => { setIsMenuOpen(false); logout(); }}
@@ -552,23 +516,19 @@ export default function Dashboard() {
                   transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
                   className="h-full flex flex-col relative"
                 >
-                  {/* Character selector */}
-                  <div className="flex items-center gap-2 p-3 md:p-4 border-b border-white/[0.06] shrink-0 overflow-x-auto bg-black/20">
+                  <div className="flex items-center gap-1 px-3 md:px-4 pt-3 pb-0 shrink-0 overflow-x-auto">
                     {characters.map(char => (
                       <button
                         key={char.characterId}
                         onClick={() => setSelectedCharacterId(char.characterId)}
-                        className={`flex items-center gap-2.5 px-3.5 py-2.5 border transition-all duration-300 shrink-0 relative overflow-hidden ${
+                        className={`flex items-center gap-2 px-3 py-2 transition-all duration-200 shrink-0 border-b-2 ${
                           selectedCharacterId === char.characterId
-                            ? 'bg-gradient-to-r from-indigo-600/20 to-transparent border-indigo-500/40 text-white shadow-lg shadow-indigo-900/20'
-                            : 'bg-white/[0.03] border-white/[0.06] text-gray-400 hover:border-white/20 hover:bg-white/[0.05]'
+                            ? 'border-indigo-500 text-white'
+                            : 'border-transparent text-gray-500 hover:text-white hover:border-white/20'
                         }`}
                         data-testid={`button-select-char-${char.characterId}`}
                       >
-                        {selectedCharacterId === char.characterId && (
-                          <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-indigo-500 to-purple-500" />
-                        )}
-                        {char.emblemPath && <img src={char.emblemPath} alt="" className="w-9 h-9 ring-1 ring-white/10" />}
+                        {char.emblemPath && <img src={char.emblemPath} alt="" className="w-8 h-8 rounded-sm" />}
                         <div className="text-left">
                           <p className="text-[10px] font-bold tracking-wider uppercase">{char.className}</p>
                           <p className="text-[9px] text-gray-500 flex items-center gap-1">
@@ -578,6 +538,7 @@ export default function Dashboard() {
                       </button>
                     ))}
                   </div>
+                  <div className="h-px bg-white/[0.06] mx-3 md:mx-4" />
 
                   {selectedCharacter && (
                     <div className="flex-1 min-h-0 overflow-y-auto">
@@ -634,7 +595,7 @@ export default function Dashboard() {
                               const val = stat.value;
                               const pct = Math.min((val / 200) * 100, 100);
                               const isMax = val >= 200;
-                              const barColor = isMax ? 'from-[#E5C76B] via-[#F5E08B] to-[#D4A843]'
+                              const barColor = isMax ? 'from-[#E5C76B] to-[#D4A843]'
                                 : val >= 100 ? 'from-purple-500 to-violet-400'
                                 : val >= 60 ? 'from-emerald-600 to-green-400'
                                 : val >= 20 ? 'from-yellow-600 to-amber-400'
@@ -650,15 +611,15 @@ export default function Dashboard() {
                                   initial={{ opacity: 0, y: 12 }}
                                   animate={{ opacity: 1, y: 0 }}
                                   transition={{ delay: 0.2 + statIdx * 0.06, duration: 0.4, ease: 'easeOut' }}
-                                  className={`bg-black/40 backdrop-blur-sm border p-2 group/stat hover:border-white/20 transition-all duration-300 ${isMax ? 'border-[#E5C76B]/30 shadow-[0_0_12px_rgba(229,199,107,0.15)] animate-[shimmer_3s_ease-in-out_infinite]' : 'border-white/[0.08]'}`} title={stat.description}
+                                  className={`bg-black/30 border p-2 hover:border-white/15 transition-all duration-300 ${isMax ? 'border-[#E5C76B]/25' : 'border-white/[0.06]'}`} title={stat.description}
                                 >
-                                  <div className="flex items-center gap-2 mb-1.5">
-                                    {stat.icon && <img src={stat.icon} alt={stat.name} className={`w-4 h-4 transition-opacity ${isMax ? 'opacity-100 drop-shadow-[0_0_4px_rgba(229,199,107,0.6)]' : 'opacity-70 group-hover/stat:opacity-100'}`} />}
-                                    <p className={`text-[7px] uppercase tracking-[0.15em] transition-colors truncate flex-1 ${isMax ? 'text-[#E5C76B]/70' : 'text-gray-400 group-hover/stat:text-gray-300'}`}>{stat.name}</p>
-                                    <p className={`text-sm font-display font-light leading-none ${numColor} ${isMax ? 'drop-shadow-[0_0_6px_rgba(229,199,107,0.5)]' : ''}`} data-testid={`text-stat-${stat.name.toLowerCase()}`}>{val}</p>
+                                  <div className="flex items-center gap-1.5 mb-1.5">
+                                    {stat.icon && <img src={stat.icon} alt={stat.name} className="w-4 h-4 opacity-70" />}
+                                    <p className={`text-[9px] uppercase tracking-[0.12em] truncate flex-1 ${isMax ? 'text-[#E5C76B]/60' : 'text-gray-500'}`}>{stat.name}</p>
+                                    <p className={`text-sm font-display font-light leading-none ${numColor}`} data-testid={`text-stat-${stat.name.toLowerCase()}`}>{val}</p>
                                   </div>
-                                  <div className="w-full h-1.5 bg-white/[0.06] rounded-full overflow-hidden">
-                                    <div className={`h-full rounded-full bg-gradient-to-r ${barColor} transition-all duration-500 ${isMax ? 'shadow-[0_0_8px_rgba(229,199,107,0.4)]' : ''}`} style={{ width: `${pct}%` }} />
+                                  <div className="w-full h-1 bg-white/[0.06] rounded-full overflow-hidden">
+                                    <div className={`h-full rounded-full bg-gradient-to-r ${barColor} transition-all duration-500`} style={{ width: `${pct}%` }} />
                                   </div>
                                 </motion.div>
                               );
@@ -674,14 +635,10 @@ export default function Dashboard() {
                         transition={{ delay: 0.3, duration: 0.5, ease: 'easeOut' }}
                         className="px-4 md:px-6 pb-5"
                       >
-                        <div className="flex items-center gap-3 mb-3">
-                          <div className="flex items-center gap-2">
-                            <div className="w-6 h-6 rounded-sm bg-gradient-to-br from-red-500/20 to-orange-500/10 flex items-center justify-center">
-                              <Crosshair className="w-3.5 h-3.5 text-red-400/80" />
-                            </div>
-                            <h4 className="text-[11px] text-white/80 uppercase tracking-[0.25em] font-display font-semibold">{t('section.weapons')}</h4>
-                          </div>
-                          <div className="flex-1 section-divider" />
+                        <div className="flex items-center gap-2 mb-3">
+                          <Crosshair className="w-3.5 h-3.5 text-red-400/70" />
+                          <h4 className="text-[10px] text-white/70 uppercase tracking-[0.2em] font-display">{t('section.weapons')}</h4>
+                          <div className="flex-1 h-px bg-white/[0.06]" />
                         </div>
                         <div className="space-y-1">
                           {(['kinetic', 'energy', 'power'] as const).map(slotId => {
@@ -715,14 +672,10 @@ export default function Dashboard() {
                         transition={{ delay: 0.45, duration: 0.5, ease: 'easeOut' }}
                         className="px-4 md:px-6 pb-5"
                       >
-                        <div className="flex items-center gap-3 mb-3">
-                          <div className="flex items-center gap-2">
-                            <div className="w-6 h-6 rounded-sm bg-gradient-to-br from-blue-500/20 to-indigo-500/10 flex items-center justify-center">
-                              <Shield className="w-3.5 h-3.5 text-blue-400/80" />
-                            </div>
-                            <h4 className="text-[11px] text-white/80 uppercase tracking-[0.25em] font-display font-semibold">{t('section.armor')}</h4>
-                          </div>
-                          <div className="flex-1 section-divider" />
+                        <div className="flex items-center gap-2 mb-3">
+                          <Shield className="w-3.5 h-3.5 text-blue-400/70" />
+                          <h4 className="text-[10px] text-white/70 uppercase tracking-[0.2em] font-display">{t('section.armor')}</h4>
+                          <div className="flex-1 h-px bg-white/[0.06]" />
                         </div>
                         <div className="space-y-1">
                           {(['helmet', 'arms', 'chest', 'legs', 'class'] as const).map(slotId => {
@@ -755,14 +708,10 @@ export default function Dashboard() {
                         transition={{ delay: 0.55, duration: 0.5, ease: 'easeOut' }}
                         className="px-4 md:px-6 pb-5"
                       >
-                        <div className="flex items-center gap-3 mb-3">
-                          <div className="flex items-center gap-2">
-                            <div className="w-6 h-6 rounded-sm bg-gradient-to-br from-purple-500/20 to-violet-500/10 flex items-center justify-center">
-                              <Orbit className="w-3.5 h-3.5 text-purple-400/80" />
-                            </div>
-                            <h4 className="text-[11px] text-white/80 uppercase tracking-[0.25em] font-display font-semibold">{t('section.subclass')}</h4>
-                          </div>
-                          <div className="flex-1 section-divider" />
+                        <div className="flex items-center gap-2 mb-3">
+                          <Orbit className="w-3.5 h-3.5 text-purple-400/70" />
+                          <h4 className="text-[10px] text-white/70 uppercase tracking-[0.2em] font-display">{t('section.subclass')}</h4>
+                          <div className="flex-1 h-px bg-white/[0.06]" />
                         </div>
                         <SubclassEditor
                           character={selectedCharacter}
@@ -778,14 +727,10 @@ export default function Dashboard() {
                           transition={{ delay: 0.65, duration: 0.5, ease: 'easeOut' }}
                           className="px-4 md:px-6 pb-5"
                         >
-                          <div className="flex items-center gap-3 mb-3">
-                            <div className="flex items-center gap-2">
-                              <div className="w-6 h-6 rounded-sm bg-gradient-to-br from-amber-500/20 to-yellow-500/10 flex items-center justify-center">
-                                <Hexagon className="w-3.5 h-3.5 text-amber-400/80" />
-                              </div>
-                              <h4 className="text-[11px] text-white/80 uppercase tracking-[0.25em] font-display font-semibold">{t('artifact.title')}</h4>
-                            </div>
-                            <div className="flex-1 section-divider" />
+                          <div className="flex items-center gap-2 mb-3">
+                            <Hexagon className="w-3.5 h-3.5 text-amber-400/70" />
+                            <h4 className="text-[10px] text-white/70 uppercase tracking-[0.2em] font-display">{t('artifact.title')}</h4>
+                            <div className="flex-1 h-px bg-white/[0.06]" />
                           </div>
                           <ArtifactDisplay artifact={profileState.artifact} />
                         </motion.div>
@@ -794,15 +739,11 @@ export default function Dashboard() {
                       {/* Quests */}
                       {selectedCharacter.quests.length > 0 && (
                         <div className="px-4 md:px-6 pb-6">
-                          <div className="flex items-center gap-3 mb-3">
-                            <div className="flex items-center gap-2">
-                              <div className="w-6 h-6 rounded-sm bg-gradient-to-br from-green-500/20 to-emerald-500/10 flex items-center justify-center">
-                                <Activity className="w-3.5 h-3.5 text-green-400/80" />
-                              </div>
-                              <h4 className="text-[11px] text-white/80 uppercase tracking-[0.25em] font-display font-semibold">Aktive Quests</h4>
-                              <span className="text-[9px] text-gray-600 bg-white/[0.04] px-2 py-0.5 rounded-sm">{selectedCharacter.quests.length}</span>
-                            </div>
-                            <div className="flex-1 section-divider" />
+                          <div className="flex items-center gap-2 mb-3">
+                            <Activity className="w-3.5 h-3.5 text-green-400/70" />
+                            <h4 className="text-[10px] text-white/70 uppercase tracking-[0.2em] font-display">Aktive Quests</h4>
+                            <span className="text-[9px] text-gray-600">{selectedCharacter.quests.length}</span>
+                            <div className="flex-1 h-px bg-white/[0.06]" />
                           </div>
                           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
                             {selectedCharacter.quests.map(quest => (
@@ -1081,7 +1022,7 @@ export default function Dashboard() {
                             <div className="px-2 py-1.5">
                               <p className="text-[8px] font-bold truncate tracking-wider uppercase text-white">{c.name}</p>
                               {c.sourceString && (
-                                <p className="text-[7px] text-gray-600 truncate mt-0.5">{c.sourceString}</p>
+                                <p className="text-[8px] text-gray-600 truncate mt-0.5">{c.sourceString}</p>
                               )}
                             </div>
                           </div>
@@ -1213,12 +1154,10 @@ export default function Dashboard() {
                   {selectedCharacter ? (
                     <div className="space-y-6">
                       <div>
-                        <div className="flex items-center gap-3 mb-4">
-                          <div className="w-6 h-6 rounded-sm bg-gradient-to-br from-indigo-500/20 to-purple-500/10 flex items-center justify-center">
-                            <TrendingUp className="w-3.5 h-3.5 text-indigo-400/80" />
-                          </div>
-                          <h4 className="text-[11px] text-white/80 uppercase tracking-[0.25em] font-display font-semibold">{t('season.progressions')}</h4>
-                          <div className="flex-1 section-divider" />
+                        <div className="flex items-center gap-2 mb-4">
+                          <TrendingUp className="w-3.5 h-3.5 text-indigo-400/70" />
+                          <h4 className="text-[10px] text-white/70 uppercase tracking-[0.2em] font-display">{t('season.progressions')}</h4>
+                          <div className="flex-1 h-px bg-white/[0.06]" />
                         </div>
                         {(selectedCharacter.progressions || []).length === 0 ? (
                           <div className="flex flex-col items-center justify-center h-32 text-gray-600">
@@ -1487,7 +1426,7 @@ function SubclassEditor({ character, membershipType }: { character: CharacterDat
                                   <div className="flex-1 min-w-0">
                                     <p className="text-[9px] font-bold truncate text-white/80">{rp.name}</p>
                                     {rp.description && (
-                                      <p className="text-[7px] text-gray-500 truncate">{rp.description}</p>
+                                      <p className="text-[8px] text-gray-500 truncate">{rp.description}</p>
                                     )}
                                   </div>
                                   <span className="text-[8px] text-purple-400 uppercase tracking-wider shrink-0">
@@ -1565,7 +1504,7 @@ function RollRatingBadge({ result }: { result: RollResult }) {
   return (
     <div className="group/roll relative">
       <span
-        className={`inline-flex items-center gap-0.5 px-1.5 py-0.5 text-[7px] font-bold uppercase tracking-wider border rounded-sm ${badgeStyle} ${rating === 'META' ? 'animate-[shimmer_3s_ease-in-out_infinite]' : ''}`}
+        className={`inline-flex items-center gap-0.5 px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-wider border rounded-sm ${badgeStyle}`}
         data-testid={`badge-roll-${rating.toLowerCase()}`}
       >
         {rating === 'META' && <Sparkles className="w-2.5 h-2.5" />}
@@ -1576,13 +1515,13 @@ function RollRatingBadge({ result }: { result: RollResult }) {
           <div className="bg-black/95 border border-white/10 rounded px-2.5 py-2 min-w-[140px] max-w-[220px]">
             {sPerks.length > 0 && (
               <div className="mb-1">
-                <p className="text-[7px] text-[#E5C76B]/70 uppercase tracking-widest mb-0.5">{t('roll.sPerks')}</p>
+                <p className="text-[8px] text-[#E5C76B]/70 uppercase tracking-widest mb-0.5">{t('roll.sPerks')}</p>
                 {sPerks.map(p => <p key={p} className="text-[8px] text-[#E5C76B]">{p}</p>)}
               </div>
             )}
             {aPerks.length > 0 && (
               <div>
-                <p className="text-[7px] text-purple-400/70 uppercase tracking-widest mb-0.5">{t('roll.aPerks')}</p>
+                <p className="text-[8px] text-purple-400/70 uppercase tracking-widest mb-0.5">{t('roll.aPerks')}</p>
                 {aPerks.map(p => <p key={p} className="text-[8px] text-purple-300">{p}</p>)}
               </div>
             )}
@@ -1779,8 +1718,8 @@ function EquippedSlotRow({ slotId, slotLabel, SlotIcon, item, isExpanded, onTogg
                                 <Sparkles className="w-2 h-2" /> {invItem.power}
                               </span>
                             )}
-                            <span className="text-[7px] text-gray-600 uppercase">{invItem.type}</span>
-                            {fromVault && <span className="text-[7px] text-indigo-400/70 uppercase">{t('vault.label')}</span>}
+                            <span className="text-[8px] text-gray-600 uppercase">{invItem.type}</span>
+                            {fromVault && <span className="text-[8px] text-indigo-400/70 uppercase">{t('vault.label')}</span>}
                           </div>
                         </div>
                         <div className="flex items-center gap-0.5">
