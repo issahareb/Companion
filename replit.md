@@ -21,6 +21,25 @@ The project uses a monorepo with `client/` (React frontend), `server/` (Express 
 -   **Animations**: Framer Motion.
 -   **Key Pages**: Home/Login, Dashboard (with tabs for characters, vault, loadouts, postmaster, collections, triumphs, season progression), and a loadout sharing page.
 
+### Dashboard Component Architecture
+-   **Dashboard.tsx** (~670 lines): Main layout shell, state management, action handlers, tab routing.
+-   **`client/src/components/dashboard/`**: 15 focused component files:
+    -   `shared.ts` — TabType, FilterState, toItem helper, useItemFilter hook
+    -   `BungieStatus.tsx` — BungieAutoRetry countdown + OfflineBanner
+    -   `FilterBar.tsx` — Slot/rarity/power filter bar
+    -   `QuestCard.tsx` — Quest item display card
+    -   `ArtifactDisplay.tsx` — Artifact tier display with active items
+    -   `SubclassEditor.tsx` — Subclass socket categories with plug swapping
+    -   `EquippedSlotRow.tsx` — Equipped slot row with item picker, mods tooltip, RollRatingBadge
+    -   `VaultItemCard.tsx` — Vault item card with transfer/equip dropdown
+    -   `CharacterPanel.tsx` — Character hero, stat rings, weapons/armor, subclass, artifact, quests
+    -   `VaultPanel.tsx` — Vault search, filters, item grid, desktop loadout sidebar
+    -   `LoadoutsPanel.tsx` — Saved loadouts grid with share/load/delete
+    -   `PostmasterPanel.tsx` — Per-character postmaster items with pull button
+    -   `CollectionsPanel.tsx` — Collections search, filter, collectibles grid
+    -   `TriumphsPanel.tsx` — Triumphs search, filter, records with progress bars
+    -   `SeasonPanel.tsx` — Season progression cards with level/reset info
+
 ### Backend (server/)
 -   **Framework**: Express 5 on Node.js.
 -   **API Routes**: Manages Bungie API interactions for fetching profile data, transferring items, equipping items, pulling from postmaster, locking items, inserting subclass plugs, and managing in-game loadouts. Also handles CRUD operations for user-saved loadouts.
@@ -54,23 +73,33 @@ The project uses a monorepo with `client/` (React frontend), `server/` (Express 
 
 ### Database
 -   **ORM**: Drizzle ORM with PostgreSQL.
--   **Tables**: `saved_loadouts` for storing user-defined loadouts with item details, class type, and share codes.
+-   **Tables**:
+    -   `saved_loadouts` for storing user-defined loadouts with item details, class type, and share codes.
+    -   `sessions` for server-side session management (id, bungieMembershipId, accessToken, refreshToken, tokenExpiresAt, createdAt).
 
 ### Authentication
--   **Bungie OAuth2**: Client-side public OAuth flow. Access tokens are stored in `localStorage`. The server relies on `bungieMembershipId` from the client for API requests.
--   **Cloudflare Turnstile CAPTCHA**: Optional CAPTCHA on login page. Requires `TURNSTILE_SITE_KEY` and `TURNSTILE_SECRET_KEY` env vars. Auto-detects if keys are set; if not, login works without CAPTCHA.
+-   **Bungie OAuth2 with Server-Side Sessions**: OAuth code exchange handled server-side. Access tokens and refresh tokens stored in DB `sessions` table, never exposed to the client.
+-   **HTTPOnly Cookies**: Session ID stored in a signed HTTPOnly cookie (`session_id`). Cookie config: httpOnly, secure (prod), sameSite: 'lax', path: '/', maxAge: 30 days, signed with SESSION_SECRET.
+-   **Refresh Token Rotation**: When access token expires, `requireAuth` middleware auto-refreshes using the stored refresh token and updates the session in DB.
+-   **Auth Routes**: POST `/api/auth/login` (code exchange + session creation), POST `/api/auth/logout` (session deletion), GET `/api/auth/me` (session validation + profile info).
+-   **requireAuth Middleware**: Protects all `/api/bungie/*` routes. Reads session cookie, validates session, auto-refreshes expired tokens, attaches accessToken to request.
+-   **Session Cleanup**: Expired sessions (>30 days) cleaned up hourly via interval.
+-   **Dashboard Auth Guard**: Dashboard shows loading spinner while checking session, redirects to `/` if not authenticated.
+-   **Cloudflare Turnstile CAPTCHA**: Optional CAPTCHA on login. Requires `TURNSTILE_SITE_KEY` and `TURNSTILE_SECRET_KEY` env vars. Auto-detects if keys are set.
 
 ### Security
 -   **Helmet**: Full security headers (CSP, HSTS, X-Frame-Options: DENY, X-Content-Type-Options: nosniff, Referrer-Policy).
 -   **Rate Limiting**: Global API limit (200/15min), auth endpoints (15/15min), write endpoints (60/15min). Uses `cf-connecting-ip` header for Cloudflare compatibility.
--   **CORS**: Locked to guardiangrid.net, www.guardiangrid.net, and Replit dev domains. Blocks unauthorized cross-origin requests.
+-   **CORS**: Locked to guardiangrid.net, www.guardiangrid.net, and Replit dev domains. Credentials: true for cookie support.
 -   **Bot Protection**: Blocks API requests without valid User-Agent headers.
 -   **Request Size Limits**: JSON and URL-encoded bodies capped at 1MB.
 -   **Trust Proxy**: Configured for Cloudflare proxy (reads real client IPs from CF headers).
 -   **Cloudflare Integration**: App is ready for Cloudflare proxy. Set DNS to "Proxied" (orange cloud) in Cloudflare dashboard for DDoS protection, WAF, and SSL.
+-   **cookie-parser**: Signed cookie parsing with SESSION_SECRET.
 
 ### Storage Pattern
 -   Uses a swappable `IStorage` interface, currently implemented with PostgreSQL (`DatabaseStorage`).
+-   Session CRUD: createSession, getSession, updateSessionTokens, deleteSession, deleteExpiredSessions.
 
 ### UI/UX Decisions
 -   **Theming**: Dark, Destiny-inspired with a gold/indigo color palette, custom clip-paths, and subtle animations.
@@ -100,3 +129,4 @@ The project uses a monorepo with `client/` (React frontend), `server/` (Express 
 -   **helmet**: Security headers middleware.
 -   **express-rate-limit**: API rate limiting.
 -   **cors**: Cross-origin resource sharing control.
+-   **cookie-parser**: Signed cookie parsing for session management.

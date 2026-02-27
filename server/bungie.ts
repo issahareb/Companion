@@ -441,6 +441,8 @@ export interface TokenResponse {
   token_type: string;
   expires_in: number;
   membership_id: string;
+  refresh_token?: string;
+  refresh_expires_in?: number;
 }
 
 export async function exchangeToken(code: string): Promise<TokenResponse> {
@@ -472,6 +474,30 @@ export interface DestinyMembership {
   membershipType: number;
   displayName: string;
   iconPath?: string;
+}
+
+export async function refreshBungieToken(refreshToken: string): Promise<TokenResponse> {
+  const body = new URLSearchParams({
+    grant_type: 'refresh_token',
+    client_id: BUNGIE_CLIENT_ID,
+    refresh_token: refreshToken,
+  });
+
+  const res = await fetch(`${BUNGIE_BASE}/Platform/App/OAuth/Token/`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    body: body.toString(),
+  });
+
+  if (!res.ok) {
+    const text = await res.text();
+    console.error('[bungie] Token refresh failed:', res.status, text);
+    throw new Error(`Token refresh failed: ${res.status}`);
+  }
+
+  return res.json();
 }
 
 export async function fetchMemberships(accessToken: string): Promise<DestinyMembership> {

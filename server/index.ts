@@ -5,6 +5,7 @@ import { createServer } from "http";
 import helmet from "helmet";
 import cors from "cors";
 import rateLimit from "express-rate-limit";
+import cookieParser from "cookie-parser";
 
 const app = express();
 const httpServer = createServer(app);
@@ -70,6 +71,9 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization'],
   maxAge: 86400,
 }));
+
+const sessionSecret = process.env.SESSION_SECRET || 'dev-secret-change-me';
+app.use(cookieParser(sessionSecret));
 
 function getClientIp(req: express.Request): string {
   return (req.headers['cf-connecting-ip'] as string) || req.ip || 'unknown';

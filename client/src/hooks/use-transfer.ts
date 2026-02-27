@@ -47,22 +47,12 @@ interface EquipItemsParams {
 
 const BUNGIE_MUTATION_KEY = ['bungie-mutation'];
 
-function getAccessToken() {
-  return localStorage.getItem('bungie_access_token') || '';
-}
-
-function makeHeaders() {
-  return {
-    'Content-Type': 'application/json',
-    'Authorization': `Bearer ${getAccessToken()}`,
-  };
-}
-
 async function bungiePostRequest(url: string, body: any, signal?: AbortSignal) {
   const res = await fetch(url, {
     method: 'POST',
-    headers: makeHeaders(),
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
+    credentials: 'include',
     signal,
   });
 

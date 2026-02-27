@@ -20,3 +20,15 @@ export const insertLoadoutSchema = createInsertSchema(savedLoadouts).omit({
 
 export type SavedLoadout = typeof savedLoadouts.$inferSelect;
 export type InsertLoadout = z.infer<typeof insertLoadoutSchema>;
+
+export const sessions = pgTable("sessions", {
+  id: text("id").primaryKey(),
+  bungieMembershipId: text("bungie_membership_id").notNull(),
+  accessToken: text("access_token").notNull(),
+  refreshToken: text("refresh_token"),
+  tokenExpiresAt: timestamp("token_expires_at").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export type Session = typeof sessions.$inferSelect;
+export type InsertSession = typeof sessions.$inferInsert;

@@ -16,12 +16,11 @@ export function useCharacters(membershipType?: number, membershipId?: string) {
   return useQuery<CharacterSummary[]>({
     queryKey: ['/api/bungie/characters', membershipType, membershipId],
     queryFn: async () => {
-      const accessToken = localStorage.getItem('bungie_access_token');
-      if (!accessToken || !membershipType || !membershipId) return [];
+      if (!membershipType || !membershipId) return [];
 
       const res = await fetch(
         `/api/bungie/characters/${membershipType}/${membershipId}`,
-        { headers: { 'Authorization': `Bearer ${accessToken}` } }
+        { credentials: 'include' }
       );
 
       if (!res.ok) {

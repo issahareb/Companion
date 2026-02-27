@@ -180,15 +180,14 @@ export function useProfileState(membershipType?: number, membershipId?: string) 
   return useQuery<ProfileState>({
     queryKey: ['/api/bungie/profile-state', membershipType, membershipId],
     queryFn: async ({ signal }) => {
-      const accessToken = localStorage.getItem('bungie_access_token');
-      if (!accessToken || !membershipType || !membershipId) {
+      if (!membershipType || !membershipId) {
         return { characters: [], vaultItems: [], postmasterItems: [], currencies: [], collectibles: [], records: [], artifact: undefined, inGameLoadouts: {} };
       }
 
       const res = await fetch(
         `/api/bungie/profile-state/${membershipType}/${membershipId}`,
         {
-          headers: { 'Authorization': `Bearer ${accessToken}` },
+          credentials: 'include',
           signal,
         }
       );

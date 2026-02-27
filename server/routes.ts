@@ -1,9 +1,19 @@
-import type { Express } from "express";
+import type { Express, Request, Response, NextFunction } from "express";
 import type { Server } from "http";
 import { storage } from "./storage";
 import { api } from "@shared/routes";
 import { z } from "zod";
-import { exchangeToken, fetchMemberships, fetchProfileState, transferItem, equipItem, pullFromPostmaster, setLockState, equipItems, insertSocketPlug, equipLoadout, snapshotLoadout, clearLoadout, BungieApiError } from "./bungie";
+import { nanoid } from "nanoid";
+import { exchangeToken, fetchMemberships, refreshBungieToken, fetchProfileState, transferItem, equipItem, pullFromPostmaster, setLockState, equipItems, insertSocketPlug, equipLoadout, snapshotLoadout, clearLoadout, BungieApiError } from "./bungie";
+
+declare global {
+  namespace Express {
+    interface Request {
+      sessionAccessToken?: string;
+      sessionMembershipId?: string;
+    }
+  }
+}
 
 interface CacheEntry {
   data: any;
@@ -76,10 +86,66 @@ async function verifyTurnstileToken(token: string): Promise<boolean> {
   }
 }
 
+const COOKIE_NAME = 'session_id';
+const isDev = process.env.NODE_ENV !== 'production';
+const COOKIE_OPTIONS = {
+  httpOnly: true,
+  secure: !isDev,
+  sameSite: 'lax' as const,
+  path: '/',
+  maxAge: 30 * 24 * 60 * 60 * 1000,
+  signed: true,
+};
+
+async function requireAuth(req: Request, res: Response, next: NextFunction) {
+  const sessionId = req.signedCookies?.[COOKIE_NAME];
+  if (!sessionId) {
+    return res.status(401).json({ message: 'Not authenticated' });
+  }
+
+  const session = await storage.getSession(sessionId);
+  if (!session) {
+    res.clearCookie(COOKIE_NAME, { path: '/' });
+    return res.status(401).json({ message: 'Session expired' });
+  }
+
+  if (session.tokenExpiresAt < new Date()) {
+    if (session.refreshToken) {
+      try {
+        const tokenData = await refreshBungieToken(session.refreshToken);
+        const newExpiresAt = new Date(Date.now() + tokenData.expires_in * 1000);
+        await storage.updateSessionTokens(
+          session.id,
+          tokenData.access_token,
+          tokenData.refresh_token || session.refreshToken,
+          newExpiresAt
+        );
+        req.sessionAccessToken = tokenData.access_token;
+        req.sessionMembershipId = session.bungieMembershipId;
+        return next();
+      } catch (err) {
+        console.error('[auth] Token refresh failed:', err);
+        await storage.deleteSession(session.id);
+        res.clearCookie(COOKIE_NAME, { path: '/' });
+        return res.status(401).json({ message: 'Session expired, please log in again' });
+      }
+    } else {
+      await storage.deleteSession(session.id);
+      res.clearCookie(COOKIE_NAME, { path: '/' });
+      return res.status(401).json({ message: 'Access token expired' });
+    }
+  }
+
+  req.sessionAccessToken = session.accessToken;
+  req.sessionMembershipId = session.bungieMembershipId;
+  next();
+}
+
 export async function registerRoutes(
   httpServer: Server,
   app: Express
 ): Promise<Server> {
+
   app.get('/api/config/turnstile', (_req, res) => {
     const siteKey = process.env.TURNSTILE_SITE_KEY || '';
     res.json({ enabled: !!siteKey, siteKey });
@@ -95,6 +161,113 @@ export async function registerRoutes(
       res.json({ success: valid });
     } catch {
       res.status(500).json({ success: false, message: 'Verification failed' });
+    }
+  });
+
+  app.post('/api/auth/login', async (req, res) => {
+    try {
+      const { code, turnstileToken } = req.body;
+      if (!code) {
+        return res.status(400).json({ message: 'Authorization code required' });
+      }
+      if (process.env.TURNSTILE_SECRET_KEY) {
+        if (!turnstileToken) {
+          return res.status(403).json({ message: 'CAPTCHA verification required' });
+        }
+        const valid = await verifyTurnstileToken(turnstileToken);
+        if (!valid) {
+          return res.status(403).json({ message: 'CAPTCHA verification failed' });
+        }
+      }
+
+      const tokenData = await exchangeToken(code);
+      const membership = await fetchMemberships(tokenData.access_token);
+
+      const sessionId = nanoid(32);
+      const tokenExpiresAt = new Date(Date.now() + tokenData.expires_in * 1000);
+
+      await storage.createSession({
+        id: sessionId,
+        bungieMembershipId: membership.membershipId,
+        accessToken: tokenData.access_token,
+        refreshToken: tokenData.refresh_token || null,
+        tokenExpiresAt,
+      });
+
+      res.cookie(COOKIE_NAME, sessionId, COOKIE_OPTIONS);
+      res.json({
+        membershipId: membership.membershipId,
+        membershipType: membership.membershipType,
+        displayName: membership.displayName,
+        iconPath: membership.iconPath,
+      });
+    } catch (err: any) {
+      handleBungieError(err, res, 'Login failed');
+    }
+  });
+
+  app.post('/api/auth/logout', async (req, res) => {
+    const sessionId = req.signedCookies?.[COOKIE_NAME];
+    if (sessionId) {
+      await storage.deleteSession(sessionId);
+    }
+    res.clearCookie(COOKIE_NAME, { path: '/' });
+    res.json({ success: true });
+  });
+
+  app.get('/api/auth/me', async (req, res) => {
+    const sessionId = req.signedCookies?.[COOKIE_NAME];
+    if (!sessionId) {
+      return res.status(401).json({ message: 'Not authenticated' });
+    }
+
+    const session = await storage.getSession(sessionId);
+    if (!session) {
+      res.clearCookie(COOKIE_NAME, { path: '/' });
+      return res.status(401).json({ message: 'Session expired' });
+    }
+
+    let accessToken = session.accessToken;
+
+    if (session.tokenExpiresAt < new Date()) {
+      if (session.refreshToken) {
+        try {
+          const tokenData = await refreshBungieToken(session.refreshToken);
+          const newExpiresAt = new Date(Date.now() + tokenData.expires_in * 1000);
+          await storage.updateSessionTokens(
+            session.id,
+            tokenData.access_token,
+            tokenData.refresh_token || session.refreshToken,
+            newExpiresAt
+          );
+          accessToken = tokenData.access_token;
+        } catch {
+          await storage.deleteSession(session.id);
+          res.clearCookie(COOKIE_NAME, { path: '/' });
+          return res.status(401).json({ message: 'Session expired, please log in again' });
+        }
+      } else {
+        await storage.deleteSession(session.id);
+        res.clearCookie(COOKIE_NAME, { path: '/' });
+        return res.status(401).json({ message: 'Access token expired' });
+      }
+    }
+
+    try {
+      const membership = await fetchMemberships(accessToken);
+      res.json({
+        membershipId: membership.membershipId,
+        membershipType: membership.membershipType,
+        displayName: membership.displayName,
+        iconPath: membership.iconPath,
+      });
+    } catch (err: any) {
+      if (err.message?.includes('401') || err.message?.includes('auth')) {
+        await storage.deleteSession(session.id);
+        res.clearCookie(COOKIE_NAME, { path: '/' });
+        return res.status(401).json({ message: 'Session invalid' });
+      }
+      handleBungieError(err, res, 'Failed to fetch profile');
     }
   });
 
@@ -120,28 +293,18 @@ export async function registerRoutes(
     }
   });
 
-  app.get('/api/bungie/membership', async (req, res) => {
+  app.get('/api/bungie/membership', requireAuth, async (req, res) => {
     try {
-      const authHeader = req.headers.authorization;
-      const accessToken = authHeader?.replace('Bearer ', '') || '';
-      if (!accessToken) {
-        return res.status(401).json({ message: 'Access token required' });
-      }
-      const membership = await fetchMemberships(accessToken);
+      const membership = await fetchMemberships(req.sessionAccessToken!);
       res.json(membership);
     } catch (err: any) {
       handleBungieError(err, res, 'Failed to fetch membership');
     }
   });
 
-  app.get('/api/bungie/profile-state/:membershipType/:membershipId', async (req, res) => {
+  app.get('/api/bungie/profile-state/:membershipType/:membershipId', requireAuth, async (req, res) => {
     try {
       const { membershipType, membershipId } = req.params;
-      const authHeader = req.headers.authorization;
-      const accessToken = authHeader?.replace('Bearer ', '') || '';
-      if (!accessToken) {
-        return res.status(401).json({ message: 'Access token required' });
-      }
 
       const fresh = req.query.fresh === 'true';
       const cacheKey = `${membershipType}:${membershipId}`;
@@ -154,7 +317,7 @@ export async function registerRoutes(
         }
       }
 
-      const state = await fetchProfileState(membershipType, membershipId, accessToken);
+      const state = await fetchProfileState(membershipType, membershipId, req.sessionAccessToken!);
       setCachedProfile(cacheKey, state);
       res.setHeader('X-Cache', 'MISS');
       res.json(state);
@@ -163,135 +326,90 @@ export async function registerRoutes(
     }
   });
 
-  app.post('/api/bungie/transfer', async (req, res) => {
+  app.post('/api/bungie/transfer', requireAuth, async (req, res) => {
     try {
-      const authHeader = req.headers.authorization;
-      const accessToken = authHeader?.replace('Bearer ', '') || '';
-      if (!accessToken) {
-        return res.status(401).json({ message: 'Access token required' });
-      }
       invalidateProfileCaches(req.body.membershipType);
-      const result = await transferItem(req.body, accessToken);
+      const result = await transferItem(req.body, req.sessionAccessToken!);
       res.json(result);
     } catch (err: any) {
       handleBungieError(err, res, 'Transfer failed');
     }
   });
 
-  app.post('/api/bungie/equip', async (req, res) => {
+  app.post('/api/bungie/equip', requireAuth, async (req, res) => {
     try {
-      const authHeader = req.headers.authorization;
-      const accessToken = authHeader?.replace('Bearer ', '') || '';
-      if (!accessToken) {
-        return res.status(401).json({ message: 'Access token required' });
-      }
       invalidateProfileCaches(req.body.membershipType);
-      const result = await equipItem(req.body, accessToken);
+      const result = await equipItem(req.body, req.sessionAccessToken!);
       res.json(result);
     } catch (err: any) {
       handleBungieError(err, res, 'Equip failed');
     }
   });
 
-  app.post('/api/bungie/pull-postmaster', async (req, res) => {
+  app.post('/api/bungie/pull-postmaster', requireAuth, async (req, res) => {
     try {
-      const authHeader = req.headers.authorization;
-      const accessToken = authHeader?.replace('Bearer ', '') || '';
-      if (!accessToken) {
-        return res.status(401).json({ message: 'Access token required' });
-      }
       invalidateProfileCaches(req.body.membershipType);
-      const result = await pullFromPostmaster(req.body, accessToken);
+      const result = await pullFromPostmaster(req.body, req.sessionAccessToken!);
       res.json(result);
     } catch (err: any) {
       handleBungieError(err, res, 'Pull from postmaster failed');
     }
   });
 
-  app.post('/api/bungie/lock', async (req, res) => {
+  app.post('/api/bungie/lock', requireAuth, async (req, res) => {
     try {
-      const authHeader = req.headers.authorization;
-      const accessToken = authHeader?.replace('Bearer ', '') || '';
-      if (!accessToken) {
-        return res.status(401).json({ message: 'Access token required' });
-      }
       invalidateProfileCaches(req.body.membershipType);
-      const result = await setLockState(req.body, accessToken);
+      const result = await setLockState(req.body, req.sessionAccessToken!);
       res.json(result);
     } catch (err: any) {
       handleBungieError(err, res, 'Lock state change failed');
     }
   });
 
-  app.post('/api/bungie/equip-items', async (req, res) => {
+  app.post('/api/bungie/equip-items', requireAuth, async (req, res) => {
     try {
-      const authHeader = req.headers.authorization;
-      const accessToken = authHeader?.replace('Bearer ', '') || '';
-      if (!accessToken) {
-        return res.status(401).json({ message: 'Access token required' });
-      }
       invalidateProfileCaches(req.body.membershipType);
-      const result = await equipItems(req.body, accessToken);
+      const result = await equipItems(req.body, req.sessionAccessToken!);
       res.json(result);
     } catch (err: any) {
       handleBungieError(err, res, 'Batch equip failed');
     }
   });
 
-  app.post('/api/bungie/insert-plug', async (req, res) => {
+  app.post('/api/bungie/insert-plug', requireAuth, async (req, res) => {
     try {
-      const authHeader = req.headers.authorization;
-      const accessToken = authHeader?.replace('Bearer ', '') || '';
-      if (!accessToken) {
-        return res.status(401).json({ message: 'Access token required' });
-      }
       invalidateProfileCaches(req.body.membershipType);
-      const result = await insertSocketPlug(req.body, accessToken);
+      const result = await insertSocketPlug(req.body, req.sessionAccessToken!);
       res.json(result);
     } catch (err: any) {
       handleBungieError(err, res, 'Insert plug failed');
     }
   });
 
-  app.post('/api/bungie/equip-loadout', async (req, res) => {
+  app.post('/api/bungie/equip-loadout', requireAuth, async (req, res) => {
     try {
-      const authHeader = req.headers.authorization;
-      const accessToken = authHeader?.replace('Bearer ', '') || '';
-      if (!accessToken) {
-        return res.status(401).json({ message: 'Access token required' });
-      }
       invalidateProfileCaches(req.body.membershipType);
-      const result = await equipLoadout(req.body, accessToken);
+      const result = await equipLoadout(req.body, req.sessionAccessToken!);
       res.json(result);
     } catch (err: any) {
       handleBungieError(err, res, 'Equip loadout failed');
     }
   });
 
-  app.post('/api/bungie/snapshot-loadout', async (req, res) => {
+  app.post('/api/bungie/snapshot-loadout', requireAuth, async (req, res) => {
     try {
-      const authHeader = req.headers.authorization;
-      const accessToken = authHeader?.replace('Bearer ', '') || '';
-      if (!accessToken) {
-        return res.status(401).json({ message: 'Access token required' });
-      }
       invalidateProfileCaches(req.body.membershipType);
-      const result = await snapshotLoadout(req.body, accessToken);
+      const result = await snapshotLoadout(req.body, req.sessionAccessToken!);
       res.json(result);
     } catch (err: any) {
       handleBungieError(err, res, 'Snapshot loadout failed');
     }
   });
 
-  app.post('/api/bungie/clear-loadout', async (req, res) => {
+  app.post('/api/bungie/clear-loadout', requireAuth, async (req, res) => {
     try {
-      const authHeader = req.headers.authorization;
-      const accessToken = authHeader?.replace('Bearer ', '') || '';
-      if (!accessToken) {
-        return res.status(401).json({ message: 'Access token required' });
-      }
       invalidateProfileCaches(req.body.membershipType);
-      const result = await clearLoadout(req.body, accessToken);
+      const result = await clearLoadout(req.body, req.sessionAccessToken!);
       res.json(result);
     } catch (err: any) {
       handleBungieError(err, res, 'Clear loadout failed');
@@ -344,6 +462,12 @@ export async function registerRoutes(
     }
     res.json(loadout);
   });
+
+  setInterval(() => {
+    storage.deleteExpiredSessions().catch(err => {
+      console.error('[auth] Failed to clean expired sessions:', err);
+    });
+  }, 60 * 60 * 1000);
 
   return httpServer;
 }
