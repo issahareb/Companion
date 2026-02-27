@@ -553,12 +553,20 @@ export default function Dashboard() {
                             <h3 className="text-2xl md:text-3xl text-white font-display font-light tracking-wider text-shadow-glow">{selectedCharacter.className}</h3>
                             <p className="text-[10px] text-gray-400 uppercase tracking-[0.3em] mt-1">{selectedCharacter.raceName}</p>
                           </div>
-                          <div className="text-right">
-                            <div className="flex items-center gap-2.5 justify-end">
-                              <img src="https://www.bungie.net/common/destiny2_content/icons/c81de78390f1b7f2b759c33e9a8b9938.png" alt="Power" className="w-5 h-5 brightness-150" />
-                              <span className="text-4xl font-display font-light text-[#E5C76B] text-shadow-glow" data-testid="text-power-level">{selectedCharacter.light}</span>
+                          <div className="flex items-center gap-4">
+                            {(() => {
+                              const subclassItem = selectedCharacter.equippedItems.find(i => i.slot === 'subclass');
+                              return subclassItem?.icon ? (
+                                <img src={subclassItem.icon} alt={subclassItem.name} title={subclassItem.name} className="w-12 h-12 drop-shadow-[0_0_8px_rgba(100,180,255,0.4)]" data-testid="img-subclass-super" />
+                              ) : null;
+                            })()}
+                            <div className="text-right">
+                              <div className="flex items-center gap-2.5 justify-end">
+                                <img src="https://www.bungie.net/common/destiny2_content/icons/c81de78390f1b7f2b759c33e9a8b9938.png" alt="Power" className="w-5 h-5 brightness-150" />
+                                <span className="text-4xl font-display font-light text-[#E5C76B] text-shadow-glow" data-testid="text-power-level">{selectedCharacter.light}</span>
+                              </div>
+                              <p className="text-[9px] text-gray-400 uppercase tracking-[0.25em] mt-1.5">{t('power.label')}</p>
                             </div>
-                            <p className="text-[9px] text-gray-400 uppercase tracking-[0.25em] mt-1.5">{t('power.label')}</p>
                           </div>
                         </div>
                       </div>
