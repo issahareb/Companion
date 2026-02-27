@@ -577,26 +577,27 @@ export default function Dashboard() {
                           <div className="grid grid-cols-3 md:grid-cols-6 gap-1.5">
                             {selectedCharacter.stats.map((stat) => {
                               const val = stat.value;
-                              const pct = Math.min((val / 100) * 100, 100);
-                              const barColor = val >= 100 ? 'from-[#E5C76B] to-[#D4A843]'
-                                : val >= 80 ? 'from-purple-500 to-violet-400'
-                                : val >= 50 ? 'from-emerald-600 to-green-400'
-                                : val >= 30 ? 'from-yellow-600 to-amber-400'
+                              const pct = Math.min((val / 200) * 100, 100);
+                              const isMax = val >= 200;
+                              const barColor = isMax ? 'from-[#E5C76B] via-[#F5E08B] to-[#D4A843]'
+                                : val >= 100 ? 'from-purple-500 to-violet-400'
+                                : val >= 60 ? 'from-emerald-600 to-green-400'
+                                : val >= 20 ? 'from-yellow-600 to-amber-400'
                                 : 'from-red-700 to-red-400';
-                              const numColor = val >= 100 ? 'text-[#E5C76B]'
-                                : val >= 80 ? 'text-purple-300'
-                                : val >= 50 ? 'text-emerald-300'
-                                : val >= 30 ? 'text-amber-300'
+                              const numColor = isMax ? 'text-[#E5C76B]'
+                                : val >= 100 ? 'text-purple-300'
+                                : val >= 60 ? 'text-emerald-300'
+                                : val >= 20 ? 'text-amber-300'
                                 : 'text-red-400';
                               return (
-                                <div key={stat.name} className="bg-black/40 backdrop-blur-sm border border-white/[0.08] p-2 group/stat hover:border-white/20 transition-all duration-300" title={stat.description}>
+                                <div key={stat.name} className={`bg-black/40 backdrop-blur-sm border p-2 group/stat hover:border-white/20 transition-all duration-300 ${isMax ? 'border-[#E5C76B]/30 shadow-[0_0_12px_rgba(229,199,107,0.15)]' : 'border-white/[0.08]'}`} title={stat.description}>
                                   <div className="flex items-center gap-2 mb-1.5">
-                                    {stat.icon && <img src={stat.icon} alt={stat.name} className="w-4 h-4 opacity-70 group-hover/stat:opacity-100 transition-opacity" />}
-                                    <p className="text-[7px] text-gray-400 uppercase tracking-[0.15em] group-hover/stat:text-gray-300 transition-colors truncate flex-1">{stat.name}</p>
-                                    <p className={`text-sm font-display font-light leading-none ${numColor}`} data-testid={`text-stat-${stat.name.toLowerCase()}`}>{val}</p>
+                                    {stat.icon && <img src={stat.icon} alt={stat.name} className={`w-4 h-4 transition-opacity ${isMax ? 'opacity-100 drop-shadow-[0_0_4px_rgba(229,199,107,0.6)]' : 'opacity-70 group-hover/stat:opacity-100'}`} />}
+                                    <p className={`text-[7px] uppercase tracking-[0.15em] transition-colors truncate flex-1 ${isMax ? 'text-[#E5C76B]/70' : 'text-gray-400 group-hover/stat:text-gray-300'}`}>{stat.name}</p>
+                                    <p className={`text-sm font-display font-light leading-none ${numColor} ${isMax ? 'drop-shadow-[0_0_6px_rgba(229,199,107,0.5)]' : ''}`} data-testid={`text-stat-${stat.name.toLowerCase()}`}>{val}</p>
                                   </div>
                                   <div className="w-full h-1.5 bg-white/[0.06] rounded-full overflow-hidden">
-                                    <div className={`h-full rounded-full bg-gradient-to-r ${barColor} transition-all duration-500`} style={{ width: `${pct}%` }} />
+                                    <div className={`h-full rounded-full bg-gradient-to-r ${barColor} transition-all duration-500 ${isMax ? 'shadow-[0_0_8px_rgba(229,199,107,0.4)]' : ''}`} style={{ width: `${pct}%` }} />
                                   </div>
                                 </div>
                               );
