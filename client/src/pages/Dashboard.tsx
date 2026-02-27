@@ -23,6 +23,7 @@ import { ItemCard, EquippedSlot, type Item, type SlotInfo } from '@/components/I
 import { SaveLoadoutModal } from '@/components/SaveLoadoutModal';
 import { useToast } from '@/hooks/use-toast';
 import { useI18n } from '@/lib/i18n';
+import { rateWeaponRoll, type RollResult } from '@/lib/roll-ratings';
 
 type TabType = 'characters' | 'vault' | 'loadouts' | 'postmaster' | 'collections' | 'triumphs' | 'season';
 
@@ -116,7 +117,15 @@ export default function Dashboard() {
     { id: 'rare', label: t('filter.rare') },
   ];
 
-  const [activeTab, setActiveTab] = useState<TabType>('characters');
+  const TAB_ORDER: TabType[] = ['characters', 'vault', 'loadouts', 'postmaster', 'collections', 'triumphs', 'season'];
+  const [activeTab, setActiveTabRaw] = useState<TabType>('characters');
+  const [tabDirection, setTabDirection] = useState(0);
+  const setActiveTab = (newTab: TabType) => {
+    const oldIdx = TAB_ORDER.indexOf(activeTab);
+    const newIdx = TAB_ORDER.indexOf(newTab);
+    setTabDirection(newIdx > oldIdx ? 1 : -1);
+    setActiveTabRaw(newTab);
+  };
   const [loadout, setLoadout] = useState<Record<string, Item>>({});
   const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
   const [showMobileLoadout, setShowMobileLoadout] = useState(false);
@@ -495,9 +504,24 @@ export default function Dashboard() {
             </>
           )}
           {isLoadingProfile ? (
-            <div className="flex flex-col items-center justify-center h-full space-y-4">
-              <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
-              <p className="text-[10px] text-gray-500 uppercase tracking-[0.3em] font-display">{t('loading.profile')}</p>
+            <div className="flex flex-col items-center justify-center h-full space-y-6">
+              <div className="w-full max-w-md space-y-4 px-8">
+                <div className="h-24 loading-skeleton rounded" />
+                <div className="grid grid-cols-3 gap-2">
+                  {[...Array(6)].map((_, i) => (
+                    <div key={i} className="h-14 loading-skeleton rounded" style={{ animationDelay: `${i * 0.15}s` }} />
+                  ))}
+                </div>
+                <div className="space-y-2">
+                  {[...Array(3)].map((_, i) => (
+                    <div key={i} className="h-16 loading-skeleton rounded" style={{ animationDelay: `${i * 0.2}s` }} />
+                  ))}
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <Loader2 className="w-5 h-5 animate-spin text-indigo-500" />
+                <p className="text-[10px] text-gray-500 uppercase tracking-[0.3em] font-display">{t('loading.profile')}</p>
+              </div>
             </div>
           ) : profileError ? (
             <div className="flex flex-col items-center justify-center h-full space-y-4">
@@ -508,10 +532,18 @@ export default function Dashboard() {
               </button>
             </div>
           ) : (
-            <AnimatePresence mode="wait">
+            <AnimatePresence mode="wait" custom={tabDirection}>
               {/* HÜTER TAB */}
               {activeTab === 'characters' && (
-                <motion.div key="characters" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="h-full flex flex-col relative">
+                <motion.div
+                  key="characters"
+                  custom={tabDirection}
+                  initial={{ opacity: 0, x: tabDirection * 30 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: tabDirection * -30 }}
+                  transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
+                  className="h-full flex flex-col relative"
+                >
                   {/* Character selector */}
                   <div className="flex items-center gap-2 p-3 md:p-4 border-b border-white/[0.06] shrink-0 overflow-x-auto bg-black/20">
                     {characters.map(char => (
@@ -542,18 +574,33 @@ export default function Dashboard() {
                   {selectedCharacter && (
                     <div className="flex-1 min-h-0 overflow-y-auto">
                       {/* Character header */}
-                      <div className="relative overflow-hidden">
+                      <motion.div
+                        key={selectedCharacter.characterId}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ duration: 0.4 }}
+                        className="relative overflow-hidden"
+                      >
                         {selectedCharacter.emblemBackgroundPath && (
                           <img src={selectedCharacter.emblemBackgroundPath} alt="" className="absolute inset-0 w-full h-full object-cover opacity-60" />
                         )}
                         <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-transparent" />
                         <div className="absolute inset-0 bg-gradient-to-t from-[#080b14] via-transparent to-transparent" />
                         <div className="relative z-10 p-5 md:p-7 flex items-center justify-between">
-                          <div>
+                          <motion.div
+                            initial={{ x: -20, opacity: 0 }}
+                            animate={{ x: 0, opacity: 1 }}
+                            transition={{ delay: 0.1, duration: 0.5, ease: 'easeOut' }}
+                          >
                             <h3 className="text-2xl md:text-3xl text-white font-display font-light tracking-wider text-shadow-glow">{selectedCharacter.className}</h3>
                             <p className="text-[10px] text-gray-400 uppercase tracking-[0.3em] mt-1">{selectedCharacter.raceName}</p>
-                          </div>
-                          <div className="flex items-center gap-4">
+                          </motion.div>
+                          <motion.div
+                            className="flex items-center gap-4"
+                            initial={{ x: 20, opacity: 0 }}
+                            animate={{ x: 0, opacity: 1 }}
+                            transition={{ delay: 0.15, duration: 0.5, ease: 'easeOut' }}
+                          >
                             {(() => {
                               const subclassItem = selectedCharacter.equippedItems.find(i => i.slot === 'subclass');
                               return subclassItem?.icon ? (
@@ -562,20 +609,20 @@ export default function Dashboard() {
                             })()}
                             <div className="text-right">
                               <div className="flex items-center gap-2.5 justify-end">
-                                <img src="https://www.bungie.net/common/destiny2_content/icons/c81de78390f1b7f2b759c33e9a8b9938.png" alt="Power" className="w-5 h-5 brightness-150" />
+                                <img src="https://www.bungie.net/common/destiny2_content/icons/c81de78390f1b7f2b759c33e9a8b9938.png" alt="Power" className="w-5 h-5 brightness-150 animate-[pulse_3s_ease-in-out_infinite]" />
                                 <span className="text-4xl font-display font-light text-[#E5C76B] text-shadow-glow" data-testid="text-power-level">{selectedCharacter.light}</span>
                               </div>
                               <p className="text-[9px] text-gray-400 uppercase tracking-[0.25em] mt-1.5">{t('power.label')}</p>
                             </div>
-                          </div>
+                          </motion.div>
                         </div>
-                      </div>
+                      </motion.div>
 
                       {/* Stats */}
                       {selectedCharacter.stats.length > 0 && (
                         <div className="px-4 md:px-6 pb-5">
                           <div className="grid grid-cols-3 md:grid-cols-6 gap-1.5">
-                            {selectedCharacter.stats.map((stat) => {
+                            {selectedCharacter.stats.map((stat, statIdx) => {
                               const val = stat.value;
                               const pct = Math.min((val / 200) * 100, 100);
                               const isMax = val >= 200;
@@ -590,7 +637,13 @@ export default function Dashboard() {
                                 : val >= 20 ? 'text-amber-300'
                                 : 'text-red-400';
                               return (
-                                <div key={stat.name} className={`bg-black/40 backdrop-blur-sm border p-2 group/stat hover:border-white/20 transition-all duration-300 ${isMax ? 'border-[#E5C76B]/30 shadow-[0_0_12px_rgba(229,199,107,0.15)]' : 'border-white/[0.08]'}`} title={stat.description}>
+                                <motion.div
+                                  key={stat.name}
+                                  initial={{ opacity: 0, y: 12 }}
+                                  animate={{ opacity: 1, y: 0 }}
+                                  transition={{ delay: 0.2 + statIdx * 0.06, duration: 0.4, ease: 'easeOut' }}
+                                  className={`bg-black/40 backdrop-blur-sm border p-2 group/stat hover:border-white/20 transition-all duration-300 ${isMax ? 'border-[#E5C76B]/30 shadow-[0_0_12px_rgba(229,199,107,0.15)] animate-[shimmer_3s_ease-in-out_infinite]' : 'border-white/[0.08]'}`} title={stat.description}
+                                >
                                   <div className="flex items-center gap-2 mb-1.5">
                                     {stat.icon && <img src={stat.icon} alt={stat.name} className={`w-4 h-4 transition-opacity ${isMax ? 'opacity-100 drop-shadow-[0_0_4px_rgba(229,199,107,0.6)]' : 'opacity-70 group-hover/stat:opacity-100'}`} />}
                                     <p className={`text-[7px] uppercase tracking-[0.15em] transition-colors truncate flex-1 ${isMax ? 'text-[#E5C76B]/70' : 'text-gray-400 group-hover/stat:text-gray-300'}`}>{stat.name}</p>
@@ -599,7 +652,7 @@ export default function Dashboard() {
                                   <div className="w-full h-1.5 bg-white/[0.06] rounded-full overflow-hidden">
                                     <div className={`h-full rounded-full bg-gradient-to-r ${barColor} transition-all duration-500 ${isMax ? 'shadow-[0_0_8px_rgba(229,199,107,0.4)]' : ''}`} style={{ width: `${pct}%` }} />
                                   </div>
-                                </div>
+                                </motion.div>
                               );
                             })}
                           </div>
@@ -607,7 +660,12 @@ export default function Dashboard() {
                       )}
 
                       {/* WAFFEN Section */}
-                      <div className="px-4 md:px-6 pb-5">
+                      <motion.div
+                        initial={{ opacity: 0, y: 15 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.3, duration: 0.5, ease: 'easeOut' }}
+                        className="px-4 md:px-6 pb-5"
+                      >
                         <div className="flex items-center gap-3 mb-3">
                           <div className="flex items-center gap-2">
                             <div className="w-6 h-6 rounded-sm bg-gradient-to-br from-red-500/20 to-orange-500/10 flex items-center justify-center">
@@ -640,10 +698,15 @@ export default function Dashboard() {
                             );
                           })}
                         </div>
-                      </div>
+                      </motion.div>
 
                       {/* RÜSTUNG Section */}
-                      <div className="px-4 md:px-6 pb-5">
+                      <motion.div
+                        initial={{ opacity: 0, y: 15 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.45, duration: 0.5, ease: 'easeOut' }}
+                        className="px-4 md:px-6 pb-5"
+                      >
                         <div className="flex items-center gap-3 mb-3">
                           <div className="flex items-center gap-2">
                             <div className="w-6 h-6 rounded-sm bg-gradient-to-br from-blue-500/20 to-indigo-500/10 flex items-center justify-center">
@@ -675,10 +738,15 @@ export default function Dashboard() {
                             );
                           })}
                         </div>
-                      </div>
+                      </motion.div>
 
                       {/* SUBKLASSE Section */}
-                      <div className="px-4 md:px-6 pb-5">
+                      <motion.div
+                        initial={{ opacity: 0, y: 15 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.55, duration: 0.5, ease: 'easeOut' }}
+                        className="px-4 md:px-6 pb-5"
+                      >
                         <div className="flex items-center gap-3 mb-3">
                           <div className="flex items-center gap-2">
                             <div className="w-6 h-6 rounded-sm bg-gradient-to-br from-purple-500/20 to-violet-500/10 flex items-center justify-center">
@@ -692,11 +760,16 @@ export default function Dashboard() {
                           character={selectedCharacter}
                           membershipType={destinyProfile!.membershipType}
                         />
-                      </div>
+                      </motion.div>
 
                       {/* ARTEFAKT Section */}
                       {profileState?.artifact && (
-                        <div className="px-4 md:px-6 pb-5">
+                        <motion.div
+                          initial={{ opacity: 0, y: 15 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.65, duration: 0.5, ease: 'easeOut' }}
+                          className="px-4 md:px-6 pb-5"
+                        >
                           <div className="flex items-center gap-3 mb-3">
                             <div className="flex items-center gap-2">
                               <div className="w-6 h-6 rounded-sm bg-gradient-to-br from-amber-500/20 to-yellow-500/10 flex items-center justify-center">
@@ -707,7 +780,7 @@ export default function Dashboard() {
                             <div className="flex-1 section-divider" />
                           </div>
                           <ArtifactDisplay artifact={profileState.artifact} />
-                        </div>
+                        </motion.div>
                       )}
 
                       {/* Quests */}
@@ -737,7 +810,7 @@ export default function Dashboard() {
 
               {/* TRESOR TAB */}
               {activeTab === 'vault' && (
-                <motion.div key="vault" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="h-full flex flex-col lg:flex-row">
+                <motion.div key="vault" initial={{ opacity: 0, x: tabDirection * 30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: tabDirection * -30 }} transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }} className="h-full flex flex-col lg:flex-row">
                   <div className="flex-1 flex flex-col min-w-0 border-r border-white/5 min-h-0 overflow-hidden">
                     <div className="p-4 md:p-6 pb-2 shrink-0 space-y-3">
                       <div className="relative group">
@@ -810,7 +883,7 @@ export default function Dashboard() {
 
               {/* LOADOUTS TAB */}
               {activeTab === 'loadouts' && (
-                <motion.div key="loadouts" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="h-full p-4 md:p-8 overflow-y-auto">
+                <motion.div key="loadouts" initial={{ opacity: 0, x: tabDirection * 30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: tabDirection * -30 }} transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }} className="h-full p-4 md:p-8 overflow-y-auto">
                   {isLoadingLoadouts ? (
                     <div className="flex items-center justify-center h-64">
                       <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
@@ -864,7 +937,7 @@ export default function Dashboard() {
 
               {/* POSTMASTER TAB */}
               {activeTab === 'postmaster' && (
-                <motion.div key="postmaster" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="h-full overflow-y-auto p-4 md:p-8">
+                <motion.div key="postmaster" initial={{ opacity: 0, x: tabDirection * 30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: tabDirection * -30 }} transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }} className="h-full overflow-y-auto p-4 md:p-8">
                   {postmasterItems.length === 0 && characters.length === 0 ? (
                     <div className="flex flex-col items-center justify-center h-64 text-gray-500 space-y-6">
                       <Mail className="w-16 h-16 opacity-10" />
@@ -933,7 +1006,7 @@ export default function Dashboard() {
 
               {/* COLLECTIONS TAB */}
               {activeTab === 'collections' && (
-                <motion.div key="collections" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="h-full flex flex-col">
+                <motion.div key="collections" initial={{ opacity: 0, x: tabDirection * 30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: tabDirection * -30 }} transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }} className="h-full flex flex-col">
                   <div className="p-4 md:p-6 pb-2 shrink-0 space-y-3">
                     <div className="relative group">
                       <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 group-focus-within:text-indigo-400 transition-colors" />
@@ -1013,7 +1086,7 @@ export default function Dashboard() {
 
               {/* TRIUMPHS TAB */}
               {activeTab === 'triumphs' && (
-                <motion.div key="triumphs" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="h-full flex flex-col">
+                <motion.div key="triumphs" initial={{ opacity: 0, x: tabDirection * 30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: tabDirection * -30 }} transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }} className="h-full flex flex-col">
                   <div className="p-4 md:p-6 pb-2 shrink-0 space-y-3">
                     <div className="relative group">
                       <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 group-focus-within:text-indigo-400 transition-colors" />
@@ -1128,7 +1201,7 @@ export default function Dashboard() {
 
               {/* SEASON TAB */}
               {activeTab === 'season' && (
-                <motion.div key="season" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="h-full overflow-y-auto p-4 md:p-8">
+                <motion.div key="season" initial={{ opacity: 0, x: tabDirection * 30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: tabDirection * -30 }} transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }} className="h-full overflow-y-auto p-4 md:p-8">
                   {selectedCharacter ? (
                     <div className="space-y-6">
                       <div>
@@ -1469,6 +1542,49 @@ function ArtifactDisplay({ artifact }: { artifact: ArtifactInfo }) {
   );
 }
 
+function RollRatingBadge({ result }: { result: RollResult }) {
+  const { t } = useI18n();
+  const { rating, sPerks, aPerks } = result;
+
+  const badgeStyle = rating === 'META'
+    ? 'bg-gradient-to-r from-[#E5C76B]/20 to-[#D4A843]/20 border-[#E5C76B]/40 text-[#E5C76B] shadow-[0_0_8px_rgba(229,199,107,0.25)]'
+    : rating === 'GOOD'
+    ? 'bg-purple-500/15 border-purple-500/30 text-purple-300'
+    : 'bg-white/5 border-white/10 text-gray-500';
+
+  const label = rating === 'META' ? t('roll.meta') : rating === 'GOOD' ? t('roll.good') : t('roll.mid');
+
+  return (
+    <div className="group/roll relative">
+      <span
+        className={`inline-flex items-center gap-0.5 px-1.5 py-0.5 text-[7px] font-bold uppercase tracking-wider border rounded-sm ${badgeStyle} ${rating === 'META' ? 'animate-[shimmer_3s_ease-in-out_infinite]' : ''}`}
+        data-testid={`badge-roll-${rating.toLowerCase()}`}
+      >
+        {rating === 'META' && <Sparkles className="w-2.5 h-2.5" />}
+        {label}
+      </span>
+      {(sPerks.length > 0 || aPerks.length > 0) && (
+        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 hidden group-hover/roll:block z-50 pointer-events-none">
+          <div className="bg-black/95 border border-white/10 rounded px-2.5 py-2 min-w-[140px] max-w-[220px]">
+            {sPerks.length > 0 && (
+              <div className="mb-1">
+                <p className="text-[7px] text-[#E5C76B]/70 uppercase tracking-widest mb-0.5">{t('roll.sPerks')}</p>
+                {sPerks.map(p => <p key={p} className="text-[8px] text-[#E5C76B]">{p}</p>)}
+              </div>
+            )}
+            {aPerks.length > 0 && (
+              <div>
+                <p className="text-[7px] text-purple-400/70 uppercase tracking-widest mb-0.5">{t('roll.aPerks')}</p>
+                {aPerks.map(p => <p key={p} className="text-[8px] text-purple-300">{p}</p>)}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function EquippedSlotRow({ slotId, slotLabel, SlotIcon, item, isExpanded, onTogglePicker, onAddToLoadout, character, vaultItems, onEquip, onAddToLoadoutItem }: {
   slotId: string;
   slotLabel: string;
@@ -1487,6 +1603,17 @@ function EquippedSlotRow({ slotId, slotLabel, SlotIcon, item, isExpanded, onTogg
   const { t } = useI18n();
   const isExotic = item?.rarity === 'exotic';
   const rarityColor = isExotic ? '#E5C76B' : '#7D5C96';
+  const isWeaponSlot = ['kinetic', 'energy', 'power'].includes(slotId);
+
+  const rollResult = useMemo(() => {
+    if (!item || !isWeaponSlot) return null;
+    const perkNames = [
+      ...(item.perks || []).filter(p => p.isActive).map(p => p.name),
+      ...(item.mods || []).map(m => m.name),
+    ];
+    if (perkNames.length === 0) return null;
+    return rateWeaponRoll(item.type, perkNames);
+  }, [item, isWeaponSlot]);
 
   const filtered = useMemo(() => {
     const charItems = character.inventory.filter(i => i.slot === slotId);
@@ -1541,13 +1668,14 @@ function EquippedSlotRow({ slotId, slotLabel, SlotIcon, item, isExpanded, onTogg
                   </span>
                 )}
                 <span className="text-[8px] text-gray-600">{item.type}</span>
+                {rollResult && <RollRatingBadge result={rollResult} />}
               </div>
               {item.mods && item.mods.length > 0 && (
                 <div className="flex items-center gap-1 mt-1 flex-wrap">
                   {item.mods.slice(0, 8).map((mod, i) => (
                     mod.icon ? (
                       <div key={i} className="group/perk relative">
-                        <img src={mod.icon} alt={mod.name} className="w-5 h-5 rounded-sm ring-1 ring-white/10 hover:ring-indigo-500/40 transition-all cursor-help" />
+                        <img src={mod.icon} alt={mod.name} className="w-5 h-5 rounded-sm ring-1 ring-white/10 hover:ring-indigo-500/40 hover:scale-110 transition-all cursor-help duration-200" />
                         <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 hidden group-hover/perk:block z-50 pointer-events-none">
                           <div className="bg-black/95 border border-white/10 rounded px-2 py-1 min-w-[120px] max-w-[200px]">
                             <p className="text-[9px] text-white font-bold whitespace-nowrap">{mod.name}</p>
@@ -1680,6 +1808,17 @@ function VaultItemCard({ item, characters, onTransferToChar, onEquipOnChar, onAd
   const { t } = useI18n();
   const isExotic = item.rarity === 'exotic';
   const rarityColor = isExotic ? '#E5C76B' : '#7D5C96';
+  const isWeapon = ['kinetic', 'energy', 'power'].includes(item.slot);
+
+  const rollResult = useMemo(() => {
+    if (!isWeapon) return null;
+    const perkNames = [
+      ...(item.perks || []).filter(p => p.isActive).map(p => p.name),
+      ...(item.mods || []).map(m => m.name),
+    ];
+    if (perkNames.length === 0) return null;
+    return rateWeaponRoll(item.type, perkNames);
+  }, [item, isWeapon]);
 
   useEffect(() => {
     if (!showDropdown) return;
@@ -1694,7 +1833,11 @@ function VaultItemCard({ item, characters, onTransferToChar, onEquipOnChar, onAd
   return (
     <div
       className={`group relative bg-gradient-to-b from-white/[0.03] to-transparent border transition-all duration-500 destiny-clip-sm ${
-        isInLoadout ? 'opacity-30 grayscale-[70%] border-white/5' : 'border-white/[0.08] hover:border-white/25 item-card-hover'
+        isInLoadout
+          ? 'opacity-30 grayscale-[70%] border-white/5'
+          : isExotic
+            ? 'border-[#E5C76B]/20 hover:border-[#E5C76B]/40 rarity-exotic-glow item-card-hover'
+            : 'border-white/[0.08] hover:border-white/25 item-card-hover'
       }`}
       style={{ overflow: showDropdown ? 'visible' : 'hidden' }}
       data-dropdown-id={item.id}
@@ -1708,9 +1851,12 @@ function VaultItemCard({ item, characters, onTransferToChar, onEquipOnChar, onAd
       <div className="px-2.5 py-2 relative z-10">
         <h4 className="text-[9px] font-bold truncate tracking-wider uppercase" style={{ color: isExotic ? '#E5C76B' : 'white' }}>{item.name}</h4>
         <div className="flex items-center justify-between mt-0.5">
-          <p className="text-[8px] text-gray-500 uppercase tracking-widest">{item.type}</p>
+          <div className="flex items-center gap-1.5 min-w-0">
+            <p className="text-[8px] text-gray-500 uppercase tracking-widest truncate">{item.type}</p>
+            {rollResult && <RollRatingBadge result={rollResult} />}
+          </div>
           {item.power > 0 && (
-            <p className="text-[8px] text-gray-400 flex items-center gap-0.5">
+            <p className="text-[8px] text-gray-400 flex items-center gap-0.5 shrink-0">
               <Sparkles className="w-2 h-2 text-[#E5C76B]" /> {item.power}
             </p>
           )}

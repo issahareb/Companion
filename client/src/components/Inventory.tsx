@@ -41,7 +41,9 @@ export function ItemCard({ item, isEquipped, onClick }: ItemCardProps) {
       className={`group cursor-pointer relative bg-gradient-to-b from-white/[0.03] to-transparent border overflow-hidden transition-all duration-500 destiny-clip-sm ${
         isEquipped 
           ? 'opacity-30 grayscale-[70%] border-white/5' 
-          : 'border-white/[0.08] hover:border-white/30 hover:shadow-[0_10px_40px_rgba(0,0,0,0.8)]'
+          : isExotic
+            ? 'border-[#E5C76B]/20 hover:border-[#E5C76B]/50 rarity-exotic-glow hover:shadow-[0_10px_40px_rgba(229,199,107,0.15)]'
+            : 'border-white/[0.08] hover:border-white/30 hover:shadow-[0_10px_40px_rgba(0,0,0,0.8)]'
       }`}
     >
       <div className="h-[2px] w-full" style={{ backgroundColor: rarityColor }} />
