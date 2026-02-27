@@ -626,46 +626,50 @@ export default function Dashboard() {
 
                   {selectedCharacter && (
                     <div className="flex-1 min-h-0 overflow-y-auto">
-                      {/* Character header */}
+                      {/* Character Hero */}
                       <motion.div
                         key={selectedCharacter.characterId}
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
-                        transition={{ duration: 0.4 }}
+                        transition={{ duration: 0.6 }}
                         className="relative overflow-hidden"
                       >
                         {selectedCharacter.emblemBackgroundPath && (
-                          <img src={selectedCharacter.emblemBackgroundPath} alt="" className="absolute inset-0 w-full h-full object-cover opacity-60" />
+                          <img src={selectedCharacter.emblemBackgroundPath} alt="" className="absolute inset-0 w-full h-full object-cover opacity-50 scale-105 animate-ambient" />
                         )}
-                        <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-transparent" />
-                        <div className="absolute inset-0 bg-gradient-to-t from-[#080b14] via-transparent to-transparent" />
-                        <div className="relative z-10 p-5 md:p-7 flex items-center justify-between">
+                        <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/50 to-black/20" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-[#080b14] via-[#080b14]/30 to-transparent" />
+                        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[#080b14]/90" />
+                        <div className="relative z-10 px-5 md:px-8 py-6 md:py-8 flex items-end justify-between">
                           <motion.div
-                            initial={{ x: -20, opacity: 0 }}
+                            initial={{ x: -25, opacity: 0 }}
                             animate={{ x: 0, opacity: 1 }}
-                            transition={{ delay: 0.1, duration: 0.5, ease: 'easeOut' }}
+                            transition={{ delay: 0.1, duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
                           >
-                            <h3 className="text-2xl md:text-3xl text-white font-display font-light tracking-wider text-shadow-glow">{selectedCharacter.className}</h3>
-                            <p className="text-[10px] text-gray-400 uppercase tracking-[0.3em] mt-1">{selectedCharacter.raceName}</p>
+                            <h3 className="text-3xl md:text-4xl text-white font-display font-light tracking-wider text-shadow-glow leading-none">{selectedCharacter.className}</h3>
+                            <p className="text-[10px] text-gray-400/80 uppercase tracking-[0.35em] mt-2">{selectedCharacter.raceName}</p>
                           </motion.div>
                           <motion.div
-                            className="flex items-center gap-4"
-                            initial={{ x: 20, opacity: 0 }}
+                            className="flex items-center gap-5"
+                            initial={{ x: 25, opacity: 0 }}
                             animate={{ x: 0, opacity: 1 }}
-                            transition={{ delay: 0.15, duration: 0.5, ease: 'easeOut' }}
+                            transition={{ delay: 0.2, duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
                           >
                             {(() => {
                               const subclassItem = selectedCharacter.equippedItems.find(i => i.slot === 'subclass');
                               return subclassItem?.icon ? (
-                                <img src={subclassItem.icon} alt={subclassItem.name} title={subclassItem.name} className="w-12 h-12 drop-shadow-[0_0_8px_rgba(100,180,255,0.4)]" data-testid="img-subclass-super" />
+                                <div className="relative">
+                                  <div className="absolute inset-0 blur-xl opacity-40 rounded-full" style={{ background: 'radial-gradient(circle, rgba(100,180,255,0.5), transparent 70%)' }} />
+                                  <img src={subclassItem.icon} alt={subclassItem.name} title={subclassItem.name} className="w-14 h-14 relative z-10 drop-shadow-[0_0_12px_rgba(100,180,255,0.5)]" data-testid="img-subclass-super" />
+                                </div>
                               ) : null;
                             })()}
                             <div className="text-right">
-                              <div className="flex items-center gap-2.5 justify-end">
+                              <div className="flex items-center gap-3 justify-end">
                                 <img src="https://www.bungie.net/common/destiny2_content/icons/c81de78390f1b7f2b759c33e9a8b9938.png" alt="Power" className="w-5 h-5 brightness-150 animate-[pulse_3s_ease-in-out_infinite]" />
-                                <span className="text-4xl font-display font-light text-[#E5C76B] text-shadow-glow" data-testid="text-power-level">{selectedCharacter.light}</span>
+                                <span className="text-5xl md:text-6xl font-display font-light text-[#E5C76B] text-shadow-gold leading-none" data-testid="text-power-level">{selectedCharacter.light}</span>
                               </div>
-                              <p className="text-[9px] text-gray-400 uppercase tracking-[0.25em] mt-1.5">{t('power.label')}</p>
+                              <p className="text-[9px] text-gray-400/60 uppercase tracking-[0.3em] mt-2">{t('power.label')}</p>
                             </div>
                           </motion.div>
                         </div>
@@ -674,36 +678,52 @@ export default function Dashboard() {
                       {/* Stats */}
                       {selectedCharacter.stats.length > 0 && (
                         <div className="px-4 md:px-6 pb-5">
-                          <div className="grid grid-cols-3 md:grid-cols-6 gap-1.5">
+                          <div className="grid grid-cols-3 md:grid-cols-6 gap-2">
                             {selectedCharacter.stats.map((stat, statIdx) => {
                               const val = stat.value;
-                              const pct = Math.min((val / 200) * 100, 100);
-                              const isMax = val >= 200;
-                              const barColor = isMax ? 'from-[#E5C76B] to-[#D4A843]'
-                                : val >= 100 ? 'from-purple-500 to-violet-400'
-                                : val >= 60 ? 'from-emerald-600 to-green-400'
-                                : val >= 20 ? 'from-yellow-600 to-amber-400'
-                                : 'from-red-700 to-red-400';
+                              const pct = Math.min((val / 100) * 100, 100);
+                              const isMax = val >= 100;
+                              const strokeColor = isMax ? '#E5C76B'
+                                : val >= 80 ? '#a78bfa'
+                                : val >= 50 ? '#34d399'
+                                : val >= 30 ? '#fbbf24'
+                                : '#f87171';
                               const numColor = isMax ? 'text-[#E5C76B]'
-                                : val >= 100 ? 'text-purple-300'
-                                : val >= 60 ? 'text-emerald-300'
-                                : val >= 20 ? 'text-amber-300'
+                                : val >= 80 ? 'text-purple-300'
+                                : val >= 50 ? 'text-emerald-300'
+                                : val >= 30 ? 'text-amber-300'
                                 : 'text-red-400';
+                              const circumference = 2 * Math.PI * 18;
+                              const dashOffset = circumference - (pct / 100) * circumference;
                               return (
                                 <motion.div
                                   key={stat.name}
-                                  initial={{ opacity: 0, y: 12 }}
-                                  animate={{ opacity: 1, y: 0 }}
-                                  transition={{ delay: 0.2 + statIdx * 0.06, duration: 0.4, ease: 'easeOut' }}
-                                  className={`bg-black/30 border p-2 hover:border-white/15 transition-all duration-300 ${isMax ? 'border-[#E5C76B]/25' : 'border-white/[0.06]'}`} title={stat.description}
+                                  initial={{ opacity: 0, scale: 0.9 }}
+                                  animate={{ opacity: 1, scale: 1 }}
+                                  transition={{ delay: 0.2 + statIdx * 0.06, duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
+                                  className={`glass-subtle border p-2.5 hover:border-white/15 transition-all duration-400 group/stat ${isMax ? 'border-[#E5C76B]/20' : 'border-white/[0.06]'}`}
+                                  title={stat.description}
                                 >
-                                  <div className="flex items-center gap-1.5 mb-1.5">
-                                    {stat.icon && <img src={stat.icon} alt={stat.name} className="w-4 h-4 opacity-70" />}
-                                    <p className={`text-[9px] uppercase tracking-[0.12em] truncate flex-1 ${isMax ? 'text-[#E5C76B]/60' : 'text-gray-500'}`}>{stat.name}</p>
-                                    <p className={`text-sm font-display font-light leading-none ${numColor}`} data-testid={`text-stat-${stat.name.toLowerCase()}`}>{val}</p>
-                                  </div>
-                                  <div className="w-full h-1 bg-white/[0.06] rounded-full overflow-hidden">
-                                    <div className={`h-full rounded-full bg-gradient-to-r ${barColor} transition-all duration-500`} style={{ width: `${pct}%` }} />
+                                  <div className="flex items-center gap-2">
+                                    <div className="relative w-11 h-11 shrink-0">
+                                      <svg viewBox="0 0 40 40" className="w-full h-full stat-ring">
+                                        <circle cx="20" cy="20" r="18" className="stat-ring-track" />
+                                        <circle
+                                          cx="20" cy="20" r="18"
+                                          className="stat-ring-fill"
+                                          stroke={strokeColor}
+                                          strokeDasharray={circumference}
+                                          strokeDashoffset={dashOffset}
+                                        />
+                                      </svg>
+                                      <div className="absolute inset-0 flex items-center justify-center">
+                                        <span className={`text-xs font-display leading-none ${numColor}`} data-testid={`text-stat-${stat.name.toLowerCase()}`}>{val}</span>
+                                      </div>
+                                    </div>
+                                    <div className="min-w-0 flex-1">
+                                      <p className={`text-[8px] uppercase tracking-[0.15em] truncate ${isMax ? 'text-[#E5C76B]/70' : 'text-gray-500'}`}>{stat.name}</p>
+                                      {stat.icon && <img src={stat.icon} alt="" className="w-3.5 h-3.5 opacity-50 mt-1 group-hover/stat:opacity-80 transition-opacity" />}
+                                    </div>
                                   </div>
                                 </motion.div>
                               );
