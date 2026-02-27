@@ -11,6 +11,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import hunterBgImg from '@assets/IMG_0576_1772037013335.jpeg';
 import warlockBgImg from '@assets/IMG_0577_1772043445515.jpeg';
+import titanBgImg from '@assets/IMG_0673_1772205996067.png';
 import ggLogoImg from '@assets/IMG_0608_1772051654559.png';
 
 import { DesktopNavButton, MobileNavButton, UserProfile } from '@/components/Navigation';
@@ -629,6 +630,13 @@ export default function DemoDashboard() {
           {activeTab === 'characters' && selectedCharacter?.className === 'Warlock' && (
             <>
               <img src={warlockBgImg} alt="" className="absolute inset-0 w-full h-full object-cover opacity-[0.25] pointer-events-none z-0" />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#080b14] via-[#080b14]/50 to-transparent pointer-events-none z-0" />
+              <div className="absolute inset-0 bg-gradient-to-r from-[#080b14]/70 via-transparent to-[#080b14]/40 pointer-events-none z-0" />
+            </>
+          )}
+          {activeTab === 'characters' && selectedCharacter?.className === 'Titan' && (
+            <>
+              <img src={titanBgImg} alt="" className="absolute inset-0 w-full h-full object-cover opacity-[0.25] pointer-events-none z-0" />
               <div className="absolute inset-0 bg-gradient-to-t from-[#080b14] via-[#080b14]/50 to-transparent pointer-events-none z-0" />
               <div className="absolute inset-0 bg-gradient-to-r from-[#080b14]/70 via-transparent to-[#080b14]/40 pointer-events-none z-0" />
             </>

@@ -9,6 +9,7 @@ import Home from "@/pages/Home";
 
 import Dashboard from "@/pages/Dashboard";
 import SharePage from "@/pages/SharePage";
+import DemoDashboard from "@/pages/Demo";
 
 function Router() {
   return (
@@ -16,6 +17,7 @@ function Router() {
       <Route path="/" component={Home} />
       <Route path="/dashboard" component={Dashboard} />
       <Route path="/share/:shareCode" component={SharePage} />
+      <Route path="/demo" component={DemoDashboard} />
       <Route component={NotFound} />
     </Switch>
   );
