@@ -104,7 +104,7 @@ The project uses a monorepo with `client/` (React frontend), `server/` (Express 
 ### UI/UX Decisions
 -   **Theming**: Dark, Destiny-inspired with a gold/indigo color palette, custom clip-paths, and subtle animations.
 -   **Typography**: Protest Strike (headings), Plus Jakarta Sans (body), JetBrains Mono (code). Minimum text size: 8px.
--   **Animations**: Framer Motion for page transitions, item interactions, staggered entrances. Exotic glow is subtle (4s cycle). No shimmer on stat cards.
+-   **Animations**: Apple-like cinematic animation system using Framer Motion + CSS. Apple ease curve `[0.16, 1, 0.3, 1]` for smooth deceleration. Spring physics `{ damping: 25-30, stiffness: 120-300 }` for interactive elements. CSS classes: `.reveal-up`, `.reveal-scale`, `.reveal-left` (with `.visible`), `.hover-lift`, `.press-scale`, `.card-3d`, `.scroll-container`, `.animate-float-gentle`, `.animate-breathe`, `.progress-animated`. Stagger delays via `stagger-1` through `stagger-8`. `useScrollReveal` hook uses IntersectionObserver with scroll container root detection (`data-scroll-container`). `will-change: transform, opacity` on animated classes for GPU compositing. Exotic glow is subtle (4s cycle). No shimmer on stat cards.
 -   **Layout**: Single consolidated header bar (no double header). Clean tab-style character selector with bottom border indicator.
 -   **Section Headers**: Minimal style — icon + label + subtle line divider (no gradient icon containers).
 -   **Background**: Subtle static blur orbs (no pulse animations on background elements).
