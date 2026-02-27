@@ -59,7 +59,7 @@ export function VaultItemCard({ item, characters, onTransferToChar, onEquipOnCha
   return (
     <div
       ref={cardRef}
-      className={`group relative bg-gradient-to-b from-white/[0.03] to-transparent border transition-all duration-500 destiny-clip-sm card-3d ${
+      className={`group relative bg-gradient-to-b from-white/[0.03] to-transparent border transition-all duration-500 destiny-clip-sm card-3d card-sheen ${
         isInLoadout
           ? 'opacity-30 grayscale-[70%] border-white/5'
           : isExotic

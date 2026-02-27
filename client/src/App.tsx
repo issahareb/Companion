@@ -32,6 +32,7 @@ function App() {
           <ErrorBoundary fallbackTitle="GuardianGrid encountered an error">
             <Toaster />
             <Router />
+            <div className="noise-overlay" aria-hidden="true" />
           </ErrorBoundary>
         </TooltipProvider>
       </QueryClientProvider>

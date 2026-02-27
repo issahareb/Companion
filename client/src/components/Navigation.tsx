@@ -14,7 +14,7 @@ export function DesktopNavButton({ icon: Icon, label, active, onClick }: NavButt
   return (
     <button 
       onClick={onClick}
-      className={`w-full flex items-center space-x-3 px-4 py-3 transition-all duration-300 relative overflow-hidden group ${
+      className={`w-full flex items-center space-x-3 px-4 py-3 transition-all duration-300 relative overflow-hidden group sidebar-shine-hover ${
         active 
           ? 'text-white' 
           : 'text-gray-500 hover:text-white border-l-2 border-transparent'

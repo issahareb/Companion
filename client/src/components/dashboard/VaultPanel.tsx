@@ -44,7 +44,7 @@ export function VaultPanel({
           transition={{ delay: 0.1, duration: 0.5, ease: appleEase }}
           className="p-4 md:p-6 pb-2 shrink-0 space-y-3"
         >
-          <div className="relative group">
+          <div className="relative group focus-glow rounded-sm">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 group-focus-within:text-indigo-400 transition-colors" />
             <input 
               type="text"

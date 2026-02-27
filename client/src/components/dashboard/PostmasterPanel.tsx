@@ -39,9 +39,9 @@ function PostmasterCharSection({ char, charPostItems, handlePullPostmaster, isPu
             <motion.div
               key={item.id}
               initial={{ opacity: 0, y: 16, scale: 0.95 }}
-              animate={isVisible ? { opacity: 1, y: 0, scale: 1 } : {}}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
               transition={{ delay: i * 0.04, duration: 0.4, ease: appleEase }}
-              className="bg-gradient-to-b from-amber-500/[0.03] to-transparent border border-amber-500/15 overflow-hidden destiny-clip-sm hover:border-amber-500/30 transition-all duration-300 group hover-lift"
+              className="bg-gradient-to-b from-amber-500/[0.03] to-transparent border border-amber-500/15 overflow-hidden destiny-clip-sm hover:border-amber-500/30 transition-all duration-300 group hover-lift card-sheen"
               data-testid={`card-postmaster-${item.id}`}
             >
               <div className="h-[2px] w-full bg-amber-500/60" />

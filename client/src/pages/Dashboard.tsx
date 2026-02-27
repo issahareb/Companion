@@ -330,7 +330,7 @@ export default function Dashboard() {
       </aside>
 
       <main className="flex-1 flex flex-col h-full relative overflow-hidden z-10">
-        <header className="h-14 border-b border-white/[0.06] bg-header backdrop-blur-xl flex items-center justify-between px-4 md:px-6 shrink-0 z-10">
+        <header className="h-14 border-b border-white/[0.06] bg-header backdrop-blur-xl flex items-center justify-between px-4 md:px-6 shrink-0 z-10 header-border-glow">
           <div className="flex items-center gap-3">
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
@@ -367,9 +367,15 @@ export default function Dashboard() {
                 ))}
               </div>
             )}
-            <button onClick={() => refetchProfile()} className="p-2 text-gray-500 hover:text-white transition-all hover:bg-white/5 rounded" data-testid="button-refresh">
-              <RefreshCw className="w-4 h-4" />
-            </button>
+            <motion.button
+              onClick={() => refetchProfile()}
+              className="p-2 text-gray-500 hover:text-white transition-all hover:bg-white/5 rounded icon-bounce-hover"
+              data-testid="button-refresh"
+              whileTap={{ rotate: 180 }}
+              transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+            >
+              <RefreshCw className={`w-4 h-4 ${isFetchingProfile ? 'animate-spin' : ''}`} />
+            </motion.button>
           </div>
         </header>
 

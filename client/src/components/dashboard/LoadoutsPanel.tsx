@@ -48,7 +48,7 @@ export function LoadoutsPanel({
               initial={{ opacity: 0, y: 20, scale: 0.95 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               transition={{ delay: i * 0.06, duration: 0.5, ease: appleEase }}
-              className="bg-gradient-to-b from-white/[0.03] to-transparent border border-white/[0.08] p-4 group destiny-clip-sm hover:border-white/25 transition-all duration-500 hover-lift"
+              className="bg-gradient-to-b from-white/[0.03] to-transparent border border-white/[0.08] p-4 group destiny-clip-sm hover:border-white/25 transition-all duration-500 hover-lift card-sheen"
               data-testid={`card-loadout-${saved.id}`}
             >
               <div className="flex justify-between items-start mb-3">
