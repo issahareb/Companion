@@ -6,7 +6,8 @@ import {
   Users, ArrowRightLeft, Trash2, X, Package, Mail,
   ChevronDown, ChevronUp, Filter, SlidersHorizontal, Coins,
   Plus, Sword, ShieldHalf, Orbit, Eye, ScrollText,
-  BookOpen, Trophy, TrendingUp, Lock, Unlock, Download, LogOut
+  BookOpen, Trophy, TrendingUp, Lock, Unlock, Download, LogOut,
+  WifiOff, ServerCrash, Clock
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import hunterBgImg from '@assets/IMG_0576_1772037013335.jpeg';
@@ -16,8 +17,10 @@ import ggLogoImg from '@assets/IMG_0608_1772051654559.png';
 
 import { useBungieAuth } from '@/hooks/use-bungie-auth';
 import { useLoadouts, useSaveLoadout, useDeleteLoadout } from '@/hooks/use-loadouts';
-import { useProfileState, type InventoryItem, type CharacterData, type CurrencyInfo, type QuestItem, type CollectibleItem, type RecordItem, type ProgressionInfo, type SocketInfo, type ArtifactInfo } from '@/hooks/use-profile-state';
-import { useTransferItem, useEquipItem, useSwapItem, usePullFromPostmaster, useSetLockState, useEquipItems, useInsertPlug } from '@/hooks/use-transfer';
+import { useProfileState, getBungieErrorType, type InventoryItem, type CharacterData, type CurrencyInfo, type QuestItem, type CollectibleItem, type RecordItem, type ProgressionInfo, type SocketInfo, type ArtifactInfo } from '@/hooks/use-profile-state';
+import { useTransferItem, useEquipItem, useSwapItem, usePullFromPostmaster, useSetLockState, useEquipItems, useInsertPlug, useIsBungieMutating } from '@/hooks/use-transfer';
+import { useOnlineStatus } from '@/hooks/use-online-status';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 
 import { DesktopNavButton, MobileNavButton, UserProfile } from '@/components/Navigation';
 import { ItemCard, EquippedSlot, type Item, type SlotInfo } from '@/components/Inventory';
@@ -27,6 +30,53 @@ import { useI18n } from '@/lib/i18n';
 import { rateWeaponRoll, type RollResult } from '@/lib/roll-ratings';
 
 type TabType = 'characters' | 'vault' | 'loadouts' | 'postmaster' | 'collections' | 'triumphs' | 'season';
+
+function BungieAutoRetry({ onRetry, intervalSeconds = 30 }: { onRetry: () => void; intervalSeconds?: number }) {
+  const [countdown, setCountdown] = useState(intervalSeconds);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCountdown(prev => {
+        if (prev <= 1) {
+          onRetry();
+          return intervalSeconds;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [onRetry, intervalSeconds]);
+
+  return (
+    <div className="flex items-center gap-3 mt-2">
+      <button
+        onClick={() => { setCountdown(intervalSeconds); onRetry(); }}
+        className="flex items-center gap-2 px-4 py-2 text-xs uppercase tracking-widest bg-white/5 hover:bg-white/10 text-white border border-white/10 transition-all destiny-clip-sm"
+        data-testid="button-bungie-retry"
+      >
+        <RefreshCw className="w-3.5 h-3.5" /> Retry Now
+      </button>
+      <span className="text-[10px] text-gray-500" data-testid="text-retry-countdown">
+        Auto-retry in {countdown}s
+      </span>
+    </div>
+  );
+}
+
+function OfflineBanner() {
+  return (
+    <motion.div
+      initial={{ height: 0, opacity: 0 }}
+      animate={{ height: 'auto', opacity: 1 }}
+      exit={{ height: 0, opacity: 0 }}
+      className="bg-amber-500/10 border-b border-amber-500/20 px-4 py-2 flex items-center justify-center gap-2"
+      data-testid="banner-offline"
+    >
+      <WifiOff className="w-3.5 h-3.5 text-amber-400" />
+      <span className="text-[11px] text-amber-300">You are offline — showing cached data</span>
+    </motion.div>
+  );
+}
 
 function toItem(inv: InventoryItem): Item {
   return {
@@ -83,8 +133,11 @@ export default function Dashboard() {
   const pullPostmasterMutation = usePullFromPostmaster();
   const lockStateMutation = useSetLockState();
   const equipItemsMutation = useEquipItems();
+  const isBungieMutating = useIsBungieMutating();
+  const isOnline = useOnlineStatus();
   const { toast } = useToast();
   const { t } = useI18n();
+  const bungieErrorType = getBungieErrorType(profileError);
 
   const ITEM_SLOTS: SlotInfo[] = [
     { id: 'kinetic', label: t('slot.kinetic'), icon: Crosshair },
@@ -192,7 +245,7 @@ export default function Dashboard() {
   }, [records, triumphsSearch, triumphsFilter]);
 
   const handlePullPostmaster = async (item: InventoryItem) => {
-    if (!destinyProfile || !item.characterId) return;
+    if (!destinyProfile || !item.characterId || isBungieMutating) return;
     try {
       await pullPostmasterMutation.mutateAsync({
         itemReferenceHash: item.itemHash,
@@ -243,7 +296,7 @@ export default function Dashboard() {
   };
 
   const handleTransfer = async (item: InventoryItem, toVault: boolean, characterId: string) => {
-    if (!destinyProfile) return;
+    if (!destinyProfile || isBungieMutating) return;
     try {
       await transferMutation.mutateAsync({
         itemReferenceHash: item.itemHash,
@@ -259,6 +312,7 @@ export default function Dashboard() {
   };
 
   const handleEquip = async (item: InventoryItem, characterId: string) => {
+    if (isBungieMutating) return;
     if (!destinyProfile) return;
     try {
       if (item.location === 'vault') {
@@ -453,6 +507,10 @@ export default function Dashboard() {
           )}
         </AnimatePresence>
 
+        <AnimatePresence>
+          {!isOnline && <OfflineBanner />}
+        </AnimatePresence>
+
         <div className="flex-1 min-h-0 overflow-hidden relative">
           {activeTab === 'characters' && selectedCharacter?.className === 'Hunter' && (
             <>
@@ -497,11 +555,37 @@ export default function Dashboard() {
             </div>
           ) : profileError ? (
             <div className="flex flex-col items-center justify-center h-full space-y-4">
-              <AlertTriangle className="w-8 h-8 text-amber-500" />
-              <p className="text-sm text-gray-400 text-center max-w-md">{t('error.profile')}</p>
-              <button onClick={() => refetchProfile()} className="flex items-center gap-2 px-4 py-2 text-xs uppercase tracking-widest bg-white/5 hover:bg-white/10 text-white border border-white/10 transition-all destiny-clip-sm">
-                <RefreshCw className="w-3.5 h-3.5" /> {t('error.retry')}
-              </button>
+              {bungieErrorType === 'maintenance' ? (
+                <>
+                  <div className="w-16 h-16 rounded-full bg-amber-500/10 flex items-center justify-center">
+                    <ServerCrash className="w-8 h-8 text-amber-400" />
+                  </div>
+                  <h3 className="text-base font-semibold text-white/90" data-testid="text-bungie-maintenance">Bungie API Maintenance</h3>
+                  <p className="text-sm text-gray-400 text-center max-w-md">
+                    Bungie's servers are currently undergoing maintenance. Your data will load automatically when they're back online.
+                  </p>
+                  <BungieAutoRetry onRetry={() => refetchProfile()} />
+                </>
+              ) : bungieErrorType === 'rate_limit' ? (
+                <>
+                  <div className="w-16 h-16 rounded-full bg-orange-500/10 flex items-center justify-center">
+                    <Clock className="w-8 h-8 text-orange-400" />
+                  </div>
+                  <h3 className="text-base font-semibold text-white/90" data-testid="text-bungie-throttled">Rate Limited</h3>
+                  <p className="text-sm text-gray-400 text-center max-w-md">
+                    Too many requests to Bungie's API. Please wait a moment before trying again.
+                  </p>
+                  <BungieAutoRetry onRetry={() => refetchProfile()} intervalSeconds={15} />
+                </>
+              ) : (
+                <>
+                  <AlertTriangle className="w-8 h-8 text-amber-500" />
+                  <p className="text-sm text-gray-400 text-center max-w-md">{t('error.profile')}</p>
+                  <button onClick={() => refetchProfile()} className="flex items-center gap-2 px-4 py-2 text-xs uppercase tracking-widest bg-white/5 hover:bg-white/10 text-white border border-white/10 transition-all destiny-clip-sm" data-testid="button-retry-profile">
+                    <RefreshCw className="w-3.5 h-3.5" /> {t('error.retry')}
+                  </button>
+                </>
+              )}
             </div>
           ) : (
             <AnimatePresence mode="wait" custom={tabDirection}>

@@ -2,8 +2,17 @@ import { QueryClient, QueryFunction } from "@tanstack/react-query";
 
 async function throwIfResNotOk(res: Response) {
   if (!res.ok) {
-    const text = (await res.text()) || res.statusText;
-    throw new Error(`${res.status}: ${text}`);
+    let errorData: any;
+    try {
+      errorData = await res.json();
+    } catch {
+      errorData = { message: res.statusText };
+    }
+    const error = new Error(errorData.message || `${res.status}: ${res.statusText}`);
+    (error as any).status = res.status;
+    (error as any).errorType = errorData.errorType || null;
+    (error as any).errorCode = errorData.errorCode || 0;
+    throw error;
   }
 }
 
@@ -41,17 +50,27 @@ export const getQueryFn: <T>(options: {
     return await res.json();
   };
 
+function shouldRetry(failureCount: number, error: any): boolean {
+  if (error?.status === 401 || error?.status === 403) return false;
+  if (error?.errorType === 'auth') return false;
+  if (error?.errorType === 'maintenance') return false;
+  return failureCount < 2;
+}
+
 export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       queryFn: getQueryFn({ on401: "throw" }),
       refetchInterval: false,
       refetchOnWindowFocus: false,
-      staleTime: Infinity,
-      retry: false,
+      staleTime: 5 * 60 * 1000,
+      retry: shouldRetry,
+      retryDelay: (attemptIndex) => Math.min(1000 * Math.pow(2, attemptIndex), 8000),
+      networkMode: 'offlineFirst',
     },
     mutations: {
       retry: false,
+      networkMode: 'always',
     },
   },
 });

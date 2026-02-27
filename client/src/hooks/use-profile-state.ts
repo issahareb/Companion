@@ -169,10 +169,17 @@ export interface ProfileState {
   inGameLoadouts: Record<string, InGameLoadout[]>;
 }
 
+export type BungieErrorType = 'rate_limit' | 'maintenance' | 'auth' | 'timeout' | 'network' | 'api' | null;
+
+export function getBungieErrorType(error: unknown): BungieErrorType {
+  if (!error || typeof error !== 'object') return null;
+  return (error as any).errorType || null;
+}
+
 export function useProfileState(membershipType?: number, membershipId?: string) {
   return useQuery<ProfileState>({
     queryKey: ['/api/bungie/profile-state', membershipType, membershipId],
-    queryFn: async () => {
+    queryFn: async ({ signal }) => {
       const accessToken = localStorage.getItem('bungie_access_token');
       if (!accessToken || !membershipType || !membershipId) {
         return { characters: [], vaultItems: [], postmasterItems: [], currencies: [], collectibles: [], records: [], artifact: undefined, inGameLoadouts: {} };
@@ -180,18 +187,34 @@ export function useProfileState(membershipType?: number, membershipId?: string) 
 
       const res = await fetch(
         `/api/bungie/profile-state/${membershipType}/${membershipId}`,
-        { headers: { 'Authorization': `Bearer ${accessToken}` } }
+        {
+          headers: { 'Authorization': `Bearer ${accessToken}` },
+          signal,
+        }
       );
 
       if (!res.ok) {
-        const error = await res.json().catch(() => ({ message: 'Unknown error' }));
-        throw new Error(error.message || 'Failed to fetch profile state');
+        let errorData: any;
+        try {
+          errorData = await res.json();
+        } catch {
+          errorData = { message: 'Unknown error' };
+        }
+        const error = new Error(errorData.message || 'Failed to fetch profile state');
+        (error as any).status = res.status;
+        (error as any).errorType = errorData.errorType || null;
+        (error as any).errorCode = errorData.errorCode || 0;
+        throw error;
       }
 
       return res.json();
     },
     enabled: !!membershipType && !!membershipId,
     staleTime: 2 * 60 * 1000,
-    retry: 1,
+    retry: (failureCount, error: any) => {
+      if (error?.errorType === 'auth' || error?.errorType === 'maintenance') return false;
+      if (error?.status === 401) return false;
+      return failureCount < 1;
+    },
   });
 }

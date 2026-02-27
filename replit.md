@@ -29,10 +29,21 @@ The project uses a monorepo with `client/` (React frontend), `server/` (Express 
 -   The server fetches comprehensive player profile states, including characters, inventory, vault, postmaster, currencies, collectibles, records, seasonal artifact, and in-game loadouts using various Bungie API components.
 -   Provides endpoints for in-game actions like item transfers, equipping, and subclass modifications.
 -   Caches Bungie manifest data for 24 hours.
+-   **Retry Logic**: `bungieRequestWithRetry` wrapper with exponential backoff (max 3 attempts), 15s timeout via AbortController, handles HTTP 429 rate limits, 503/521/522 maintenance, and Bungie-specific throttle/maintenance error codes.
+-   **Profile Cache**: Server-side 30s TTL in-memory cache for profile state responses. Bypass with `?fresh=true` query param. Cache invalidated on write operations.
+-   **Error Classification**: `BungieApiError` class with typed errors (`rate_limit`, `maintenance`, `auth`, `timeout`, `network`, `api`) passed to frontend for appropriate UI handling.
 
 ### Client-Side Data Management
 -   Extensive type definitions for game entities like perks, mods, sockets, artifacts, inventory items, collectibles, records, and progressions.
 -   Custom React hooks for fetching and mutating Bungie API data and managing saved loadouts.
+
+### Robustness & Error Handling
+-   **React Error Boundary**: `ErrorBoundary` component wraps the app routes. Shows retry/home buttons on crashes. Individual tab sections can be wrapped for isolation.
+-   **Offline Support**: `useOnlineStatus` hook tracks `navigator.onLine`. Offline banner shown in Dashboard. React Query uses `networkMode: 'offlineFirst'` to show cached data when offline.
+-   **Query Retry**: React Query retries queries up to 2 times with exponential backoff. Skips retry for 401/403/maintenance errors. Mutations do not retry.
+-   **Mutation Locking**: Shared `BUNGIE_MUTATION_KEY` across all Bungie mutations. `useIsBungieMutating()` hook prevents concurrent mutations (no double-transfers).
+-   **AbortController Cleanup**: All fetch calls in `use-bungie-auth.ts` use AbortController cancelled on unmount. Profile state query uses React Query's built-in signal forwarding.
+-   **Bungie-Down Fallback UI**: Dashboard detects `errorType` from server responses and shows maintenance/rate-limit specific screens with auto-retry countdown.
 
 ### Internationalization (i18n)
 -   Supports German, English, and French, covering all UI strings.

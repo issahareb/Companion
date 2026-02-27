@@ -1,4 +1,4 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient, useIsMutating } from '@tanstack/react-query';
 
 interface TransferParams {
   itemReferenceHash: number;
@@ -45,6 +45,8 @@ interface EquipItemsParams {
   membershipType: number;
 }
 
+const BUNGIE_MUTATION_KEY = ['bungie-mutation'];
+
 function getAccessToken() {
   return localStorage.getItem('bungie_access_token') || '';
 }
@@ -56,22 +58,40 @@ function makeHeaders() {
   };
 }
 
+async function bungiePostRequest(url: string, body: any, signal?: AbortSignal) {
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: makeHeaders(),
+    body: JSON.stringify(body),
+    signal,
+  });
+
+  if (!res.ok) {
+    let errorData: any;
+    try {
+      errorData = await res.json();
+    } catch {
+      errorData = { message: 'Request failed' };
+    }
+    const error = new Error(errorData.message || 'Request failed');
+    (error as any).status = res.status;
+    (error as any).errorType = errorData.errorType || null;
+    throw error;
+  }
+  return res.json();
+}
+
+export function useIsBungieMutating() {
+  return useIsMutating({ mutationKey: BUNGIE_MUTATION_KEY }) > 0;
+}
+
 export function useTransferItem() {
   const queryClient = useQueryClient();
 
   return useMutation({
+    mutationKey: BUNGIE_MUTATION_KEY,
     mutationFn: async (params: TransferParams) => {
-      const res = await fetch('/api/bungie/transfer', {
-        method: 'POST',
-        headers: makeHeaders(),
-        body: JSON.stringify(params),
-      });
-
-      if (!res.ok) {
-        const error = await res.json().catch(() => ({ message: 'Transfer failed' }));
-        throw new Error(error.message);
-      }
-      return res.json();
+      return bungiePostRequest('/api/bungie/transfer', params);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/bungie/profile-state'] });
@@ -83,18 +103,9 @@ export function useEquipItem() {
   const queryClient = useQueryClient();
 
   return useMutation({
+    mutationKey: BUNGIE_MUTATION_KEY,
     mutationFn: async (params: EquipParams) => {
-      const res = await fetch('/api/bungie/equip', {
-        method: 'POST',
-        headers: makeHeaders(),
-        body: JSON.stringify(params),
-      });
-
-      if (!res.ok) {
-        const error = await res.json().catch(() => ({ message: 'Equip failed' }));
-        throw new Error(error.message);
-      }
-      return res.json();
+      return bungiePostRequest('/api/bungie/equip', params);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/bungie/profile-state'] });
@@ -106,78 +117,54 @@ export function useSwapItem() {
   const queryClient = useQueryClient();
 
   return useMutation({
+    mutationKey: BUNGIE_MUTATION_KEY,
     mutationFn: async (params: SwapParams) => {
       const { item, targetCharacterId, membershipType } = params;
-      const headers = makeHeaders();
 
       if (item.location === 'vault') {
-        await fetch('/api/bungie/transfer', {
-          method: 'POST',
-          headers,
-          body: JSON.stringify({
-            itemReferenceHash: item.itemHash,
-            itemId: item.id,
-            characterId: targetCharacterId,
-            membershipType,
-            transferToVault: false,
-          }),
-        }).then(r => { if (!r.ok) throw new Error('Transfer from vault failed'); return r.json(); });
+        await bungiePostRequest('/api/bungie/transfer', {
+          itemReferenceHash: item.itemHash,
+          itemId: item.id,
+          characterId: targetCharacterId,
+          membershipType,
+          transferToVault: false,
+        });
 
-        await fetch('/api/bungie/equip', {
-          method: 'POST',
-          headers,
-          body: JSON.stringify({
-            itemId: item.id,
-            characterId: targetCharacterId,
-            membershipType,
-          }),
-        }).then(r => { if (!r.ok) throw new Error('Equip failed'); return r.json(); });
+        await bungiePostRequest('/api/bungie/equip', {
+          itemId: item.id,
+          characterId: targetCharacterId,
+          membershipType,
+        });
 
       } else if (item.location === 'character' && item.characterId === targetCharacterId) {
-        await fetch('/api/bungie/equip', {
-          method: 'POST',
-          headers,
-          body: JSON.stringify({
-            itemId: item.id,
-            characterId: targetCharacterId,
-            membershipType,
-          }),
-        }).then(r => { if (!r.ok) throw new Error('Equip failed'); return r.json(); });
+        await bungiePostRequest('/api/bungie/equip', {
+          itemId: item.id,
+          characterId: targetCharacterId,
+          membershipType,
+        });
 
       } else if (item.location === 'character' && item.characterId !== targetCharacterId) {
-        await fetch('/api/bungie/transfer', {
-          method: 'POST',
-          headers,
-          body: JSON.stringify({
-            itemReferenceHash: item.itemHash,
-            itemId: item.id,
-            characterId: item.characterId,
-            membershipType,
-            transferToVault: true,
-          }),
-        }).then(r => { if (!r.ok) throw new Error('Transfer to vault failed'); return r.json(); });
+        await bungiePostRequest('/api/bungie/transfer', {
+          itemReferenceHash: item.itemHash,
+          itemId: item.id,
+          characterId: item.characterId!,
+          membershipType,
+          transferToVault: true,
+        });
 
-        await fetch('/api/bungie/transfer', {
-          method: 'POST',
-          headers,
-          body: JSON.stringify({
-            itemReferenceHash: item.itemHash,
-            itemId: item.id,
-            characterId: targetCharacterId,
-            membershipType,
-            transferToVault: false,
-          }),
-        }).then(r => { if (!r.ok) throw new Error('Transfer from vault failed'); return r.json(); });
+        await bungiePostRequest('/api/bungie/transfer', {
+          itemReferenceHash: item.itemHash,
+          itemId: item.id,
+          characterId: targetCharacterId,
+          membershipType,
+          transferToVault: false,
+        });
 
-        await fetch('/api/bungie/equip', {
-          method: 'POST',
-          headers,
-          body: JSON.stringify({
-            itemId: item.id,
-            characterId: targetCharacterId,
-            membershipType,
-          }),
-        }).then(r => { if (!r.ok) throw new Error('Equip failed'); return r.json(); });
+        await bungiePostRequest('/api/bungie/equip', {
+          itemId: item.id,
+          characterId: targetCharacterId,
+          membershipType,
+        });
       }
 
       return { success: true };
@@ -192,18 +179,9 @@ export function usePullFromPostmaster() {
   const queryClient = useQueryClient();
 
   return useMutation({
+    mutationKey: BUNGIE_MUTATION_KEY,
     mutationFn: async (params: PullPostmasterParams) => {
-      const res = await fetch('/api/bungie/pull-postmaster', {
-        method: 'POST',
-        headers: makeHeaders(),
-        body: JSON.stringify(params),
-      });
-
-      if (!res.ok) {
-        const error = await res.json().catch(() => ({ message: 'Pull from postmaster failed' }));
-        throw new Error(error.message);
-      }
-      return res.json();
+      return bungiePostRequest('/api/bungie/pull-postmaster', params);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/bungie/profile-state'] });
@@ -215,18 +193,9 @@ export function useSetLockState() {
   const queryClient = useQueryClient();
 
   return useMutation({
+    mutationKey: BUNGIE_MUTATION_KEY,
     mutationFn: async (params: SetLockStateParams) => {
-      const res = await fetch('/api/bungie/lock', {
-        method: 'POST',
-        headers: makeHeaders(),
-        body: JSON.stringify(params),
-      });
-
-      if (!res.ok) {
-        const error = await res.json().catch(() => ({ message: 'Lock state change failed' }));
-        throw new Error(error.message);
-      }
-      return res.json();
+      return bungiePostRequest('/api/bungie/lock', params);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/bungie/profile-state'] });
@@ -246,18 +215,9 @@ export function useInsertPlug() {
   const queryClient = useQueryClient();
 
   return useMutation({
+    mutationKey: BUNGIE_MUTATION_KEY,
     mutationFn: async (params: InsertPlugParams) => {
-      const res = await fetch('/api/bungie/insert-plug', {
-        method: 'POST',
-        headers: makeHeaders(),
-        body: JSON.stringify(params),
-      });
-
-      if (!res.ok) {
-        const error = await res.json().catch(() => ({ message: 'Insert plug failed' }));
-        throw new Error(error.message);
-      }
-      return res.json();
+      return bungiePostRequest('/api/bungie/insert-plug', params);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/bungie/profile-state'] });
@@ -290,18 +250,9 @@ export function useEquipLoadout() {
   const queryClient = useQueryClient();
 
   return useMutation({
+    mutationKey: BUNGIE_MUTATION_KEY,
     mutationFn: async (params: EquipLoadoutParams) => {
-      const res = await fetch('/api/bungie/equip-loadout', {
-        method: 'POST',
-        headers: makeHeaders(),
-        body: JSON.stringify(params),
-      });
-
-      if (!res.ok) {
-        const error = await res.json().catch(() => ({ message: 'Equip loadout failed' }));
-        throw new Error(error.message);
-      }
-      return res.json();
+      return bungiePostRequest('/api/bungie/equip-loadout', params);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/bungie/profile-state'] });
@@ -313,18 +264,9 @@ export function useSnapshotLoadout() {
   const queryClient = useQueryClient();
 
   return useMutation({
+    mutationKey: BUNGIE_MUTATION_KEY,
     mutationFn: async (params: SnapshotLoadoutParams) => {
-      const res = await fetch('/api/bungie/snapshot-loadout', {
-        method: 'POST',
-        headers: makeHeaders(),
-        body: JSON.stringify(params),
-      });
-
-      if (!res.ok) {
-        const error = await res.json().catch(() => ({ message: 'Snapshot loadout failed' }));
-        throw new Error(error.message);
-      }
-      return res.json();
+      return bungiePostRequest('/api/bungie/snapshot-loadout', params);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/bungie/profile-state'] });
@@ -336,18 +278,9 @@ export function useClearLoadout() {
   const queryClient = useQueryClient();
 
   return useMutation({
+    mutationKey: BUNGIE_MUTATION_KEY,
     mutationFn: async (params: ClearLoadoutParams) => {
-      const res = await fetch('/api/bungie/clear-loadout', {
-        method: 'POST',
-        headers: makeHeaders(),
-        body: JSON.stringify(params),
-      });
-
-      if (!res.ok) {
-        const error = await res.json().catch(() => ({ message: 'Clear loadout failed' }));
-        throw new Error(error.message);
-      }
-      return res.json();
+      return bungiePostRequest('/api/bungie/clear-loadout', params);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/bungie/profile-state'] });
@@ -359,18 +292,9 @@ export function useEquipItems() {
   const queryClient = useQueryClient();
 
   return useMutation({
+    mutationKey: BUNGIE_MUTATION_KEY,
     mutationFn: async (params: EquipItemsParams) => {
-      const res = await fetch('/api/bungie/equip-items', {
-        method: 'POST',
-        headers: makeHeaders(),
-        body: JSON.stringify(params),
-      });
-
-      if (!res.ok) {
-        const error = await res.json().catch(() => ({ message: 'Batch equip failed' }));
-        throw new Error(error.message);
-      }
-      return res.json();
+      return bungiePostRequest('/api/bungie/equip-items', params);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/bungie/profile-state'] });

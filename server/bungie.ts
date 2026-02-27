@@ -141,6 +141,135 @@ interface ManifestItem {
 let manifestCache: ManifestCache | null = null;
 const MANIFEST_TTL = 24 * 60 * 60 * 1000;
 
+const BUNGIE_REQUEST_TIMEOUT = 15000;
+const BUNGIE_MAX_RETRIES = 3;
+const BUNGIE_THROTTLE_ERROR_CODES = new Set([31, 35, 36, 37, 51]);
+const BUNGIE_MAINTENANCE_ERROR_CODES = new Set([5, 3, 4]);
+
+export class BungieApiError extends Error {
+  public readonly statusCode: number;
+  public readonly errorCode: number;
+  public readonly errorType: 'rate_limit' | 'maintenance' | 'auth' | 'timeout' | 'network' | 'api';
+
+  constructor(message: string, statusCode: number, errorCode: number, errorType: BungieApiError['errorType']) {
+    super(message);
+    this.name = 'BungieApiError';
+    this.statusCode = statusCode;
+    this.errorCode = errorCode;
+    this.errorType = errorType;
+  }
+}
+
+function sleep(ms: number): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+async function bungieRequestWithRetry(
+  url: string,
+  options: RequestInit & { headers: Record<string, string> },
+  maxRetries = BUNGIE_MAX_RETRIES
+): Promise<any> {
+  let lastError: Error | null = null;
+
+  for (let attempt = 0; attempt < maxRetries; attempt++) {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), BUNGIE_REQUEST_TIMEOUT);
+
+    try {
+      const res = await fetch(url, { ...options, signal: controller.signal });
+      clearTimeout(timeout);
+
+      if (res.status === 429) {
+        const retryAfter = parseInt(res.headers.get('retry-after') || '2', 10);
+        const waitMs = Math.min(retryAfter * 1000, 10000);
+        console.warn(`[bungie] Rate limited (429). Waiting ${waitMs}ms before retry ${attempt + 1}/${maxRetries}`);
+        await sleep(waitMs);
+        lastError = new BungieApiError('Rate limited by Bungie API', 429, 0, 'rate_limit');
+        continue;
+      }
+
+      if (res.status === 503 || res.status === 522 || res.status === 521) {
+        throw new BungieApiError(
+          'Bungie API is currently unavailable (maintenance or outage)',
+          res.status, 0, 'maintenance'
+        );
+      }
+
+      if (res.status === 401) {
+        throw new BungieApiError('Authentication expired or invalid', 401, 0, 'auth');
+      }
+
+      if (!res.ok) {
+        const text = await res.text().catch(() => '');
+        throw new BungieApiError(
+          `Bungie API error: ${res.status} ${res.statusText} ${text}`.trim(),
+          res.status, 0, 'api'
+        );
+      }
+
+      const data = await res.json();
+
+      if (data.ErrorCode !== undefined && data.ErrorCode !== 1) {
+        if (BUNGIE_THROTTLE_ERROR_CODES.has(data.ErrorCode)) {
+          const backoff = Math.min(1000 * Math.pow(2, attempt), 8000);
+          console.warn(`[bungie] Throttled (ErrorCode ${data.ErrorCode}). Waiting ${backoff}ms before retry ${attempt + 1}/${maxRetries}`);
+          await sleep(backoff);
+          lastError = new BungieApiError(
+            data.Message || 'Throttled by Bungie API',
+            200, data.ErrorCode, 'rate_limit'
+          );
+          continue;
+        }
+
+        if (BUNGIE_MAINTENANCE_ERROR_CODES.has(data.ErrorCode)) {
+          throw new BungieApiError(
+            data.Message || 'Bungie API is under maintenance',
+            200, data.ErrorCode, 'maintenance'
+          );
+        }
+
+        throw new BungieApiError(
+          data.Message || `Bungie API error: ${data.ErrorStatus}`,
+          200, data.ErrorCode, 'api'
+        );
+      }
+
+      return data;
+    } catch (err: any) {
+      clearTimeout(timeout);
+
+      if (err instanceof BungieApiError) {
+        if (err.errorType === 'rate_limit') {
+          lastError = err;
+          continue;
+        }
+        throw err;
+      }
+
+      if (err.name === 'AbortError') {
+        if (attempt < maxRetries - 1) {
+          console.warn(`[bungie] Request timeout after ${BUNGIE_REQUEST_TIMEOUT}ms. Retry ${attempt + 1}/${maxRetries}`);
+          lastError = new BungieApiError('Request timed out', 0, 0, 'timeout');
+          continue;
+        }
+        throw new BungieApiError('Request timed out after multiple attempts', 0, 0, 'timeout');
+      }
+
+      if (attempt < maxRetries - 1 && (err.code === 'ECONNRESET' || err.code === 'ECONNREFUSED' || err.code === 'ENOTFOUND' || err.message?.includes('fetch failed'))) {
+        const backoff = Math.min(1000 * Math.pow(2, attempt), 8000);
+        console.warn(`[bungie] Network error: ${err.message}. Waiting ${backoff}ms before retry ${attempt + 1}/${maxRetries}`);
+        await sleep(backoff);
+        lastError = new BungieApiError(err.message || 'Network error', 0, 0, 'network');
+        continue;
+      }
+
+      throw err;
+    }
+  }
+
+  throw lastError || new Error('Bungie API request failed after all retries');
+}
+
 async function bungieGet(path: string, accessToken?: string) {
   const headers: Record<string, string> = {
     'X-API-Key': BUNGIE_API_KEY || '',
@@ -148,11 +277,19 @@ async function bungieGet(path: string, accessToken?: string) {
   if (accessToken) {
     headers['Authorization'] = `Bearer ${accessToken}`;
   }
-  const res = await fetch(`${BUNGIE_BASE}${path}`, { headers });
-  if (!res.ok) {
-    throw new Error(`Bungie API error: ${res.status} ${res.statusText}`);
-  }
-  return res.json();
+  return bungieRequestWithRetry(`${BUNGIE_BASE}${path}`, { headers });
+}
+
+async function bungiePost(path: string, body: any, accessToken: string) {
+  return bungieRequestWithRetry(`${BUNGIE_BASE}${path}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-API-Key': BUNGIE_API_KEY || '',
+      'Authorization': `Bearer ${accessToken}`,
+    },
+    body: JSON.stringify(body),
+  });
 }
 
 async function fetchManifest(): Promise<ManifestCache> {
@@ -974,30 +1111,14 @@ export interface TransferRequest {
 }
 
 export async function transferItem(request: TransferRequest, accessToken: string): Promise<any> {
-  const body = {
+  return bungiePost('/Platform/Destiny2/Actions/Items/TransferItem/', {
     itemReferenceHash: request.itemReferenceHash,
     itemId: request.itemId,
     characterId: request.characterId,
     membershipType: request.membershipType,
     transferToVault: request.transferToVault,
     stackSize: 1,
-  };
-
-  const res = await fetch(`${BUNGIE_BASE}/Platform/Destiny2/Actions/Items/TransferItem/`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-API-Key': BUNGIE_API_KEY || '',
-      'Authorization': `Bearer ${accessToken}`,
-    },
-    body: JSON.stringify(body),
-  });
-
-  const data = await res.json();
-  if (data.ErrorCode !== 1) {
-    throw new Error(data.Message || `Transfer failed: ${data.ErrorStatus}`);
-  }
-  return data;
+  }, accessToken);
 }
 
 export interface EquipRequest {
@@ -1007,27 +1128,11 @@ export interface EquipRequest {
 }
 
 export async function equipItem(request: EquipRequest, accessToken: string): Promise<any> {
-  const body = {
+  return bungiePost('/Platform/Destiny2/Actions/Items/EquipItem/', {
     itemId: request.itemId,
     characterId: request.characterId,
     membershipType: request.membershipType,
-  };
-
-  const res = await fetch(`${BUNGIE_BASE}/Platform/Destiny2/Actions/Items/EquipItem/`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-API-Key': BUNGIE_API_KEY || '',
-      'Authorization': `Bearer ${accessToken}`,
-    },
-    body: JSON.stringify(body),
-  });
-
-  const data = await res.json();
-  if (data.ErrorCode !== 1) {
-    throw new Error(data.Message || `Equip failed: ${data.ErrorStatus}`);
-  }
-  return data;
+  }, accessToken);
 }
 
 export interface PullPostmasterRequest {
@@ -1038,29 +1143,13 @@ export interface PullPostmasterRequest {
 }
 
 export async function pullFromPostmaster(request: PullPostmasterRequest, accessToken: string): Promise<any> {
-  const body = {
+  return bungiePost('/Platform/Destiny2/Actions/Items/PullFromPostmaster/', {
     itemReferenceHash: request.itemReferenceHash,
     itemId: request.itemId,
     characterId: request.characterId,
     membershipType: request.membershipType,
     stackSize: 1,
-  };
-
-  const res = await fetch(`${BUNGIE_BASE}/Platform/Destiny2/Actions/Items/PullFromPostmaster/`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-API-Key': BUNGIE_API_KEY || '',
-      'Authorization': `Bearer ${accessToken}`,
-    },
-    body: JSON.stringify(body),
-  });
-
-  const data = await res.json();
-  if (data.ErrorCode !== 1) {
-    throw new Error(data.Message || `Pull from postmaster failed: ${data.ErrorStatus}`);
-  }
-  return data;
+  }, accessToken);
 }
 
 export interface SetLockStateRequest {
@@ -1071,28 +1160,12 @@ export interface SetLockStateRequest {
 }
 
 export async function setLockState(request: SetLockStateRequest, accessToken: string): Promise<any> {
-  const body = {
+  return bungiePost('/Platform/Destiny2/Actions/Items/SetLockState/', {
     itemId: request.itemId,
     characterId: request.characterId,
     membershipType: request.membershipType,
     state: request.state,
-  };
-
-  const res = await fetch(`${BUNGIE_BASE}/Platform/Destiny2/Actions/Items/SetLockState/`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-API-Key': BUNGIE_API_KEY || '',
-      'Authorization': `Bearer ${accessToken}`,
-    },
-    body: JSON.stringify(body),
-  });
-
-  const data = await res.json();
-  if (data.ErrorCode !== 1) {
-    throw new Error(data.Message || `Lock state change failed: ${data.ErrorStatus}`);
-  }
-  return data;
+  }, accessToken);
 }
 
 export interface EquipItemsRequest {
@@ -1102,27 +1175,11 @@ export interface EquipItemsRequest {
 }
 
 export async function equipItems(request: EquipItemsRequest, accessToken: string): Promise<any> {
-  const body = {
+  return bungiePost('/Platform/Destiny2/Actions/Items/EquipItems/', {
     itemIds: request.itemIds,
     characterId: request.characterId,
     membershipType: request.membershipType,
-  };
-
-  const res = await fetch(`${BUNGIE_BASE}/Platform/Destiny2/Actions/Items/EquipItems/`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-API-Key': BUNGIE_API_KEY || '',
-      'Authorization': `Bearer ${accessToken}`,
-    },
-    body: JSON.stringify(body),
-  });
-
-  const data = await res.json();
-  if (data.ErrorCode !== 1) {
-    throw new Error(data.Message || `Batch equip failed: ${data.ErrorStatus}`);
-  }
-  return data;
+  }, accessToken);
 }
 
 export interface InsertPlugRequest {
@@ -1134,7 +1191,7 @@ export interface InsertPlugRequest {
 }
 
 export async function insertSocketPlug(request: InsertPlugRequest, accessToken: string): Promise<any> {
-  const body = {
+  return bungiePost('/Platform/Destiny2/Actions/Items/InsertSocketPlugFree/', {
     itemInstanceId: request.itemInstanceId,
     plug: {
       socketIndex: request.socketIndex,
@@ -1143,23 +1200,7 @@ export async function insertSocketPlug(request: InsertPlugRequest, accessToken: 
     },
     characterId: request.characterId,
     membershipType: request.membershipType,
-  };
-
-  const res = await fetch(`${BUNGIE_BASE}/Platform/Destiny2/Actions/Items/InsertSocketPlugFree/`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-API-Key': BUNGIE_API_KEY || '',
-      'Authorization': `Bearer ${accessToken}`,
-    },
-    body: JSON.stringify(body),
-  });
-
-  const data = await res.json();
-  if (data.ErrorCode !== 1) {
-    throw new Error(data.Message || `Insert socket plug failed: ${data.ErrorStatus}`);
-  }
-  return data;
+  }, accessToken);
 }
 
 export interface EquipLoadoutRequest {
@@ -1169,27 +1210,11 @@ export interface EquipLoadoutRequest {
 }
 
 export async function equipLoadout(request: EquipLoadoutRequest, accessToken: string): Promise<any> {
-  const body = {
+  return bungiePost('/Platform/Destiny2/Actions/Loadouts/EquipLoadout/', {
     loadoutIndex: request.loadoutIndex,
     characterId: request.characterId,
     membershipType: request.membershipType,
-  };
-
-  const res = await fetch(`${BUNGIE_BASE}/Platform/Destiny2/Actions/Loadouts/EquipLoadout/`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-API-Key': BUNGIE_API_KEY || '',
-      'Authorization': `Bearer ${accessToken}`,
-    },
-    body: JSON.stringify(body),
-  });
-
-  const data = await res.json();
-  if (data.ErrorCode !== 1) {
-    throw new Error(data.Message || `Equip loadout failed: ${data.ErrorStatus}`);
-  }
-  return data;
+  }, accessToken);
 }
 
 export interface SnapshotLoadoutRequest {
@@ -1211,21 +1236,7 @@ export async function snapshotLoadout(request: SnapshotLoadoutRequest, accessTok
   if (request.colorHash) body.colorHash = request.colorHash;
   if (request.iconHash) body.iconHash = request.iconHash;
 
-  const res = await fetch(`${BUNGIE_BASE}/Platform/Destiny2/Actions/Loadouts/SnapshotLoadout/`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-API-Key': BUNGIE_API_KEY || '',
-      'Authorization': `Bearer ${accessToken}`,
-    },
-    body: JSON.stringify(body),
-  });
-
-  const data = await res.json();
-  if (data.ErrorCode !== 1) {
-    throw new Error(data.Message || `Snapshot loadout failed: ${data.ErrorStatus}`);
-  }
-  return data;
+  return bungiePost('/Platform/Destiny2/Actions/Loadouts/SnapshotLoadout/', body, accessToken);
 }
 
 export interface ClearLoadoutRequest {
@@ -1235,27 +1246,11 @@ export interface ClearLoadoutRequest {
 }
 
 export async function clearLoadout(request: ClearLoadoutRequest, accessToken: string): Promise<any> {
-  const body = {
+  return bungiePost('/Platform/Destiny2/Actions/Loadouts/ClearLoadout/', {
     loadoutIndex: request.loadoutIndex,
     characterId: request.characterId,
     membershipType: request.membershipType,
-  };
-
-  const res = await fetch(`${BUNGIE_BASE}/Platform/Destiny2/Actions/Loadouts/ClearLoadout/`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-API-Key': BUNGIE_API_KEY || '',
-      'Authorization': `Bearer ${accessToken}`,
-    },
-    body: JSON.stringify(body),
-  });
-
-  const data = await res.json();
-  if (data.ErrorCode !== 1) {
-    throw new Error(data.Message || `Clear loadout failed: ${data.ErrorStatus}`);
-  }
-  return data;
+  }, accessToken);
 }
 
 export async function fetchMembershipsRaw(accessToken: string) {

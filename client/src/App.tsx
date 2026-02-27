@@ -4,6 +4,7 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { I18nProvider } from "@/lib/i18n";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import NotFound from "@/pages/not-found";
 import Home from "@/pages/Home";
 
@@ -28,8 +29,10 @@ function App() {
     <I18nProvider>
       <QueryClientProvider client={queryClient}>
         <TooltipProvider>
-          <Toaster />
-          <Router />
+          <ErrorBoundary fallbackTitle="GuardianGrid encountered an error">
+            <Toaster />
+            <Router />
+          </ErrorBoundary>
         </TooltipProvider>
       </QueryClientProvider>
     </I18nProvider>

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 
 const BUNGIE_CLIENT_ID = '51625';
 const BUNGIE_AUTH_URL = `https://www.bungie.net/en/OAuth/Authorize?client_id=${BUNGIE_CLIENT_ID}&response_type=code`;
@@ -19,6 +19,7 @@ export function useBungieAuth() {
   const [authError, setAuthError] = useState<string | null>(null);
   
   const hasAttemptedAuth = useRef(false);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
     const savedToken = localStorage.getItem('bungie_access_token');
@@ -53,12 +54,23 @@ export function useBungieAuth() {
     }
   }, [isAuthenticated, accessToken, destinyProfile]);
 
-  const exchangeCodeForToken = async (code: string) => {
+  useEffect(() => {
+    return () => {
+      abortControllerRef.current?.abort();
+    };
+  }, []);
+
+  const exchangeCodeForToken = useCallback(async (code: string) => {
+    abortControllerRef.current?.abort();
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
+
     try {
       const res = await fetch('/api/bungie/token', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ code }),
+        signal: controller.signal,
       });
 
       if (!res.ok) {
@@ -72,21 +84,27 @@ export function useBungieAuth() {
       localStorage.setItem('bungie_access_token', token);
       setAccessToken(token);
       setIsAuthenticated(true);
-    } catch (err) {
+    } catch (err: any) {
+      if (err.name === 'AbortError') return;
       console.error('Auth error:', err);
       setAuthError('Anmeldung fehlgeschlagen. Bitte versuche es erneut.');
     } finally {
       setIsAuthenticating(false);
     }
-  };
+  }, []);
 
-  const fetchDestinyProfile = async () => {
+  const fetchDestinyProfile = useCallback(async () => {
+    abortControllerRef.current?.abort();
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
+
     setIsFetchingProfile(true);
     try {
       const res = await fetch('/api/bungie/membership', {
         headers: {
           'Authorization': `Bearer ${accessToken}`,
         },
+        signal: controller.signal,
       });
 
       if (!res.ok) {
@@ -105,25 +123,27 @@ export function useBungieAuth() {
 
       setDestinyProfile(profile);
       localStorage.setItem('destiny_profile', JSON.stringify(profile));
-    } catch (err) {
+    } catch (err: any) {
+      if (err.name === 'AbortError') return;
       console.error('Profile error:', err);
       setAuthError('Destiny-Profil konnte nicht geladen werden.');
     } finally {
       setIsFetchingProfile(false);
     }
-  };
+  }, [accessToken]);
 
-  const login = () => {
+  const login = useCallback(() => {
     window.location.href = BUNGIE_AUTH_URL;
-  };
+  }, []);
 
-  const logout = () => {
+  const logout = useCallback(() => {
+    abortControllerRef.current?.abort();
     localStorage.removeItem('bungie_access_token');
     localStorage.removeItem('destiny_profile');
     setAccessToken(null);
     setDestinyProfile(null);
     setIsAuthenticated(false);
-  };
+  }, []);
 
   return {
     isAuthenticated,

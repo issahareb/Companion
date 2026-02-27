@@ -3,7 +3,62 @@ import type { Server } from "http";
 import { storage } from "./storage";
 import { api } from "@shared/routes";
 import { z } from "zod";
-import { exchangeToken, fetchMemberships, fetchProfileState, transferItem, equipItem, pullFromPostmaster, setLockState, equipItems, insertSocketPlug, equipLoadout, snapshotLoadout, clearLoadout } from "./bungie";
+import { exchangeToken, fetchMemberships, fetchProfileState, transferItem, equipItem, pullFromPostmaster, setLockState, equipItems, insertSocketPlug, equipLoadout, snapshotLoadout, clearLoadout, BungieApiError } from "./bungie";
+
+interface CacheEntry {
+  data: any;
+  timestamp: number;
+}
+
+const PROFILE_CACHE_TTL = 30 * 1000;
+const profileCache = new Map<string, CacheEntry>();
+
+function getCachedProfile(key: string): any | null {
+  const entry = profileCache.get(key);
+  if (!entry) return null;
+  if (Date.now() - entry.timestamp > PROFILE_CACHE_TTL) {
+    profileCache.delete(key);
+    return null;
+  }
+  return entry.data;
+}
+
+function setCachedProfile(key: string, data: any): void {
+  profileCache.set(key, { data, timestamp: Date.now() });
+  if (profileCache.size > 100) {
+    const oldest = [...profileCache.entries()].sort((a, b) => a[1].timestamp - b[1].timestamp)[0];
+    if (oldest) profileCache.delete(oldest[0]);
+  }
+}
+
+function invalidateProfileCaches(membershipType?: number) {
+  if (membershipType) {
+    for (const key of profileCache.keys()) {
+      if (key.startsWith(`${membershipType}:`)) {
+        profileCache.delete(key);
+      }
+    }
+  } else {
+    profileCache.clear();
+  }
+}
+
+function handleBungieError(err: any, res: any, defaultMessage: string) {
+  if (err instanceof BungieApiError) {
+    const status = err.errorType === 'auth' ? 401
+      : err.errorType === 'maintenance' ? 503
+      : err.errorType === 'rate_limit' ? 429
+      : err.errorType === 'timeout' ? 504
+      : 502;
+    return res.status(status).json({
+      message: err.message,
+      errorType: err.errorType,
+      errorCode: err.errorCode,
+    });
+  }
+  console.error(`[bungie] ${defaultMessage}:`, err.message);
+  res.status(502).json({ message: err.message || defaultMessage });
+}
 
 async function verifyTurnstileToken(token: string): Promise<boolean> {
   const secret = process.env.TURNSTILE_SECRET_KEY;
@@ -61,8 +116,7 @@ export async function registerRoutes(
       const tokenData = await exchangeToken(code);
       res.json(tokenData);
     } catch (err: any) {
-      console.error('[bungie token error]', err.message);
-      res.status(502).json({ message: 'Failed to exchange token', error: err.message });
+      handleBungieError(err, res, 'Failed to exchange token');
     }
   });
 
@@ -76,8 +130,7 @@ export async function registerRoutes(
       const membership = await fetchMemberships(accessToken);
       res.json(membership);
     } catch (err: any) {
-      console.error('[bungie membership error]', err.message);
-      res.status(502).json({ message: 'Failed to fetch membership', error: err.message });
+      handleBungieError(err, res, 'Failed to fetch membership');
     }
   });
 
@@ -89,11 +142,24 @@ export async function registerRoutes(
       if (!accessToken) {
         return res.status(401).json({ message: 'Access token required' });
       }
+
+      const fresh = req.query.fresh === 'true';
+      const cacheKey = `${membershipType}:${membershipId}`;
+
+      if (!fresh) {
+        const cached = getCachedProfile(cacheKey);
+        if (cached) {
+          res.setHeader('X-Cache', 'HIT');
+          return res.json(cached);
+        }
+      }
+
       const state = await fetchProfileState(membershipType, membershipId, accessToken);
+      setCachedProfile(cacheKey, state);
+      res.setHeader('X-Cache', 'MISS');
       res.json(state);
     } catch (err: any) {
-      console.error('[bungie profile-state error]', err.message);
-      res.status(502).json({ message: 'Failed to fetch profile state', error: err.message });
+      handleBungieError(err, res, 'Failed to fetch profile state');
     }
   });
 
@@ -104,11 +170,11 @@ export async function registerRoutes(
       if (!accessToken) {
         return res.status(401).json({ message: 'Access token required' });
       }
+      invalidateProfileCaches(req.body.membershipType);
       const result = await transferItem(req.body, accessToken);
       res.json(result);
     } catch (err: any) {
-      console.error('[bungie transfer error]', err.message);
-      res.status(502).json({ message: err.message || 'Transfer failed' });
+      handleBungieError(err, res, 'Transfer failed');
     }
   });
 
@@ -119,11 +185,11 @@ export async function registerRoutes(
       if (!accessToken) {
         return res.status(401).json({ message: 'Access token required' });
       }
+      invalidateProfileCaches(req.body.membershipType);
       const result = await equipItem(req.body, accessToken);
       res.json(result);
     } catch (err: any) {
-      console.error('[bungie equip error]', err.message);
-      res.status(502).json({ message: err.message || 'Equip failed' });
+      handleBungieError(err, res, 'Equip failed');
     }
   });
 
@@ -134,11 +200,11 @@ export async function registerRoutes(
       if (!accessToken) {
         return res.status(401).json({ message: 'Access token required' });
       }
+      invalidateProfileCaches(req.body.membershipType);
       const result = await pullFromPostmaster(req.body, accessToken);
       res.json(result);
     } catch (err: any) {
-      console.error('[bungie pull-postmaster error]', err.message);
-      res.status(502).json({ message: err.message || 'Pull from postmaster failed' });
+      handleBungieError(err, res, 'Pull from postmaster failed');
     }
   });
 
@@ -149,11 +215,11 @@ export async function registerRoutes(
       if (!accessToken) {
         return res.status(401).json({ message: 'Access token required' });
       }
+      invalidateProfileCaches(req.body.membershipType);
       const result = await setLockState(req.body, accessToken);
       res.json(result);
     } catch (err: any) {
-      console.error('[bungie lock error]', err.message);
-      res.status(502).json({ message: err.message || 'Lock state change failed' });
+      handleBungieError(err, res, 'Lock state change failed');
     }
   });
 
@@ -164,11 +230,11 @@ export async function registerRoutes(
       if (!accessToken) {
         return res.status(401).json({ message: 'Access token required' });
       }
+      invalidateProfileCaches(req.body.membershipType);
       const result = await equipItems(req.body, accessToken);
       res.json(result);
     } catch (err: any) {
-      console.error('[bungie equip-items error]', err.message);
-      res.status(502).json({ message: err.message || 'Batch equip failed' });
+      handleBungieError(err, res, 'Batch equip failed');
     }
   });
 
@@ -179,11 +245,11 @@ export async function registerRoutes(
       if (!accessToken) {
         return res.status(401).json({ message: 'Access token required' });
       }
+      invalidateProfileCaches(req.body.membershipType);
       const result = await insertSocketPlug(req.body, accessToken);
       res.json(result);
     } catch (err: any) {
-      console.error('[bungie insert-plug error]', err.message);
-      res.status(502).json({ message: err.message || 'Insert plug failed' });
+      handleBungieError(err, res, 'Insert plug failed');
     }
   });
 
@@ -194,11 +260,11 @@ export async function registerRoutes(
       if (!accessToken) {
         return res.status(401).json({ message: 'Access token required' });
       }
+      invalidateProfileCaches(req.body.membershipType);
       const result = await equipLoadout(req.body, accessToken);
       res.json(result);
     } catch (err: any) {
-      console.error('[bungie equip-loadout error]', err.message);
-      res.status(502).json({ message: err.message || 'Equip loadout failed' });
+      handleBungieError(err, res, 'Equip loadout failed');
     }
   });
 
@@ -209,11 +275,11 @@ export async function registerRoutes(
       if (!accessToken) {
         return res.status(401).json({ message: 'Access token required' });
       }
+      invalidateProfileCaches(req.body.membershipType);
       const result = await snapshotLoadout(req.body, accessToken);
       res.json(result);
     } catch (err: any) {
-      console.error('[bungie snapshot-loadout error]', err.message);
-      res.status(502).json({ message: err.message || 'Snapshot loadout failed' });
+      handleBungieError(err, res, 'Snapshot loadout failed');
     }
   });
 
@@ -224,11 +290,11 @@ export async function registerRoutes(
       if (!accessToken) {
         return res.status(401).json({ message: 'Access token required' });
       }
+      invalidateProfileCaches(req.body.membershipType);
       const result = await clearLoadout(req.body, accessToken);
       res.json(result);
     } catch (err: any) {
-      console.error('[bungie clear-loadout error]', err.message);
-      res.status(502).json({ message: err.message || 'Clear loadout failed' });
+      handleBungieError(err, res, 'Clear loadout failed');
     }
   });
 
