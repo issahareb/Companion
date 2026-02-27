@@ -564,35 +564,28 @@ export default function Dashboard() {
                       </div>
 
                       {/* Stats */}
-                      {Object.keys(selectedCharacter.stats).length > 0 && (
+                      {selectedCharacter.stats.length > 0 && (
                         <div className="px-4 md:px-6 pb-5">
                           <div className="grid grid-cols-3 md:grid-cols-6 gap-1.5">
-                            {Object.entries(selectedCharacter.stats).map(([name, val]) => {
-                              const statIcons: Record<string, string> = {
-                                'Mobility': 'https://www.bungie.net/common/destiny2_content/icons/e26e0e93a9daf4fdd21bf64eb9246340.png',
-                                'Resilience': 'https://www.bungie.net/common/destiny2_content/icons/202ecc1c6f346f24e3e3765ce62e06ba.png',
-                                'Recovery': 'https://www.bungie.net/common/destiny2_content/icons/128eee4ee7fc127851ab32eac6ca617f.png',
-                                'Discipline': 'https://www.bungie.net/common/destiny2_content/icons/79be1d1a141c3e0c2f33e40ddff7e834.png',
-                                'Intellect': 'https://www.bungie.net/common/destiny2_content/icons/59732534ce7060dba681c1a4c3a3ccba.png',
-                                'Strength': 'https://www.bungie.net/common/destiny2_content/icons/c7eefc8abbaa586eeab79e962a79d6ad.png',
-                              };
-                              const pct = Math.min((val / 200) * 100, 100);
-                              const barColor = val >= 200 ? 'from-[#E5C76B] to-[#D4A843]'
-                                : val >= 100 ? 'from-purple-500 to-violet-400'
-                                : val >= 60 ? 'from-emerald-600 to-green-400'
-                                : val >= 20 ? 'from-yellow-600 to-amber-400'
+                            {selectedCharacter.stats.map((stat) => {
+                              const val = stat.value;
+                              const pct = Math.min((val / 100) * 100, 100);
+                              const barColor = val >= 100 ? 'from-[#E5C76B] to-[#D4A843]'
+                                : val >= 80 ? 'from-purple-500 to-violet-400'
+                                : val >= 50 ? 'from-emerald-600 to-green-400'
+                                : val >= 30 ? 'from-yellow-600 to-amber-400'
                                 : 'from-red-700 to-red-400';
-                              const numColor = val >= 200 ? 'text-[#E5C76B]'
-                                : val >= 100 ? 'text-purple-300'
-                                : val >= 60 ? 'text-emerald-300'
-                                : val >= 20 ? 'text-amber-300'
+                              const numColor = val >= 100 ? 'text-[#E5C76B]'
+                                : val >= 80 ? 'text-purple-300'
+                                : val >= 50 ? 'text-emerald-300'
+                                : val >= 30 ? 'text-amber-300'
                                 : 'text-red-400';
                               return (
-                                <div key={name} className="bg-black/40 backdrop-blur-sm border border-white/[0.08] p-2 group/stat hover:border-white/20 transition-all duration-300">
+                                <div key={stat.name} className="bg-black/40 backdrop-blur-sm border border-white/[0.08] p-2 group/stat hover:border-white/20 transition-all duration-300" title={stat.description}>
                                   <div className="flex items-center gap-2 mb-1.5">
-                                    <img src={statIcons[name]} alt={name} className="w-4 h-4 opacity-70 group-hover/stat:opacity-100 transition-opacity" />
-                                    <p className="text-[7px] text-gray-400 uppercase tracking-[0.15em] group-hover/stat:text-gray-300 transition-colors truncate flex-1">{name}</p>
-                                    <p className={`text-sm font-display font-light leading-none ${numColor}`} data-testid={`text-stat-${name.toLowerCase()}`}>{val}</p>
+                                    {stat.icon && <img src={stat.icon} alt={stat.name} className="w-4 h-4 opacity-70 group-hover/stat:opacity-100 transition-opacity" />}
+                                    <p className="text-[7px] text-gray-400 uppercase tracking-[0.15em] group-hover/stat:text-gray-300 transition-colors truncate flex-1">{stat.name}</p>
+                                    <p className={`text-sm font-display font-light leading-none ${numColor}`} data-testid={`text-stat-${stat.name.toLowerCase()}`}>{val}</p>
                                   </div>
                                   <div className="w-full h-1.5 bg-white/[0.06] rounded-full overflow-hidden">
                                     <div className={`h-full rounded-full bg-gradient-to-r ${barColor} transition-all duration-500`} style={{ width: `${pct}%` }} />

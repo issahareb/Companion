@@ -104,6 +104,12 @@ interface LoadoutIconDef {
   iconImagePath: string;
 }
 
+interface StatDef {
+  name: string;
+  icon: string;
+  description: string;
+}
+
 interface ManifestCache {
   version: string;
   items: Record<string, ManifestItem>;
@@ -112,6 +118,7 @@ interface ManifestCache {
   progressions: Record<string, ProgressionDef>;
   objectives: Record<string, ObjectiveDef>;
   activities: Record<string, ActivityDef>;
+  stats: Record<string, StatDef>;
   loadoutNames: Record<string, LoadoutNameDef>;
   loadoutColors: Record<string, LoadoutColorDef>;
   loadoutIcons: Record<string, LoadoutIconDef>;
@@ -164,13 +171,14 @@ async function fetchManifest(): Promise<ManifestCache> {
 
   const paths = manifestData.Response.jsonWorldComponentContentPaths.en;
 
-  const [itemDefs, collectibleDefs, recordDefs, progressionDefs, objectiveDefs, activityDefs, loadoutNameDefs, loadoutColorDefs, loadoutIconDefs] = await Promise.all([
+  const [itemDefs, collectibleDefs, recordDefs, progressionDefs, objectiveDefs, activityDefs, statDefs, loadoutNameDefs, loadoutColorDefs, loadoutIconDefs] = await Promise.all([
     fetch(`${BUNGIE_BASE}${paths.DestinyInventoryItemDefinition}`).then(r => r.json()),
     fetch(`${BUNGIE_BASE}${paths.DestinyCollectibleDefinition}`).then(r => r.json()).catch(() => ({})),
     fetch(`${BUNGIE_BASE}${paths.DestinyRecordDefinition}`).then(r => r.json()).catch(() => ({})),
     fetch(`${BUNGIE_BASE}${paths.DestinyProgressionDefinition}`).then(r => r.json()).catch(() => ({})),
     fetch(`${BUNGIE_BASE}${paths.DestinyObjectiveDefinition}`).then(r => r.json()).catch(() => ({})),
     fetch(`${BUNGIE_BASE}${paths.DestinyActivityDefinition}`).then(r => r.json()).catch(() => ({})),
+    fetch(`${BUNGIE_BASE}${paths.DestinyStatDefinition}`).then(r => r.json()).catch(() => ({})),
     paths.DestinyLoadoutNameDefinition ? fetch(`${BUNGIE_BASE}${paths.DestinyLoadoutNameDefinition}`).then(r => r.json()).catch(() => ({})) : Promise.resolve({}),
     paths.DestinyLoadoutColorDefinition ? fetch(`${BUNGIE_BASE}${paths.DestinyLoadoutColorDefinition}`).then(r => r.json()).catch(() => ({})) : Promise.resolve({}),
     paths.DestinyLoadoutIconDefinition ? fetch(`${BUNGIE_BASE}${paths.DestinyLoadoutIconDefinition}`).then(r => r.json()).catch(() => ({})) : Promise.resolve({}),
@@ -259,6 +267,16 @@ async function fetchManifest(): Promise<ManifestCache> {
     };
   }
 
+  const stats: Record<string, StatDef> = {};
+  for (const [hash, def] of Object.entries(statDefs) as [string, any][]) {
+    if (!def.displayProperties?.name) continue;
+    stats[hash] = {
+      name: def.displayProperties.name,
+      icon: def.displayProperties.hasIcon ? `${BUNGIE_BASE}${def.displayProperties.icon}` : '',
+      description: def.displayProperties.description || '',
+    };
+  }
+
   const loadoutNames: Record<string, LoadoutNameDef> = {};
   for (const [hash, def] of Object.entries(loadoutNameDefs) as [string, any][]) {
     loadoutNames[hash] = { name: def.name || '' };
@@ -274,7 +292,7 @@ async function fetchManifest(): Promise<ManifestCache> {
     loadoutIcons[hash] = { iconImagePath: def.iconImagePath ? `${BUNGIE_BASE}${def.iconImagePath}` : '' };
   }
 
-  manifestCache = { version: manifestVersion, items, collectibles, records, progressions, objectives, activities, loadoutNames, loadoutColors, loadoutIcons, fetchedAt: Date.now() };
+  manifestCache = { version: manifestVersion, items, collectibles, records, progressions, objectives, activities, stats, loadoutNames, loadoutColors, loadoutIcons, fetchedAt: Date.now() };
   console.log(`[bungie] Manifest cached: ${Object.keys(items).length} items, ${Object.keys(collectibles).length} collectibles, ${Object.keys(records).length} records, ${Object.keys(loadoutNames).length} loadout names`);
   return manifestCache;
 }
@@ -476,7 +494,7 @@ export interface CharacterData {
   emblemPath: string;
   emblemBackgroundPath: string;
   dateLastPlayed: string;
-  stats: Record<string, number>;
+  stats: { name: string; value: number; icon: string; description: string; }[];
   equippedItems: InventoryItem[];
   inventory: InventoryItem[];
   quests: QuestItem[];
@@ -767,20 +785,20 @@ export async function fetchProfileState(
       }
     }
 
-    const charStats: Record<string, number> = {};
+    const CHAR_STAT_HASHES = ['2996146975', '392767087', '1943323491', '1735777505', '144602215', '4244567218'];
+    const charStats: { name: string; value: number; icon: string; description: string; }[] = [];
     if (charInfo.stats) {
-      const statNames: Record<string, string> = {
-        '2996146975': 'Mobility',
-        '392767087': 'Resilience',
-        '1943323491': 'Recovery',
-        '1735777505': 'Discipline',
-        '144602215': 'Intellect',
-        '4244567218': 'Strength',
-      };
-      for (const [statHash, val] of Object.entries(charInfo.stats) as [string, any][]) {
-        const statName = statNames[statHash];
-        if (statName) {
-          charStats[statName] = val;
+      for (const statHash of CHAR_STAT_HASHES) {
+        const val = charInfo.stats[statHash];
+        if (val === undefined) continue;
+        const statDef = manifestData.stats[statHash];
+        if (statDef) {
+          charStats.push({
+            name: statDef.name,
+            value: val,
+            icon: statDef.icon,
+            description: statDef.description,
+          });
         }
       }
     }

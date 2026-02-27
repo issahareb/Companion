@@ -132,7 +132,7 @@ export interface CharacterData {
   emblemPath: string;
   emblemBackgroundPath: string;
   dateLastPlayed: string;
-  stats: Record<string, number>;
+  stats: { name: string; value: number; icon: string; description: string; }[];
   equippedItems: InventoryItem[];
   inventory: InventoryItem[];
   quests: QuestItem[];
