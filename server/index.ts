@@ -30,7 +30,7 @@ app.use(
           : ["'self'", "'unsafe-inline'", "https://challenges.cloudflare.com"],
         styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
         fontSrc: ["'self'", "https://fonts.gstatic.com", "data:"],
-        imgSrc: ["'self'", "data:", "blob:", "https://www.bungie.net", "https://bungie.net"],
+        imgSrc: ["'self'", "data:", "blob:", "https://www.bungie.net", "https://bungie.net", "https://images.contentstack.io"],
         connectSrc: isDev
           ? ["'self'", "https://www.bungie.net", "https://challenges.cloudflare.com", "wss:", "ws:"]
           : ["'self'", "https://www.bungie.net", "https://challenges.cloudflare.com"],

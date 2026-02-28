@@ -155,13 +155,12 @@ export function CharacterPanel({
                   })()}
                   <div className="text-right">
                     <div className="flex items-center gap-3 justify-end">
-                      <motion.img
-                        src="https://www.bungie.net/common/destiny2_content/icons/c81de78390f1b7f2b759c33e9a8b9938.png"
-                        alt="Power"
-                        className="w-5 h-5 brightness-150"
+                      <motion.div
                         animate={{ scale: [1, 1.1, 1], opacity: [0.8, 1, 0.8] }}
                         transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
-                      />
+                      >
+                        <Sparkles className="w-5 h-5 text-[#E5C76B]" />
+                      </motion.div>
                       <motion.span
                         className="text-5xl md:text-6xl font-display font-light text-[#E5C76B] text-shadow-gold leading-none"
                         data-testid="text-power-level"
@@ -190,17 +189,17 @@ export function CharacterPanel({
                 <div className="grid grid-cols-3 md:grid-cols-6 gap-2">
                   {selectedCharacter.stats.map((stat, statIdx) => {
                     const val = stat.value;
-                    const pct = Math.min((val / 100) * 100, 100);
-                    const isMax = val >= 100;
+                    const pct = Math.min((val / 200) * 100, 100);
+                    const isMax = val >= 200;
                     const strokeColor = isMax ? '#E5C76B'
-                      : val >= 80 ? '#a78bfa'
-                      : val >= 50 ? '#34d399'
-                      : val >= 30 ? '#fbbf24'
+                      : val >= 160 ? '#a78bfa'
+                      : val >= 100 ? '#34d399'
+                      : val >= 60 ? '#fbbf24'
                       : '#f87171';
                     const numColor = isMax ? 'text-[#E5C76B]'
-                      : val >= 80 ? 'text-purple-300'
-                      : val >= 50 ? 'text-emerald-300'
-                      : val >= 30 ? 'text-amber-300'
+                      : val >= 160 ? 'text-purple-300'
+                      : val >= 100 ? 'text-emerald-300'
+                      : val >= 60 ? 'text-amber-300'
                       : 'text-red-400';
                     const circumference = 2 * Math.PI * 18;
                     const dashOffset = circumference - (pct / 100) * circumference;

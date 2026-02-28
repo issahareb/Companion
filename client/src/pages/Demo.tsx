@@ -682,7 +682,7 @@ export default function DemoDashboard() {
                           })()}
                           <div className="text-right">
                             <div className="flex items-center gap-2.5 justify-end">
-                              <img src="https://www.bungie.net/common/destiny2_content/icons/c81de78390f1b7f2b759c33e9a8b9938.png" alt="Power" className="w-5 h-5 brightness-150 animate-[pulse_3s_ease-in-out_infinite]" />
+                              <Sparkles className="w-5 h-5 text-[#E5C76B] animate-[pulse_3s_ease-in-out_infinite]" />
                               <span className="text-4xl font-display font-light text-[#E5C76B] text-shadow-glow">{selectedCharacter.light}</span>
                             </div>
                             <p className="text-[9px] text-gray-400 uppercase tracking-[0.25em] mt-1.5">{t('power.label')}</p>
