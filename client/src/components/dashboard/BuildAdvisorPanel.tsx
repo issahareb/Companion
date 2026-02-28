@@ -39,13 +39,6 @@ const activities: { id: ActivityType; icon: typeof Swords; color: string }[] = [
   { id: 'dungeon', icon: Flame, color: '#f59e0b' },
 ];
 
-const activityLabels: Record<ActivityType, Record<string, string>> = {
-  raid: { de: 'Raid', en: 'Raid', fr: 'Raid' },
-  nightfall: { de: 'Dämmerung', en: 'Nightfall', fr: 'Crépuscule' },
-  pvp: { de: 'PvP', en: 'PvP', fr: 'PvP' },
-  gambit: { de: 'Gambit', en: 'Gambit', fr: 'Gambit' },
-  dungeon: { de: 'Dungeon', en: 'Dungeon', fr: 'Donjon' },
-};
 
 export function BuildAdvisorPanel({ tabDirection, selectedCharacter, vaultItems, artifact }: BuildAdvisorPanelProps) {
   const { t, language } = useI18n();
@@ -149,7 +142,7 @@ export function BuildAdvisorPanel({ tabDirection, selectedCharacter, vaultItems,
         >
           <Swords className="w-5 h-5 text-indigo-400" />
           <h2 className="font-display text-sm tracking-[0.2em] text-white uppercase" data-testid="text-build-advisor-title">
-            {language === 'de' ? 'Build-Empfehlung' : language === 'fr' ? 'Recommandation de Build' : 'Build Recommendation'}
+            {t('build.title')}
           </h2>
         </motion.div>
 
@@ -176,7 +169,7 @@ export function BuildAdvisorPanel({ tabDirection, selectedCharacter, vaultItems,
                 data-testid={`button-activity-${act.id}`}
               >
                 <Icon className="w-4 h-4" style={isSelected ? { color: act.color } : {}} />
-                <span>{activityLabels[act.id][language] || act.id}</span>
+                <span>{t(`build.activity.${act.id}`)}</span>
               </button>
             );
           })}
@@ -194,11 +187,7 @@ export function BuildAdvisorPanel({ tabDirection, selectedCharacter, vaultItems,
             </div>
             <div className="text-center space-y-2">
               <p className="text-gray-400 text-sm max-w-md" data-testid="text-build-description">
-                {language === 'de'
-                  ? `Wähle eine Aktivität und lass die KI das beste Loadout aus deinem Inventar zusammenstellen.`
-                  : language === 'fr'
-                  ? `Sélectionnez une activité et laissez l'IA composer le meilleur loadout à partir de votre inventaire.`
-                  : `Select an activity and let AI build the best loadout from your inventory.`}
+                {t('build.description')}
               </p>
               {selectedCharacter && (
                 <p className="text-gray-600 text-xs">{selectedCharacter.className} · {selectedCharacter.light} Power</p>
@@ -210,7 +199,7 @@ export function BuildAdvisorPanel({ tabDirection, selectedCharacter, vaultItems,
               className="press-scale px-8 py-3 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-30 disabled:cursor-not-allowed text-white text-xs font-display tracking-[0.2em] uppercase transition-all duration-300 destiny-clip-sm border border-indigo-500/30"
               data-testid="button-generate-build"
             >
-              {language === 'de' ? 'Empfehlung generieren' : language === 'fr' ? 'Générer une recommandation' : 'Generate Recommendation'}
+              {t('build.generate')}
             </button>
             {error && (
               <motion.p
@@ -238,7 +227,7 @@ export function BuildAdvisorPanel({ tabDirection, selectedCharacter, vaultItems,
               <div className="absolute -inset-2 rounded-full border border-indigo-500/20 animate-ping" style={{ animationDuration: '2s' }} />
             </div>
             <p className="text-gray-400 text-xs font-display tracking-[0.2em] uppercase" data-testid="text-build-loading">
-              {language === 'de' ? 'KI erstellt Loadout...' : language === 'fr' ? "L'IA compose le loadout..." : 'AI is building your loadout...'}
+              {t('build.loading')}
             </p>
           </motion.div>
         )}
@@ -254,7 +243,7 @@ export function BuildAdvisorPanel({ tabDirection, selectedCharacter, vaultItems,
               <div className="flex items-center gap-2 mb-4">
                 <Swords className="w-4 h-4 text-indigo-400" />
                 <h3 className="font-display text-xs tracking-[0.15em] text-indigo-400 uppercase" data-testid="text-weapons-heading">
-                  {language === 'de' ? 'Empfohlene Waffen' : language === 'fr' ? 'Armes recommandées' : 'Recommended Weapons'}
+                  {t('build.weapons')}
                 </h3>
               </div>
               <ul className="space-y-3" data-testid="list-recommended-weapons">
@@ -290,7 +279,7 @@ export function BuildAdvisorPanel({ tabDirection, selectedCharacter, vaultItems,
               <div className="flex items-center gap-2 mb-4">
                 <Shield className="w-4 h-4 text-emerald-400" />
                 <h3 className="font-display text-xs tracking-[0.15em] text-emerald-400 uppercase" data-testid="text-armor-heading">
-                  {language === 'de' ? 'Empfohlene Rüstung' : language === 'fr' ? 'Armure recommandée' : 'Recommended Armor'}
+                  {t('build.armor')}
                 </h3>
               </div>
               <ul className="space-y-3" data-testid="list-recommended-armor">
@@ -323,7 +312,7 @@ export function BuildAdvisorPanel({ tabDirection, selectedCharacter, vaultItems,
               <div className="flex items-center gap-2 mb-3">
                 <Flame className="w-4 h-4 text-purple-400" />
                 <h3 className="font-display text-xs tracking-[0.15em] text-purple-400 uppercase" data-testid="text-subclass-heading">
-                  {language === 'de' ? 'Subklasse' : language === 'fr' ? 'Sous-classe' : 'Subclass'}
+                  {t('build.subclass')}
                 </h3>
               </div>
               <div className="space-y-2">
@@ -331,7 +320,7 @@ export function BuildAdvisorPanel({ tabDirection, selectedCharacter, vaultItems,
                 {result.recommendedSubclass.aspects.length > 0 && (
                   <div>
                     <span className="text-xs text-gray-500 uppercase tracking-wider">
-                      {language === 'de' ? 'Aspekte' : language === 'fr' ? 'Aspects' : 'Aspects'}
+                      {t('build.aspects')}
                     </span>
                     <div className="flex flex-wrap gap-2 mt-1">
                       {result.recommendedSubclass.aspects.map((asp, i) => (
@@ -345,7 +334,7 @@ export function BuildAdvisorPanel({ tabDirection, selectedCharacter, vaultItems,
                 {result.recommendedSubclass.fragments.length > 0 && (
                   <div>
                     <span className="text-xs text-gray-500 uppercase tracking-wider">
-                      {language === 'de' ? 'Fragmente' : language === 'fr' ? 'Fragments' : 'Fragments'}
+                      {t('build.fragments')}
                     </span>
                     <div className="flex flex-wrap gap-2 mt-1">
                       {result.recommendedSubclass.fragments.map((frag, i) => (
@@ -369,7 +358,7 @@ export function BuildAdvisorPanel({ tabDirection, selectedCharacter, vaultItems,
                 <div className="flex items-center gap-2 mb-3">
                   <TrendingUp className="w-4 h-4 text-[#E5C76B]" />
                   <h3 className="font-display text-xs tracking-[0.15em] text-[#E5C76B] uppercase" data-testid="text-stats-heading">
-                    {language === 'de' ? 'Stat-Prioritäten' : language === 'fr' ? 'Priorités de stats' : 'Stat Priorities'}
+                    {t('build.stats')}
                   </h3>
                 </div>
                 <ol className="space-y-2" data-testid="list-stat-priorities">
@@ -400,7 +389,7 @@ export function BuildAdvisorPanel({ tabDirection, selectedCharacter, vaultItems,
                 <div className="flex items-center gap-2 mb-3">
                   <Lightbulb className="w-4 h-4 text-amber-400" />
                   <h3 className="font-display text-xs tracking-[0.15em] text-amber-400 uppercase" data-testid="text-strategy-heading">
-                    {language === 'de' ? 'Strategie' : language === 'fr' ? 'Stratégie' : 'Strategy'}
+                    {t('build.strategy')}
                   </h3>
                 </div>
                 <p className="text-sm text-gray-300 leading-relaxed" data-testid="text-strategy-content">
@@ -426,7 +415,7 @@ export function BuildAdvisorPanel({ tabDirection, selectedCharacter, vaultItems,
                 data-testid="button-regenerate-build"
               >
                 <RefreshCw className="w-3.5 h-3.5" />
-                {language === 'de' ? 'Neu generieren' : language === 'fr' ? 'Régénérer' : 'Regenerate'}
+                {t('build.regenerate')}
               </button>
             </motion.div>
           </div>
