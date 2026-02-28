@@ -853,6 +853,28 @@ export async function fetchProfileState(
     throw new Error('No profile data returned from Bungie');
   }
 
+  const responseKeys = Object.keys(response);
+  const loadoutRelatedKeys = responseKeys.filter(k => k.toLowerCase().includes('loadout') || k.toLowerCase().includes('load'));
+  console.log(`[bungie-debug] Response top-level keys: ${responseKeys.join(', ')}`);
+  console.log(`[bungie-debug] Loadout-related keys: ${loadoutRelatedKeys.join(', ') || 'NONE'}`);
+  if (response.characterLoadouts) {
+    console.log(`[bungie-debug] characterLoadouts exists, type: ${typeof response.characterLoadouts}, keys: ${Object.keys(response.characterLoadouts).join(', ')}`);
+    if (response.characterLoadouts.data) {
+      const charIds = Object.keys(response.characterLoadouts.data);
+      console.log(`[bungie-debug] characterLoadouts.data charIds: ${charIds.join(', ')}`);
+      for (const cid of charIds.slice(0, 1)) {
+        const sample = response.characterLoadouts.data[cid];
+        console.log(`[bungie-debug] sample char ${cid}: keys=${Object.keys(sample || {}).join(', ')}, loadouts count=${(sample?.loadouts || []).length}`);
+        if (sample?.loadouts?.[0]) {
+          const lo = sample.loadouts[0];
+          console.log(`[bungie-debug] first loadout keys: ${Object.keys(lo).join(', ')}, items count: ${(lo.items || []).length}, nameHash: ${lo.nameHash}`);
+        }
+      }
+    }
+  } else {
+    console.log(`[bungie-debug] characterLoadouts is MISSING from response`);
+  }
+
   const instanceDetails = response.itemComponents?.instances?.data || {};
   const itemPerks = response.itemComponents?.perks?.data || {};
   const itemSockets = response.itemComponents?.sockets?.data || {};
