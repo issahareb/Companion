@@ -41,6 +41,7 @@ import { BuildAdvisorPanel } from '@/components/dashboard/BuildAdvisorPanel';
 import { WeaponRollPanel } from '@/components/dashboard/WeaponRollPanel';
 import { TriumphAdvisorPanel } from '@/components/dashboard/TriumphAdvisorPanel';
 import { NewsPanel } from '@/components/dashboard/NewsPanel';
+import SynergyPanel from '@/components/dashboard/SynergyPanel';
 
 export default function Dashboard() {
   const { destinyProfile, logout, isAuthenticated, isFetchingProfile } = useBungieAuth();
@@ -650,6 +651,7 @@ export default function Dashboard() {
                       { id: 'build' as AiSubTab, label: t('advisor.buildRec') },
                       { id: 'roll' as AiSubTab, label: t('advisor.weaponRoll') },
                       { id: 'triumph' as AiSubTab, label: t('advisor.triumphAdvisor') },
+                      { id: 'synergy' as AiSubTab, label: t('advisor.synergy') },
                     ] as const).map(sub => (
                       <button
                         key={sub.id}
@@ -699,6 +701,13 @@ export default function Dashboard() {
                         tabDirection={0}
                         selectedCharacter={selectedCharacter}
                         records={profileState?.records || []}
+                      />
+                    )}
+                    {aiSubTab === 'synergy' && (
+                      <SynergyPanel
+                        key="synergy-sub"
+                        tabDirection={0}
+                        selectedCharacter={selectedCharacter}
                       />
                     )}
                   </AnimatePresence>

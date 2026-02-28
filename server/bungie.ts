@@ -839,12 +839,19 @@ export async function fetchProfileState(
   membershipId: string,
   accessToken: string
 ): Promise<ProfileState> {
-  const [manifestData, profileData] = await Promise.all([
+  const [manifestData, profileData, loadoutData] = await Promise.all([
     fetchManifest(),
     bungieGet(
-      `/Platform/Destiny2/${membershipType}/Profile/${membershipId}/?components=100,102,103,104,200,201,202,205,300,302,304,305,800,900,1200,4000`,
+      `/Platform/Destiny2/${membershipType}/Profile/${membershipId}/?components=100,102,103,104,200,201,202,205,300,302,304,305,800,900,4000`,
       accessToken
     ),
+    bungieGet(
+      `/Platform/Destiny2/${membershipType}/Profile/${membershipId}/?components=1200`,
+      accessToken
+    ).catch(err => {
+      console.warn(`[bungie] loadout fetch failed: ${err.message}`);
+      return null;
+    }),
   ]);
 
   const manifest = manifestData.items;
@@ -853,14 +860,23 @@ export async function fetchProfileState(
     throw new Error('No profile data returned from Bungie');
   }
 
-  const rk = Object.keys(response);
-  console.log(`[bd] keys(${rk.length}): ${rk.join(',')}`);
-  for (const k of rk) {
-    if (k.toLowerCase().includes('load')) {
-      const v = response[k];
-      const dk = v?.data ? Object.keys(v.data) : [];
-      console.log(`[bd] ${k}: dataKeys=${dk.length > 0 ? dk.join(',') : 'none'}`);
+  if (loadoutData) {
+    const topKeys = Object.keys(loadoutData).join(',');
+    const loadoutResponse = loadoutData.Response;
+    const respKeys = loadoutResponse ? Object.keys(loadoutResponse).join(',') : 'null';
+    console.log(`[bungie] loadout call top keys: ${topKeys}, Response keys: ${respKeys}`);
+    if (loadoutResponse?.characterLoadouts) {
+      response.characterLoadouts = loadoutResponse.characterLoadouts;
+      console.log(`[bungie] loadout separate call: found characterLoadouts`);
+    } else {
+      for (const key of Object.keys(loadoutResponse || {})) {
+        const val = (loadoutResponse as any)[key];
+        const subKeys = val && typeof val === 'object' ? Object.keys(val).join(',') : typeof val;
+        console.log(`[bungie] loadout response key "${key}": ${subKeys}`);
+      }
     }
+  } else {
+    console.log(`[bungie] loadout call returned null`);
   }
 
   const instanceDetails = response.itemComponents?.instances?.data || {};

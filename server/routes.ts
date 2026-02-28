@@ -583,6 +583,28 @@ export async function registerRoutes(
     }
   });
 
+  app.post('/api/ai/synergies', requireAuth, async (req: Request, res: Response) => {
+    try {
+      const { analyzeSynergies, synergyInputSchema } = await import('./ai');
+      const { equipmentData, language } = req.body;
+
+      const parseResult = synergyInputSchema.safeParse(equipmentData);
+      if (!parseResult.success) {
+        return res.status(400).json({ message: 'Invalid equipment data', errors: parseResult.error.flatten().fieldErrors });
+      }
+
+      const lang = ['de', 'en', 'fr'].includes(language) ? language : 'de';
+      const result = await analyzeSynergies(parseResult.data, lang);
+      res.json(result);
+    } catch (err: any) {
+      console.error('[ai] Synergy analysis failed:', err.message);
+      if (err.status === 429 || err.code === 'rate_limit_exceeded') {
+        return res.status(429).json({ message: 'AI rate limit exceeded. Please try again later.' });
+      }
+      res.status(500).json({ message: 'AI analysis failed. Please try again.' });
+    }
+  });
+
   setInterval(() => {
     storage.deleteExpiredSessions().catch(err => {
       console.error('[auth] Failed to clean expired sessions:', err);

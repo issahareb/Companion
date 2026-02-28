@@ -399,3 +399,141 @@ Return 5-8 prioritized triumphs. Return ONLY valid JSON. No markdown, no code fe
 
   return callAI(prompt, triumphAdvisorSchema);
 }
+
+export const synergyInputSchema = z.object({
+  className: z.string().min(1),
+  stats: z.array(z.object({ name: z.string(), value: z.number() })).default([]),
+  equippedItems: z.array(z.object({
+    slot: z.string(),
+    name: z.string(),
+    type: z.string().default(''),
+    rarity: z.string().default(''),
+    perks: z.array(z.object({ name: z.string(), isActive: z.boolean() })).default([]),
+    mods: z.array(z.object({ name: z.string() })).default([]),
+  })).default([]),
+  subclass: z.object({
+    name: z.string(),
+    element: z.string().default(''),
+    sockets: z.array(z.object({ name: z.string(), category: z.string() })).default([]),
+  }).nullable().default(null),
+  armorMods: z.array(z.object({
+    slot: z.string(),
+    mods: z.array(z.object({ name: z.string() })).default([]),
+  })).default([]),
+});
+
+export type SynergyInput = z.infer<typeof synergyInputSchema>;
+
+const synergyAnalysisSchema = z.object({
+  overallRating: z.number(),
+  synergies: z.array(z.object({
+    name: z.string(),
+    strength: z.enum(['strong', 'moderate', 'weak']),
+    items: z.array(z.string()),
+    perks: z.array(z.string()),
+    explanation: z.string(),
+  })),
+  antiSynergies: z.array(z.object({
+    issue: z.string(),
+    items: z.array(z.string()),
+    explanation: z.string(),
+    fix: z.string(),
+  })),
+  suggestions: z.array(z.object({
+    current: z.string(),
+    recommended: z.string(),
+    reason: z.string(),
+  })),
+  summary: z.string(),
+});
+
+export type SynergyAnalysis = z.infer<typeof synergyAnalysisSchema>;
+
+export async function analyzeSynergies(
+  data: SynergyInput,
+  language: string = 'de'
+): Promise<SynergyAnalysis> {
+  const weaponsStr = data.equippedItems
+    .filter(i => ['kinetic', 'energy', 'power'].includes(i.slot))
+    .map(w => {
+      const activePerks = w.perks.filter(p => p.isActive).map(p => p.name).join(', ');
+      const mods = w.mods.map(m => m.name).join(', ');
+      return `${w.slot}: ${w.name} (${w.type}, ${w.rarity}) [Perks: ${activePerks || 'none'}] [Mods: ${mods || 'none'}]`;
+    }).join('\n');
+
+  const armorStr = data.equippedItems
+    .filter(i => ['helmet', 'arms', 'chest', 'legs', 'class'].includes(i.slot))
+    .map(a => {
+      const perks = a.perks.filter(p => p.isActive).map(p => p.name).join(', ');
+      const mods = a.mods.map(m => m.name).join(', ');
+      return `${a.slot}: ${a.name} (${a.rarity}) [Perks: ${perks || 'none'}] [Mods: ${mods || 'none'}]`;
+    }).join('\n');
+
+  const statsStr = data.stats.map(s => `${s.name}: ${s.value}`).join(', ');
+
+  const subclassStr = data.subclass
+    ? `Subclass: ${data.subclass.name} (${data.subclass.element})\nAbilities/Fragments: ${data.subclass.sockets.map(s => `${s.category}: ${s.name}`).join(', ')}`
+    : 'Subclass: Unknown';
+
+  const prompt = `You are an expert Destiny 2 build theorycrafting specialist focused on PERK AND MOD SYNERGIES. Your job is to find every meaningful interaction between the equipped gear's perks, mods, subclass abilities, and armor stats.
+
+${getLangInstruction(language)}
+
+CLASS: ${data.className}
+
+STATS:
+${statsStr}
+
+WEAPONS:
+${weaponsStr}
+
+ARMOR (with perks and mods):
+${armorStr}
+
+${subclassStr}
+
+IMPORTANT: Look for CROSS-ITEM synergies specifically:
+- Armor perks that boost weapon effectiveness (e.g., "Ashes to Assets" on helmet + grenade builds = super energy)
+- Weapon perks that synergize with subclass abilities (e.g., "Incandescent" + Solar subclass fragments)
+- Mod combinations across armor pieces that create loops (e.g., "Font of Might" + matching element weapons)
+- Stat thresholds that enable build mechanics (e.g., 100 Discipline + grenade-focused mods)
+- Weapon perk combos that chain together (e.g., "Demolitionist" + "Adrenaline Junkie")
+- Armor charge mechanics (collecting/spending orbs, elemental wells)
+- Anti-synergies where perks conflict or are wasted
+
+Return a JSON object with exactly these fields:
+{
+  "overallRating": <number 1-10 rating of how well the equipment synergizes>,
+  "synergies": [
+    {
+      "name": "Short synergy combo name (2-5 words)",
+      "strength": "strong" | "moderate" | "weak",
+      "items": ["Item/slot name 1", "Item/slot name 2"],
+      "perks": ["Perk/mod name 1", "Perk/mod name 2"],
+      "explanation": "Detailed explanation of HOW these interact and WHY it's effective"
+    }
+  ],
+  "antiSynergies": [
+    {
+      "issue": "Short description of the conflict",
+      "items": ["Item 1", "Item 2"],
+      "explanation": "Why these don't work well together",
+      "fix": "What to swap to fix this"
+    }
+  ],
+  "suggestions": [
+    {
+      "current": "Current perk/mod name",
+      "recommended": "Recommended replacement",
+      "reason": "Why this swap improves synergy"
+    }
+  ],
+  "summary": "2-3 sentence overview of the build's synergy quality and identity"
+}
+
+Find 4-8 synergies, 0-3 anti-synergies, and 2-4 suggestions. Be specific about Destiny 2 game mechanics. Return ONLY valid JSON.`;
+
+  const result = await callAI(prompt, synergyAnalysisSchema);
+  result.overallRating = Math.max(1, Math.min(10, Math.round(result.overallRating)));
+  return result;
+}

@@ -4,7 +4,7 @@ import type { Item } from '@/components/Inventory';
 
 export type TabType = 'characters' | 'vault' | 'loadouts' | 'postmaster' | 'collections' | 'triumphs' | 'season' | 'ai' | 'news';
 
-export type AiSubTab = 'playstyle' | 'build' | 'roll' | 'triumph';
+export type AiSubTab = 'playstyle' | 'build' | 'roll' | 'triumph' | 'synergy';
 
 export interface FilterState {
   search: string;

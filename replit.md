@@ -24,7 +24,7 @@ The project is organized as a monorepo with `client/` (React frontend), `server/
 -   **Framework**: Express 5 on Node.js.
 -   **API**: Manages Bungie API interactions (fetching profile data, item transfers, equips, subclass mods, in-game loadouts) and CRUD for user-saved loadouts. Includes endpoints for AI services and Bungie news.
 -   **Bungie API Integration**: Fetches comprehensive player profile states. Implements `bungieRequestWithRetry` with exponential backoff, 15s timeout, and handles various HTTP and Bungie-specific errors. Features a server-side 30s TTL in-memory profile cache and robust error classification.
--   **AI Advisor Suite**: Integrates OpenAI GPT-4o via Replit AI Integrations. Provides endpoints for Playstyle Analysis, Build Recommendation, Weapon Roll Evaluation, and Triumph Advisor. All AI endpoints are rate-limited and require authentication.
+-   **AI Advisor Suite**: Integrates OpenAI GPT-4o via Replit AI Integrations. Provides endpoints for Playstyle Analysis, Build Recommendation, Weapon Roll Evaluation, Triumph Advisor, and Equipment Synergy Analysis. All AI endpoints are rate-limited and require authentication.
 -   **Bungie News Feed**: Provides a public endpoint for the latest Bungie.net news, with a 10-minute server-side cache and content type detection.
 
 ### Data Management & Persistence
