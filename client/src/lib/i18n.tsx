@@ -220,6 +220,10 @@ const translations: Record<Language, Record<string, string>> = {
     'triumph.tips': 'Tipps',
     'triumph.advice': 'Allgemeine Empfehlung',
     'triumph.reanalyze': 'Erneut analysieren',
+    'triumph.details': 'Triumph-Details',
+    'triumph.objectives': 'Ziele',
+    'triumph.noMatch': 'Triumph nicht in deinen Daten gefunden',
+    'triumph.clickToExpand': 'Klicke für Triumph-Details',
   },
   en: {
     'login.subtitle': 'Authenticate via Bungie.net to gain access between Shaxx\'s legs',
@@ -432,6 +436,10 @@ const translations: Record<Language, Record<string, string>> = {
     'triumph.tips': 'Tips',
     'triumph.advice': 'General Advice',
     'triumph.reanalyze': 'Re-analyze',
+    'triumph.details': 'Triumph Details',
+    'triumph.objectives': 'Objectives',
+    'triumph.noMatch': 'Triumph not found in your data',
+    'triumph.clickToExpand': 'Click for triumph details',
   },
   fr: {
     'login.subtitle': 'Authenticate via Bungie.net to gain access between Shaxx\'s legs',
@@ -644,6 +652,10 @@ const translations: Record<Language, Record<string, string>> = {
     'triumph.tips': 'Conseils',
     'triumph.advice': 'Conseil général',
     'triumph.reanalyze': 'Ré-analyser',
+    'triumph.details': 'Détails du triomphe',
+    'triumph.objectives': 'Objectifs',
+    'triumph.noMatch': 'Triomphe introuvable dans vos données',
+    'triumph.clickToExpand': 'Cliquez pour les détails',
   },
 };
 

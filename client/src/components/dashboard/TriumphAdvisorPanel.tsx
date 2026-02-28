@@ -1,6 +1,6 @@
-import { useState, useCallback } from 'react';
-import { motion } from 'framer-motion';
-import { Trophy, AlertTriangle, Loader2, Clock, Lightbulb, ChevronRight, Star, RefreshCw, Target } from 'lucide-react';
+import { useState, useCallback, useMemo } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Trophy, AlertTriangle, Loader2, Clock, Lightbulb, ChevronRight, Star, RefreshCw, Target, ChevronDown, Check } from 'lucide-react';
 import { useI18n } from '@/lib/i18n';
 import type { CharacterData, RecordItem } from '@/hooks/use-profile-state';
 import { apiRequest } from '@/lib/queryClient';
@@ -31,18 +31,115 @@ const tabVariants = {
   exit: (dir: number) => ({ x: dir > 0 ? -60 : 60, opacity: 0 }),
 };
 
+function findMatchingRecord(name: string, records: RecordItem[]): RecordItem | null {
+  const lower = name.toLowerCase().trim();
+  const exact = records.find(r => r.name.toLowerCase().trim() === lower);
+  if (exact) return exact;
+  const partial = records.find(r =>
+    r.name.toLowerCase().includes(lower) || lower.includes(r.name.toLowerCase())
+  );
+  return partial || null;
+}
+
+function RecordDetail({ record }: { record: RecordItem }) {
+  const { t } = useI18n();
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, height: 0 }}
+      animate={{ opacity: 1, height: 'auto' }}
+      exit={{ opacity: 0, height: 0 }}
+      transition={{ duration: 0.35, ease: appleEase as unknown as number[] }}
+      className="overflow-hidden"
+    >
+      <div className="mt-4 pt-4 border-t border-white/[0.06]">
+        <div className="flex items-start gap-3 mb-3">
+          <div className={`w-12 h-12 shrink-0 flex items-center justify-center overflow-hidden ring-1 rounded ${
+            record.completed ? 'ring-[#E5C76B]/30' : 'ring-white/10'
+          }`}>
+            {record.icon ? (
+              <img src={record.icon} alt="" className="w-full h-full object-cover" loading="lazy" />
+            ) : (
+              <Trophy className={`w-6 h-6 ${record.completed ? 'text-[#E5C76B]' : 'text-gray-600'}`} />
+            )}
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2">
+              <h4 className={`text-xs font-bold tracking-wider uppercase truncate ${
+                record.completed ? 'text-[#E5C76B]' : 'text-white'
+              }`}>{record.name}</h4>
+              {record.completed && (
+                <div className="shrink-0 w-4 h-4 bg-green-500/80 rounded-full flex items-center justify-center">
+                  <Check className="w-2.5 h-2.5 text-white" />
+                </div>
+              )}
+              {record.scoreValue > 0 && (
+                <span className="text-[9px] text-[#E5C76B]/60 shrink-0">{record.scoreValue} pts</span>
+              )}
+            </div>
+            {record.description && (
+              <p className="text-[10px] text-gray-400 mt-1 leading-relaxed">{record.description}</p>
+            )}
+          </div>
+        </div>
+
+        {record.objectives.length > 0 && (
+          <div className="space-y-2.5 mt-3">
+            <div className="flex items-center gap-1.5">
+              <Target className="w-3 h-3 text-indigo-400" />
+              <span className="text-[9px] text-gray-500 uppercase tracking-[0.15em] font-display">{t('triumph.objectives')}</span>
+            </div>
+            {record.objectives.map((obj, i) => {
+              const pct = obj.completionValue > 0 ? Math.min(100, (obj.progress / obj.completionValue) * 100) : 0;
+              return (
+                <div key={i} className="bg-white/[0.02] border border-white/[0.04] rounded-lg px-3 py-2">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-[10px] text-gray-300 flex-1 truncate">{obj.description || t('triumphs.progress')}</span>
+                    <span className={`text-[10px] shrink-0 ml-2 font-mono ${obj.complete ? 'text-green-400' : 'text-gray-400'}`}>
+                      {obj.progress.toLocaleString()}/{obj.completionValue.toLocaleString()}
+                    </span>
+                  </div>
+                  <div className="h-1.5 bg-white/[0.06] rounded-full overflow-hidden">
+                    <motion.div
+                      initial={{ width: 0 }}
+                      animate={{ width: `${pct}%` }}
+                      transition={{ duration: 0.8, ease: appleEase as unknown as number[], delay: 0.1 }}
+                      className={`h-full rounded-full ${obj.complete ? 'bg-green-500' : 'bg-indigo-500'}`}
+                    />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    </motion.div>
+  );
+}
+
 export function TriumphAdvisorPanel({ tabDirection, selectedCharacter, records }: TriumphAdvisorPanelProps) {
   const { t, language } = useI18n();
   const [result, setResult] = useState<TriumphAdvisorResult | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
 
   const incompleteRecords = records.filter(r => !r.completed);
+
+  const matchedRecords = useMemo(() => {
+    if (!result) return new Map<number, RecordItem | null>();
+    const map = new Map<number, RecordItem | null>();
+    result.prioritizedTriumphs.forEach((triumph, i) => {
+      map.set(i, findMatchingRecord(triumph.name, records));
+    });
+    return map;
+  }, [result, records]);
 
   const runAnalysis = useCallback(async () => {
     if (!selectedCharacter || incompleteRecords.length === 0) return;
     setIsLoading(true);
     setError(null);
+    setExpandedIndex(null);
 
     const triumphData = {
       incompleteRecords: incompleteRecords.slice(0, 30).map(r => ({
@@ -77,6 +174,10 @@ export function TriumphAdvisorPanel({ tabDirection, selectedCharacter, records }
       setIsLoading(false);
     }
   }, [selectedCharacter, incompleteRecords, language, t]);
+
+  const toggleExpand = (index: number) => {
+    setExpandedIndex(prev => prev === index ? null : index);
+  };
 
   return (
     <motion.div
@@ -159,53 +260,84 @@ export function TriumphAdvisorPanel({ tabDirection, selectedCharacter, records }
         {result && !isLoading && (
           <div className="space-y-5">
             <div className="space-y-4">
-              {result.prioritizedTriumphs.map((triumph, i) => (
-                <motion.div
-                  key={i}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, ease: appleEase as unknown as number[], delay: 0.1 + i * 0.08 }}
-                  className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-5 hover-lift"
-                  data-testid={`card-triumph-${i}`}
-                >
-                  <div className="flex items-start gap-4">
-                    <div className="flex-shrink-0 w-8 h-8 rounded-full bg-amber-500/15 flex items-center justify-center mt-0.5">
-                      <span className="text-amber-400 text-xs font-bold">#{i + 1}</span>
-                    </div>
-                    <div className="flex-1 space-y-3">
-                      <div className="flex items-start justify-between gap-3 flex-wrap">
-                        <h3 className="text-white text-sm font-medium" data-testid={`text-triumph-name-${i}`}>{triumph.name}</h3>
-                        <div className="flex items-center gap-1.5 text-gray-500 shrink-0">
-                          <Clock className="w-3.5 h-3.5" />
-                          <span className="text-xs" data-testid={`text-triumph-time-${i}`}>{triumph.estimatedTime}</span>
-                        </div>
-                      </div>
+              {result.prioritizedTriumphs.map((triumph, i) => {
+                const matchedRecord = matchedRecords.get(i) ?? null;
+                const isExpanded = expandedIndex === i;
 
-                      <div className="flex items-start gap-2">
-                        <Star className="w-3.5 h-3.5 text-amber-500/60 mt-0.5 shrink-0" />
-                        <p className="text-gray-400 text-sm leading-relaxed" data-testid={`text-triumph-reason-${i}`}>{triumph.reason}</p>
+                return (
+                  <motion.div
+                    key={i}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, ease: appleEase as unknown as number[], delay: 0.1 + i * 0.08 }}
+                    className={`bg-white/[0.03] border rounded-xl p-5 transition-all duration-300 ${
+                      isExpanded ? 'border-amber-500/30 bg-white/[0.04]' : 'border-white/[0.06] hover:border-white/[0.12]'
+                    } ${matchedRecord ? 'cursor-pointer' : ''}`}
+                    onClick={() => matchedRecord && toggleExpand(i)}
+                    data-testid={`card-triumph-${i}`}
+                  >
+                    <div className="flex items-start gap-4">
+                      <div className="flex-shrink-0 w-8 h-8 rounded-full bg-amber-500/15 flex items-center justify-center mt-0.5">
+                        <span className="text-amber-400 text-xs font-bold">#{i + 1}</span>
                       </div>
-
-                      {triumph.tips.length > 0 && (
-                        <div className="space-y-1.5 pt-1">
-                          <div className="flex items-center gap-1.5">
-                            <Lightbulb className="w-3 h-3 text-[#E5C76B]/70" />
-                            <span className="text-[10px] text-gray-500 uppercase tracking-[0.15em] font-display">{t('triumph.tips')}</span>
+                      <div className="flex-1 space-y-3">
+                        <div className="flex items-start justify-between gap-3 flex-wrap">
+                          <div className="flex items-center gap-2">
+                            <h3 className="text-white text-sm font-medium" data-testid={`text-triumph-name-${i}`}>{triumph.name}</h3>
+                            {matchedRecord && (
+                              <motion.div
+                                animate={{ rotate: isExpanded ? 180 : 0 }}
+                                transition={{ duration: 0.3 }}
+                              >
+                                <ChevronDown className="w-3.5 h-3.5 text-gray-500" />
+                              </motion.div>
+                            )}
                           </div>
-                          <ul className="space-y-1">
-                            {triumph.tips.map((tip, j) => (
-                              <li key={j} className="flex items-start gap-2 text-xs text-gray-400">
-                                <ChevronRight className="w-3 h-3 text-[#E5C76B]/40 mt-0.5 shrink-0" />
-                                <span data-testid={`text-triumph-tip-${i}-${j}`}>{tip}</span>
-                              </li>
-                            ))}
-                          </ul>
+                          <div className="flex items-center gap-1.5 text-gray-500 shrink-0">
+                            <Clock className="w-3.5 h-3.5" />
+                            <span className="text-xs" data-testid={`text-triumph-time-${i}`}>{triumph.estimatedTime}</span>
+                          </div>
                         </div>
-                      )}
+
+                        <div className="flex items-start gap-2">
+                          <Star className="w-3.5 h-3.5 text-amber-500/60 mt-0.5 shrink-0" />
+                          <p className="text-gray-400 text-sm leading-relaxed" data-testid={`text-triumph-reason-${i}`}>{triumph.reason}</p>
+                        </div>
+
+                        {triumph.tips.length > 0 && (
+                          <div className="space-y-1.5 pt-1">
+                            <div className="flex items-center gap-1.5">
+                              <Lightbulb className="w-3 h-3 text-[#E5C76B]/70" />
+                              <span className="text-[10px] text-gray-500 uppercase tracking-[0.15em] font-display">{t('triumph.tips')}</span>
+                            </div>
+                            <ul className="space-y-1">
+                              {triumph.tips.map((tip, j) => (
+                                <li key={j} className="flex items-start gap-2 text-xs text-gray-400">
+                                  <ChevronRight className="w-3 h-3 text-[#E5C76B]/40 mt-0.5 shrink-0" />
+                                  <span data-testid={`text-triumph-tip-${i}-${j}`}>{tip}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+
+                        <AnimatePresence>
+                          {isExpanded && matchedRecord && (
+                            <RecordDetail record={matchedRecord} />
+                          )}
+                        </AnimatePresence>
+
+                        {matchedRecord && !isExpanded && (
+                          <p className="text-[9px] text-gray-600 italic mt-1">{t('triumph.clickToExpand')}</p>
+                        )}
+                        {!matchedRecord && (
+                          <p className="text-[9px] text-gray-600 italic mt-1">{t('triumph.noMatch')}</p>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                </motion.div>
-              ))}
+                  </motion.div>
+                );
+              })}
             </div>
 
             {result.generalAdvice && (
