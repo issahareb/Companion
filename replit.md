@@ -1,153 +1,53 @@
 # Replit.md
 
 ## Overview
-
-GuardianGrid (Adept) is a Destiny 2 loadout manager web application. It enables players to authenticate via Bungie's OAuth2, manage their in-game inventory across characters, vault, and postmaster, create and save custom loadouts, and share them. Key features include browsing collections, triumphs, season progressions, and in-game loadout manipulation. The application features a dark, Destiny-themed UI with custom animations and supports German, English, and French localization.
+GuardianGrid (Adept) is a Destiny 2 loadout manager web application. It enables players to authenticate via Bungie's OAuth2, manage in-game inventory, create and save custom loadouts, and share them. Key features include browsing collections, triumphs, season progressions, and in-game loadout manipulation. The application aims to provide a dark, Destiny-themed UI with custom animations and supports German, English, and French localization, enhancing the player experience with comprehensive tools and AI-driven insights.
 
 ## User Preferences
-
 Preferred communication style: Simple, everyday language.
 
 ## System Architecture
 
 ### Monorepo Structure
-The project uses a monorepo with `client/` (React frontend), `server/` (Express backend), and `shared/` (shared types and schemas).
+The project is organized as a monorepo with `client/` (React frontend), `server/` (Express backend), and `shared/` (shared types and schemas).
 
-### Frontend (client/)
--   **Framework**: React 18 with TypeScript, Vite for bundling.
--   **Routing**: Wouter.
--   **State Management**: TanStack React Query.
--   **UI**: shadcn/ui with Radix UI, Tailwind CSS.
--   **Animations**: Framer Motion.
--   **Key Pages**: Home/Login, Dashboard (with tabs for characters, vault, loadouts, postmaster, collections, triumphs, season progression, AI playstyle analysis), and a loadout sharing page.
+### Frontend
+-   **Framework**: React 18 with TypeScript, Vite, Wouter for routing, TanStack React Query for state management.
+-   **UI/UX**: shadcn/ui with Radix UI, Tailwind CSS, Framer Motion for animations.
+    -   **Theming**: Dark, Destiny-inspired with a gold/indigo palette, custom clip-paths, subtle animations.
+    -   **Typography**: Protest Strike (headings), Plus Jakarta Sans (body), JetBrains Mono (code).
+    -   **Animations**: Cinematic animation system using Framer Motion + CSS, Apple ease curve, spring physics. Includes reveal, lift, scale, 3D card effects, and various hover interactions. Supports `prefers-reduced-motion` for accessibility.
+    -   **Layout**: Consolidated header, tab-style character selector, responsive design with hamburger menu and desktop sidebar.
+-   **Core Pages**: Home/Login, Dashboard (characters, vault, loadouts, postmaster, collections, triumphs, season progression, AI analysis), and a loadout sharing page with smart matching capabilities.
 
-### Dashboard Component Architecture
--   **Dashboard.tsx** (~670 lines): Main layout shell, state management, action handlers, tab routing.
--   **`client/src/components/dashboard/`**: 16 focused component files:
-    -   `shared.ts` — TabType, FilterState, toItem helper, useItemFilter hook
-    -   `BungieStatus.tsx` — BungieAutoRetry countdown + OfflineBanner
-    -   `FilterBar.tsx` — Slot/rarity/power filter bar
-    -   `QuestCard.tsx` — Quest item display card
-    -   `ArtifactDisplay.tsx` — Artifact tier display with active items
-    -   `SubclassEditor.tsx` — Subclass socket categories with plug swapping
-    -   `EquippedSlotRow.tsx` — Equipped slot row with item picker, mods tooltip, RollRatingBadge
-    -   `VaultItemCard.tsx` — Vault item card with transfer/equip dropdown
-    -   `CharacterPanel.tsx` — Character hero, stat rings, weapons/armor, subclass, artifact, quests
-    -   `VaultPanel.tsx` — Vault search, filters, item grid, desktop loadout sidebar
-    -   `LoadoutsPanel.tsx` — In-game loadouts per character with share buttons + saved loadouts grid with share/load/delete
-    -   `PostmasterPanel.tsx` — Per-character postmaster items with pull button
-    -   `CollectionsPanel.tsx` — Collections search, filter, collectibles grid
-    -   `TriumphsPanel.tsx` — Triumphs search, filter, records with progress bars
-    -   `SeasonPanel.tsx` — Season progression cards with level/reset info
-    -   `PlaystylePanel.tsx` — AI playstyle analysis with rating ring, strengths/weaknesses/synergies/tips
-    -   `BuildAdvisorPanel.tsx` — AI build recommendation for specific activities
-    -   `WeaponRollPanel.tsx` — AI weapon roll evaluation with verdict/score/perk breakdown
-    -   `TriumphAdvisorPanel.tsx` — AI triumph path advisor with prioritized suggestions
-    -   `NewsPanel.tsx` — Bungie news feed with content type badges and filters
-
-### Backend (server/)
+### Backend
 -   **Framework**: Express 5 on Node.js.
--   **API Routes**: Manages Bungie API interactions for fetching profile data, transferring items, equipping items, pulling from postmaster, locking items, inserting subclass plugs, and managing in-game loadouts. Also handles CRUD operations for user-saved loadouts. POST `/api/loadouts/share-ingame` creates a shared loadout from in-game data with a nanoid shareCode.
+-   **API**: Manages Bungie API interactions (fetching profile data, item transfers, equips, subclass mods, in-game loadouts) and CRUD for user-saved loadouts. Includes endpoints for AI services and Bungie news.
+-   **Bungie API Integration**: Fetches comprehensive player profile states. Implements `bungieRequestWithRetry` with exponential backoff, 15s timeout, and handles various HTTP and Bungie-specific errors. Features a server-side 30s TTL in-memory profile cache and robust error classification.
+-   **AI Advisor Suite**: Integrates OpenAI GPT-4o via Replit AI Integrations. Provides endpoints for Playstyle Analysis, Build Recommendation, Weapon Roll Evaluation, and Triumph Advisor. All AI endpoints are rate-limited and require authentication.
+-   **Bungie News Feed**: Provides a public endpoint for the latest Bungie.net news, with a 10-minute server-side cache and content type detection.
 
-### Bungie API Integration
--   The server fetches comprehensive player profile states, including characters, inventory, vault, postmaster, currencies, collectibles, records, seasonal artifact, and in-game loadouts using various Bungie API components.
--   Provides endpoints for in-game actions like item transfers, equipping, and subclass modifications.
--   Caches Bungie manifest data for 24 hours.
--   **Retry Logic**: `bungieRequestWithRetry` wrapper with exponential backoff (max 3 attempts), 15s timeout via AbortController, handles HTTP 429 rate limits, 503/521/522 maintenance, and Bungie-specific throttle/maintenance error codes.
--   **Profile Cache**: Server-side 30s TTL in-memory cache for profile state responses. Bypass with `?fresh=true` query param. Cache invalidated on write operations.
--   **Error Classification**: `BungieApiError` class with typed errors (`rate_limit`, `maintenance`, `auth`, `timeout`, `network`, `api`) passed to frontend for appropriate UI handling.
+### Data Management & Persistence
+-   **Database**: PostgreSQL with Drizzle ORM.
+-   **Tables**: `saved_loadouts` for user loadouts and `sessions` for server-side session management.
+-   **Authentication**: Bungie OAuth2 with server-side sessions using HTTPOnly cookies. Implements refresh token rotation and session cleanup. Includes `requireAuth` middleware for API protection and Cloudflare Turnstile CAPTCHA integration.
+-   **Shared Layer**: `shared/` directory contains `schema.ts` (Drizzle ORM/Zod schemas) and `routes.ts` (type-safe API route definitions with Zod validation).
 
-### AI Advisor Suite
--   **Module**: `server/ai.ts` — OpenAI GPT-4o integration via Replit AI Integrations (env vars: `AI_INTEGRATIONS_OPENAI_API_KEY`, `AI_INTEGRATIONS_OPENAI_BASE_URL`).
--   **Dashboard Tab**: `ai` tab with 4 horizontal sub-tabs (AiSubTab type in `shared.ts`): Playstyle | Build Rec | Weapon Roll | Triumph Advisor.
--   **Playstyle Analysis**: POST `/api/ai/analyze-playstyle` — Analyzes equipped build. Output: `{ playstyle, summary, rating (1-10), strengths[], weaknesses[], synergies[], tips[] }`. Frontend: `PlaystylePanel.tsx`.
--   **Build Recommendation**: POST `/api/ai/recommend-build` — Suggests optimized loadout for a specific activity (raid/nightfall/pvp/gambit/dungeon). Output: `{ activity, recommendedWeapons[], recommendedArmor[], recommendedSubclass, statPriorities[], strategy }`. Frontend: `BuildAdvisorPanel.tsx`.
--   **Weapon Roll Evaluation**: POST `/api/ai/evaluate-roll` — Evaluates a weapon's perk roll. Output: `{ verdict (god_roll/great/good/average/shard), score (1-10), perkBreakdown[], idealPerks[], summary }`. Frontend: `WeaponRollPanel.tsx`.
--   **Triumph Advisor**: POST `/api/ai/triumph-advisor` — Prioritizes incomplete triumphs. Output: `{ prioritizedTriumphs[{name, reason, estimatedTime, tips[]}], generalAdvice }`. Frontend: `TriumphAdvisorPanel.tsx`.
--   **All endpoints**: Protected by `requireAuth` + rate limited (10-15/15min). Results cached in component state per selection.
-
-### Bungie News Feed
--   **Endpoint**: GET `/api/bungie/news?lang=en` — Public (no auth required). Returns up to 20 latest Bungie.net news articles.
--   **Server Cache**: 10-minute TTL in-memory cache for news articles.
--   **Content Type Detection**: Articles auto-tagged as `twid` (This Week in Destiny/TWAB), `patch`, `maintenance`, `announcement`, or `news` based on title keywords.
--   **Frontend**: `NewsPanel.tsx` with filter bar (All/TWID/Patches/Announcements/General), article cards with images, content-type badges, relative date formatting, and external links to bungie.net.
--   **Auto-refresh**: React Query refetches every 5 minutes with 2-minute stale time.
-
-### Client-Side Data Management
--   Extensive type definitions for game entities like perks, mods, sockets, artifacts, inventory items, collectibles, records, and progressions.
--   Custom React hooks for fetching and mutating Bungie API data and managing saved loadouts.
-
-### Robustness & Error Handling
--   **React Error Boundary**: `ErrorBoundary` component wraps the app routes. Shows retry/home buttons on crashes. Individual tab sections can be wrapped for isolation.
--   **Offline Support**: `useOnlineStatus` hook tracks `navigator.onLine`. Offline banner shown in Dashboard. React Query uses `networkMode: 'offlineFirst'` to show cached data when offline.
--   **Query Retry**: React Query retries queries up to 2 times with exponential backoff. Skips retry for 401/403/maintenance errors. Mutations do not retry.
--   **Mutation Locking**: Shared `BUNGIE_MUTATION_KEY` across all Bungie mutations. `useIsBungieMutating()` hook prevents concurrent mutations (no double-transfers).
--   **AbortController Cleanup**: All fetch calls in `use-bungie-auth.ts` use AbortController cancelled on unmount. Profile state query uses React Query's built-in signal forwarding.
--   **Bungie-Down Fallback UI**: Dashboard detects `errorType` from server responses and shows maintenance/rate-limit specific screens with auto-retry countdown.
-
-### Internationalization (i18n)
--   Supports German, English, and French, covering all UI strings.
-
-### Shared Layer (shared/)
--   **`schema.ts`**: Drizzle ORM table definitions and Zod schemas.
--   **`routes.ts`**: Type-safe API route definitions with Zod validation.
-
-### Database
--   **ORM**: Drizzle ORM with PostgreSQL.
--   **Tables**:
-    -   `saved_loadouts` for storing user-defined loadouts with item details, class type, and share codes.
-    -   `sessions` for server-side session management (id, bungieMembershipId, accessToken, refreshToken, tokenExpiresAt, createdAt).
-
-### Authentication
--   **Bungie OAuth2 with Server-Side Sessions**: OAuth code exchange handled server-side. Access tokens and refresh tokens stored in DB `sessions` table, never exposed to the client.
--   **HTTPOnly Cookies**: Session ID stored in a signed HTTPOnly cookie (`session_id`). Cookie config: httpOnly, secure (prod), sameSite: 'lax', path: '/', maxAge: 30 days, signed with SESSION_SECRET.
--   **Refresh Token Rotation**: When access token expires, `requireAuth` middleware auto-refreshes using the stored refresh token and updates the session in DB.
--   **Auth Routes**: POST `/api/auth/login` (code exchange + session creation), POST `/api/auth/logout` (session deletion), GET `/api/auth/me` (session validation + profile info).
--   **requireAuth Middleware**: Protects all `/api/bungie/*` routes. Reads session cookie, validates session, auto-refreshes expired tokens, attaches accessToken to request.
--   **Session Cleanup**: Expired sessions (>30 days) cleaned up hourly via interval.
--   **Dashboard Auth Guard**: Dashboard shows loading spinner while checking session, redirects to `/` if not authenticated.
--   **Cloudflare Turnstile CAPTCHA**: Optional CAPTCHA on login. Requires `TURNSTILE_SITE_KEY` and `TURNSTILE_SECRET_KEY` env vars. Auto-detects if keys are set.
-
-### Security
--   **Helmet**: Full security headers (CSP, HSTS, X-Frame-Options: DENY, X-Content-Type-Options: nosniff, Referrer-Policy).
--   **Rate Limiting**: Global API limit (200/15min), auth endpoints (15/15min), write endpoints (60/15min). Uses `cf-connecting-ip` header for Cloudflare compatibility.
--   **CORS**: Locked to guardiangrid.net, www.guardiangrid.net, and Replit dev domains. Credentials: true for cookie support.
--   **Bot Protection**: Blocks API requests without valid User-Agent headers.
--   **Request Size Limits**: JSON and URL-encoded bodies capped at 1MB.
--   **Trust Proxy**: Configured for Cloudflare proxy (reads real client IPs from CF headers).
--   **Cloudflare Integration**: App is ready for Cloudflare proxy. Set DNS to "Proxied" (orange cloud) in Cloudflare dashboard for DDoS protection, WAF, and SSL.
--   **cookie-parser**: Signed cookie parsing with SESSION_SECRET.
-
-### Storage Pattern
--   Uses a swappable `IStorage` interface, currently implemented with PostgreSQL (`DatabaseStorage`).
--   Session CRUD: createSession, getSession, updateSessionTokens, deleteSession, deleteExpiredSessions.
-
-### UI/UX Decisions
--   **Theming**: Dark, Destiny-inspired with a gold/indigo color palette, custom clip-paths, and subtle animations.
--   **Typography**: Protest Strike (headings), Plus Jakarta Sans (body), JetBrains Mono (code). Minimum text size: 8px.
--   **Animations**: Apple-like cinematic animation system using Framer Motion + CSS. Apple ease curve `[0.16, 1, 0.3, 1]` for smooth deceleration. Spring physics `{ damping: 25-30, stiffness: 120-300 }` for interactive elements. CSS classes: `.reveal-up`, `.reveal-scale`, `.reveal-left` (with `.visible`), `.hover-lift`, `.press-scale`, `.card-3d`, `.scroll-container`, `.animate-float-gentle`, `.animate-breathe`, `.progress-animated`. Stagger delays via `stagger-1` through `stagger-8`. `useScrollReveal` hook uses IntersectionObserver with scroll container root detection (`data-scroll-container`). `will-change: transform, opacity` on animated classes for GPU compositing. Exotic glow is subtle (4s cycle). No shimmer on stat cards. Additional polish utilities: `.card-sheen` (hover sweep shine), `.noise-overlay` (subtle film grain at z-40), `.header-border-glow` (animated gradient header border), `.focus-glow` (input focus ring), `.sidebar-shine-hover` (nav button shine sweep), `.icon-bounce-hover` (icon bounce on hover), `.hover-ripple` (radial gradient follow cursor). `prefers-reduced-motion` media query disables all continuous animations for accessibility.
--   **Layout**: Single consolidated header bar (no double header). Clean tab-style character selector with bottom border indicator.
--   **Section Headers**: Minimal style — icon + label + subtle line divider (no gradient icon containers).
--   **Background**: Subtle static blur orbs (no pulse animations on background elements).
--   **Branding**: "GuardianGrid (Adept)" with "(Adept)" in gold. Currencies shown in header only (not duplicated in sidebar/mobile menu).
--   **Responsive Design**: Hamburger menu for all screen sizes, desktop sidebar for larger screens.
+### Security & Robustness
+-   **Security**: Helmet for security headers, `express-rate-limit` for API rate limiting, CORS configured, bot protection, request size limits, and Cloudflare integration readiness.
+-   **Error Handling**: React Error Boundary, `useOnlineStatus` hook for offline support, React Query retry logic, mutation locking to prevent concurrent Bungie mutations, and AbortController for fetch cleanup.
+-   **Internationalization**: Supports German, English, and French.
 
 ## External Dependencies
 
 ### Third-Party Services
--   **Bungie.net API**: Used for OAuth2 authentication and all game data interaction, proxied through the server.
--   **PostgreSQL**: Primary database for application data storage.
+-   **Bungie.net API**: Primary external service for all game data and authentication.
+-   **PostgreSQL**: Relational database for persistent storage.
+-   **OpenAI GPT-4o**: Integrated via Replit AI Integrations for AI advisor features.
+-   **Cloudflare Turnstile**: Optional CAPTCHA service for login.
 
 ### Key NPM Packages
--   **drizzle-orm**, **drizzle-kit**, **drizzle-zod**: For database management.
--   **express**: Web framework.
--   **@tanstack/react-query**: Client-side asynchronous state management.
--   **wouter**: Lightweight client-side router.
--   **framer-motion**: Animation library.
--   **shadcn/ui**: UI component library built on Radix UI and Tailwind CSS.
--   **zod**: Schema validation.
--   **nanoid**: Unique ID generation.
--   **helmet**: Security headers middleware.
--   **express-rate-limit**: API rate limiting.
--   **cors**: Cross-origin resource sharing control.
--   **cookie-parser**: Signed cookie parsing for session management.
+-   **Database**: `drizzle-orm`, `drizzle-kit`, `drizzle-zod`.
+-   **Backend**: `express`, `helmet`, `express-rate-limit`, `cors`, `cookie-parser`.
+-   **Frontend**: `@tanstack/react-query`, `wouter`, `framer-motion`, `shadcn/ui`, `radix-ui`.
+-   **Utilities**: `zod`, `nanoid`.

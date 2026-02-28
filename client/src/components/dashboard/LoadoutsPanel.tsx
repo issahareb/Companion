@@ -43,8 +43,11 @@ export function LoadoutsPanel({
             name: item.name,
             icon: item.icon,
             slot: item.slot,
-            rarity: 'legendary',
-            power: 0,
+            rarity: item.rarity || 'legendary',
+            power: item.power || 0,
+            stats: item.stats || [],
+            perks: item.perks || [],
+            mods: item.mods || [],
           };
         }
       }

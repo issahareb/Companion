@@ -588,6 +588,7 @@ export interface InventoryItem {
   characterId?: string;
   description?: string;
   classType?: number;
+  stats?: ItemStatValue[];
   perks?: PerkInfo[];
   mods?: ModInfo[];
   sockets?: SocketInfo[];
@@ -664,12 +665,23 @@ export interface CharacterData {
   progressions: ProgressionInfo[];
 }
 
+export interface ItemStatValue {
+  statHash: number;
+  name: string;
+  value: number;
+}
+
 export interface InGameLoadoutItem {
   itemInstanceId: string;
   itemHash: number;
   name: string;
   icon: string;
   slot: string;
+  rarity: string;
+  power: number;
+  stats: ItemStatValue[];
+  perks: { perkHash: number; name: string; icon: string; isActive: boolean }[];
+  mods: { plugHash: number; name: string; icon: string }[];
 }
 
 export interface InGameLoadout {
@@ -694,12 +706,19 @@ export interface ProfileState {
   inGameLoadouts: Record<string, InGameLoadout[]>;
 }
 
+const ARMOR_STAT_HASHES_MAP: Record<string, string> = {
+  '2996146975': 'Mobility', '392767087': 'Resilience', '1943323491': 'Recovery',
+  '1735777505': 'Discipline', '144602215': 'Intellect', '4244567218': 'Strength',
+};
+
 function parseGearItem(
   item: any,
   manifest: Record<string, ManifestItem>,
   instanceDetails: any,
   location: 'vault' | 'character' | 'equipped' | 'postmaster',
-  characterId?: string
+  characterId?: string,
+  itemStatsData?: any,
+  manifestData?: ManifestCache,
 ): InventoryItem | null {
   const hashStr = String(item.itemHash);
   const manifestItem = manifest[hashStr];
@@ -712,6 +731,19 @@ function parseGearItem(
 
   const instanceId = item.itemInstanceId || hashStr;
   const instance = item.itemInstanceId ? instanceDetails[item.itemInstanceId] : null;
+
+  const stats: ItemStatValue[] = [];
+  if (itemStatsData && item.itemInstanceId) {
+    const itemStatEntry = itemStatsData[item.itemInstanceId];
+    if (itemStatEntry?.stats) {
+      for (const [hash, stat] of Object.entries(itemStatEntry.stats) as [string, any][]) {
+        const statName = ARMOR_STAT_HASHES_MAP[hash] || manifestData?.stats[hash]?.name;
+        if (statName && stat.value) {
+          stats.push({ statHash: Number(hash), name: statName, value: stat.value });
+        }
+      }
+    }
+  }
 
   return {
     id: instanceId,
@@ -726,6 +758,7 @@ function parseGearItem(
     location,
     characterId,
     classType: manifestItem.classType,
+    stats: stats.length > 0 ? stats : undefined,
   };
 }
 
@@ -824,6 +857,7 @@ export async function fetchProfileState(
   const itemPerks = response.itemComponents?.perks?.data || {};
   const itemSockets = response.itemComponents?.sockets?.data || {};
   const itemReusablePlugs = response.itemComponents?.reusablePlugs?.data || {};
+  const itemStatsData = response.itemComponents?.stats?.data || {};
 
   const currencies: CurrencyInfo[] = [];
   const profileCurrencies = response.profileCurrencies?.data?.items;
@@ -858,7 +892,7 @@ export async function fetchProfileState(
 
       if (item.bucketHash === VAULT_BUCKET || manifestItem.bucketHash === VAULT_BUCKET) {
         vaultBucketCount++;
-        const parsed = parseGearItem(item, manifest, instanceDetails, 'vault');
+        const parsed = parseGearItem(item, manifest, instanceDetails, 'vault', undefined, itemStatsData, manifestData);
         if (parsed) {
           attachPerksAndMods(parsed, itemPerks, itemSockets, itemReusablePlugs, manifestData);
           vaultItems.push(parsed);
@@ -886,7 +920,7 @@ export async function fetchProfileState(
     const charEquip = characterEquipment[charId];
     if (charEquip?.items) {
       for (const item of charEquip.items) {
-        const parsed = parseGearItem(item, manifest, instanceDetails, 'equipped', charId);
+        const parsed = parseGearItem(item, manifest, instanceDetails, 'equipped', charId, itemStatsData, manifestData);
         if (parsed) {
           attachPerksAndMods(parsed, itemPerks, itemSockets, itemReusablePlugs, manifestData);
           equipped.push(parsed);
@@ -905,7 +939,7 @@ export async function fetchProfileState(
         if (!manifestItem) continue;
 
         if (item.bucketHash === POSTMASTER_BUCKET || item.bucketHash === POSTMASTER_LOST_ITEMS_BUCKET) {
-          const parsed = parseGearItem(item, manifest, instanceDetails, 'postmaster', charId);
+          const parsed = parseGearItem(item, manifest, instanceDetails, 'postmaster', charId, itemStatsData, manifestData);
           if (parsed) {
             console.log(`[bungie] postmaster item found for char ${charId}: "${parsed.name}" (hash=${item.itemHash})`);
             postmasterItems.push(parsed);
@@ -919,7 +953,7 @@ export async function fetchProfileState(
           continue;
         }
 
-        const parsed = parseGearItem(item, manifest, instanceDetails, 'character', charId);
+        const parsed = parseGearItem(item, manifest, instanceDetails, 'character', charId, itemStatsData, manifestData);
         if (parsed) {
           attachPerksAndMods(parsed, itemPerks, itemSockets, itemReusablePlugs, manifestData);
           charInventory.push(parsed);
@@ -1096,16 +1130,65 @@ export async function fetchProfileState(
       const colorDef = manifestData.loadoutColors[String(lo.colorHash)];
       const iconDef = manifestData.loadoutIcons[String(lo.iconHash)];
 
+      const ARMOR_STAT_HASHES: Record<string, string> = {
+        '2996146975': 'Mobility', '392767087': 'Resilience', '1943323491': 'Recovery',
+        '1735777505': 'Discipline', '144602215': 'Intellect', '4244567218': 'Strength',
+      };
+
       const loItems: InGameLoadoutItem[] = (lo.items || [])
         .filter((li: any) => li.itemInstanceId && li.itemInstanceId !== '0')
         .map((li: any) => {
           const itemDef = manifest[String(li.itemHash)];
+          const instance = instanceDetails[li.itemInstanceId];
+          const rarity = itemDef ? (TIER_TO_RARITY[itemDef.tierTypeName] || 'common') : 'common';
+          const power = instance?.primaryStat?.value || 0;
+
+          const stats: ItemStatValue[] = [];
+          const itemStatEntry = itemStatsData[li.itemInstanceId];
+          if (itemStatEntry?.stats) {
+            for (const [hash, stat] of Object.entries(itemStatEntry.stats) as [string, any][]) {
+              const statName = ARMOR_STAT_HASHES[hash] || manifestData.stats[hash]?.name;
+              if (statName && stat.value) {
+                stats.push({ statHash: Number(hash), name: statName, value: stat.value });
+              }
+            }
+          }
+
+          const perks: InGameLoadoutItem['perks'] = [];
+          const perkData = itemPerks[li.itemInstanceId];
+          if (perkData?.perks) {
+            for (const p of perkData.perks.filter((p: any) => p.visible).slice(0, 8)) {
+              perks.push({
+                perkHash: p.perkHash,
+                name: p.displayProperties?.name || '',
+                icon: p.displayProperties?.hasIcon ? `${BUNGIE_BASE}${p.displayProperties.icon}` : '',
+                isActive: p.isActive || false,
+              });
+            }
+          }
+
+          const mods: InGameLoadoutItem['mods'] = [];
+          const socketData = itemSockets[li.itemInstanceId];
+          if (socketData?.sockets) {
+            for (const s of socketData.sockets.filter((s: any) => s.plugHash && s.isEnabled).slice(0, 10)) {
+              const plugDef = manifestData.items[String(s.plugHash)];
+              if (plugDef?.name) {
+                mods.push({ plugHash: s.plugHash, name: plugDef.name, icon: plugDef.icon || '' });
+              }
+            }
+          }
+
           return {
             itemInstanceId: li.itemInstanceId,
             itemHash: li.itemHash,
             name: itemDef?.name || '',
             icon: itemDef?.icon || '',
             slot: itemDef ? (GEAR_BUCKET_TO_SLOT[itemDef.bucketHash] || 'unknown') : 'unknown',
+            rarity,
+            power,
+            stats,
+            perks: perks.filter(p => p.name),
+            mods: mods.filter(m => m.name),
           };
         })
         .filter((li: InGameLoadoutItem) => li.name);

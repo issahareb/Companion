@@ -2,6 +2,25 @@ import React from 'react';
 import { Crosshair, Sparkles } from 'lucide-react';
 import { motion } from 'framer-motion';
 
+export interface ItemStatValue {
+  statHash: number;
+  name: string;
+  value: number;
+}
+
+export interface ItemPerk {
+  perkHash: number;
+  name: string;
+  icon: string;
+  isActive: boolean;
+}
+
+export interface ItemMod {
+  plugHash: number;
+  name: string;
+  icon: string;
+}
+
 export interface Item {
   id: string;
   itemHash: number;
@@ -9,9 +28,12 @@ export interface Item {
   type: string;
   slot: string;
   screenshot: string;
-  rarity: 'legendary' | 'exotic';
+  rarity: 'legendary' | 'exotic' | string;
   power: number;
   icon: string;
+  stats?: ItemStatValue[];
+  perks?: ItemPerk[];
+  mods?: ItemMod[];
 }
 
 export interface SlotInfo {

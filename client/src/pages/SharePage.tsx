@@ -3,7 +3,7 @@ import { useRoute, useLocation } from 'wouter';
 import { useQuery } from '@tanstack/react-query';
 import { api, buildUrl } from '@shared/routes';
 import { Loader2, ArrowLeft, Hexagon, Sparkles, Check, AlertTriangle, X, ChevronDown, ArrowRight, Shield, Zap } from 'lucide-react';
-import { EquippedSlot, type Item } from '@/components/Inventory';
+import { type Item } from '@/components/Inventory';
 import { SavedLoadout } from '@shared/schema';
 import { useBungieAuth } from '@/hooks/use-bungie-auth';
 import { useProfileState, type InventoryItem, type CharacterData } from '@/hooks/use-profile-state';
@@ -19,6 +19,13 @@ const STAT_NAMES = ['Mobility', 'Resilience', 'Recovery', 'Discipline', 'Intelle
 type MatchStatus = 'exact' | 'substitute' | 'missing';
 type ItemSource = 'equipped' | 'inventory' | 'vault' | 'other_character';
 
+interface StatDiff {
+  name: string;
+  wanted: number;
+  matched: number;
+  diff: number;
+}
+
 interface MatchResult {
   slot: string;
   wanted: Item | null;
@@ -28,12 +35,67 @@ interface MatchResult {
   sourceCharId?: string;
   note?: string;
   powerDiff?: number;
+  statDiffs?: StatDiff[];
+  perkMatchCount?: number;
+  perkTotal?: number;
+  matchScore?: number;
 }
 
 function bungieIcon(url?: string) {
   if (!url) return '';
   if (url.startsWith('http')) return url;
   return `https://www.bungie.net${url}`;
+}
+
+function scoreCandidateMatch(wanted: Item, candidate: InventoryItem, isArmor: boolean): { score: number; perkMatches: number; perkTotal: number; modMatches: number; modTotal: number; statDiffs: StatDiff[] } {
+  let score = 0;
+
+  if (candidate.itemHash === wanted.itemHash) score += 15000;
+  else if (candidate.name === wanted.name) score += 10000;
+  if (candidate.rarity === wanted.rarity) score += 50;
+
+  score += Math.max(0, candidate.power);
+
+  const wantedActivePerks = wanted.perks?.filter(p => p.isActive) || [];
+  const perkTotal = wantedActivePerks.length;
+  let perkMatches = 0;
+  if (wantedActivePerks.length > 0 && candidate.perks) {
+    const candidateActiveHashes = new Set(candidate.perks.filter(p => p.isActive).map(p => p.perkHash));
+    const candidateActiveNames = new Set(candidate.perks.filter(p => p.isActive).map(p => p.name.toLowerCase()));
+    for (const wp of wantedActivePerks) {
+      if (candidateActiveHashes.has(wp.perkHash) || candidateActiveNames.has(wp.name.toLowerCase())) {
+        perkMatches++;
+        score += 200;
+      }
+    }
+  }
+
+  let modMatches = 0;
+  const modTotal = wanted.mods?.length || 0;
+  if (wanted.mods && wanted.mods.length > 0 && candidate.mods) {
+    const candidateModHashes = new Set(candidate.mods.map(m => m.plugHash));
+    const candidateModNames = new Set(candidate.mods.map(m => m.name.toLowerCase()));
+    for (const wm of wanted.mods) {
+      if (candidateModHashes.has(wm.plugHash) || candidateModNames.has(wm.name.toLowerCase())) {
+        modMatches++;
+        score += 100;
+      }
+    }
+  }
+
+  const statDiffs: StatDiff[] = [];
+  if (isArmor && wanted.stats && wanted.stats.length > 0 && candidate.stats && candidate.stats.length > 0) {
+    for (const ws of wanted.stats) {
+      if (!STAT_NAMES.includes(ws.name)) continue;
+      const candidateStatEntry = candidate.stats.find(s => s.statHash === ws.statHash) || candidate.stats.find(s => s.name === ws.name);
+      const matchedVal = candidateStatEntry?.value || 0;
+      const diff = matchedVal - ws.value;
+      statDiffs.push({ name: ws.name, wanted: ws.value, matched: matchedVal, diff });
+      score += Math.max(0, 30 - Math.abs(diff));
+    }
+  }
+
+  return { score, perkMatches, perkTotal, modMatches, modTotal, statDiffs };
 }
 
 export default function SharePage() {
@@ -141,16 +203,23 @@ export default function SharePage() {
         }
       }
 
-      const sameRarity = allAvailable.filter(e => e.item.rarity === wanted.rarity);
-      const pool = sameRarity.length > 0 ? sameRarity : allAvailable;
-      pool.sort((a, b) => b.item.power - a.item.power);
-      const best = pool[0];
+      const isArmorSlot = ARMOR_SLOTS.includes(slot.id);
+      const scored = allAvailable.map(entry => {
+        const result = scoreCandidateMatch(wanted, entry.item, isArmorSlot);
+        return { ...entry, ...result };
+      }).sort((a, b) => b.score - a.score);
+
+      const best = scored[0];
 
       if (best) {
         const powerDiff = ARMOR_SLOTS.includes(slot.id) ? best.item.power - (wanted.power || 0) : undefined;
         results.push({
           slot: slot.id, wanted, matched: best.item, status: 'substitute', source: best.src, sourceCharId: best.srcCharId,
           note: `${best.item.name} (${best.item.power})`, powerDiff,
+          statDiffs: best.statDiffs.length > 0 ? best.statDiffs : undefined,
+          perkMatchCount: best.perkMatches,
+          perkTotal: best.perkTotal,
+          matchScore: best.score,
         });
       } else {
         results.push({ slot: slot.id, wanted, matched: null, status: 'missing', note: wanted.name });
@@ -277,16 +346,46 @@ export default function SharePage() {
             <h3 className="text-xs font-display font-light tracking-[0.2em] text-white">{t('section.equipment')}</h3>
           </div>
 
-          <div className="grid gap-3">
-            {ITEM_SLOTS.map(slot => (
-              <div key={slot.id} className="opacity-90">
-                <EquippedSlot
-                  slotInfo={{ ...slot, icon: () => null } as any}
-                  item={loadoutItems[slot.id]}
-                  onUnequip={() => {}}
-                />
-              </div>
-            ))}
+          <div className="grid gap-2">
+            {ITEM_SLOTS.map(slot => {
+              const item = loadoutItems[slot.id];
+              if (!item) return null;
+              const isArmor = ARMOR_SLOTS.includes(slot.id);
+              return (
+                <div key={slot.id} className="bg-black/20 border border-white/[0.06] rounded p-2.5 space-y-1.5">
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 shrink-0 border border-white/10 overflow-hidden bg-black rounded-sm">
+                      <img src={bungieIcon(item.icon)} alt={item.name} className="w-full h-full object-cover" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[11px] text-white font-medium truncate">{item.name}</p>
+                      <p className="text-[9px] text-gray-500 capitalize">{slot.label} · {item.power > 0 ? `${item.power} PL` : item.rarity}</p>
+                    </div>
+                  </div>
+
+                  {item.perks && item.perks.length > 0 && (
+                    <div className="flex flex-wrap gap-1 ml-12">
+                      {item.perks.filter((p: any) => p.isActive).map((p: any, pi: number) => (
+                        <div key={pi} className="flex items-center gap-1 px-1.5 py-0.5 rounded text-[8px] border border-white/[0.08] bg-white/[0.02] text-gray-400" title={p.name}>
+                          {p.icon && <img src={bungieIcon(p.icon)} alt="" className="w-3 h-3" />}
+                          <span className="truncate max-w-[80px]">{p.name}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {isArmor && item.stats && item.stats.length > 0 && (
+                    <div className="flex flex-wrap gap-x-3 gap-y-0.5 ml-12">
+                      {item.stats.filter((s: any) => STAT_NAMES.includes(s.name)).map((s: any) => (
+                        <span key={s.name} className="text-[8px] text-gray-500 font-mono">
+                          {s.name.slice(0, 3)}: {s.value}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
         </div>
 
@@ -332,34 +431,68 @@ export default function SharePage() {
                     const statusColor = r.status === 'exact' ? 'text-green-400' : r.status === 'substitute' ? 'text-amber-400' : 'text-red-400';
                     const statusBg = r.status === 'exact' ? 'bg-green-500/5 border-green-500/15' : r.status === 'substitute' ? 'bg-amber-500/5 border-amber-500/15' : 'bg-red-500/5 border-red-500/15';
                     return (
-                      <div key={r.slot} className={`flex items-center gap-3 p-2 border rounded ${statusBg}`}>
-                        <div className="w-7 h-7 shrink-0 border border-white/10 overflow-hidden bg-black rounded-sm">
-                          {(r.matched || r.wanted) && (
-                            <img src={bungieIcon((r.matched || r.wanted)!.icon)} alt="" className="w-full h-full object-cover" />
-                          )}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className={`text-[10px] ${statusColor} truncate font-medium`}>
-                            {r.status === 'exact' && <span className="inline-flex items-center gap-1"><Check className="w-3 h-3 inline" /> {r.wanted!.name}</span>}
-                            {r.status === 'substitute' && r.matched!.name}
-                            {r.status === 'missing' && <span className="inline-flex items-center gap-1"><AlertTriangle className="w-3 h-3 inline" /> {r.wanted!.name}</span>}
-                          </p>
-                          {r.status === 'substitute' && (
-                            <p className="text-[9px] text-amber-400/60">
-                              {t('share.substitute')} · {r.wanted!.name}
-                              {r.powerDiff !== undefined && r.powerDiff !== 0 && (
-                                <span className={`ml-1 ${r.powerDiff > 0 ? 'text-green-400' : 'text-red-400'}`}>
-                                  ({r.powerDiff > 0 ? '+' : ''}{r.powerDiff} PL)
-                                </span>
-                              )}
+                      <div key={r.slot} className={`p-2.5 border rounded ${statusBg} space-y-1.5`}>
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 shrink-0 border border-white/10 overflow-hidden bg-black rounded-sm">
+                            {(r.matched || r.wanted) && (
+                              <img src={bungieIcon((r.matched || r.wanted)!.icon)} alt="" className="w-full h-full object-cover" />
+                            )}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className={`text-[10px] ${statusColor} truncate font-medium`}>
+                              {r.status === 'exact' && <span className="inline-flex items-center gap-1"><Check className="w-3 h-3 inline" /> {r.wanted!.name}</span>}
+                              {r.status === 'substitute' && r.matched!.name}
+                              {r.status === 'missing' && <span className="inline-flex items-center gap-1"><AlertTriangle className="w-3 h-3 inline" /> {r.wanted!.name}</span>}
                             </p>
-                          )}
+                            {r.status === 'substitute' && (
+                              <p className="text-[9px] text-amber-400/60">
+                                {t('share.substitute')} · {r.wanted!.name}
+                                {r.powerDiff !== undefined && r.powerDiff !== 0 && (
+                                  <span className={`ml-1 ${r.powerDiff > 0 ? 'text-green-400' : 'text-red-400'}`}>
+                                    ({r.powerDiff > 0 ? '+' : ''}{r.powerDiff} PL)
+                                  </span>
+                                )}
+                                {r.perkTotal !== undefined && r.perkTotal > 0 && (
+                                  <span className={`ml-1 ${r.perkMatchCount === r.perkTotal ? 'text-green-400' : r.perkMatchCount && r.perkMatchCount > 0 ? 'text-amber-400' : 'text-red-400'}`}>
+                                    · {r.perkMatchCount || 0}/{r.perkTotal} perks
+                                  </span>
+                                )}
+                              </p>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-1 shrink-0">
+                            {r.source === 'vault' && (
+                              <span className="text-[8px] text-indigo-400/70 bg-indigo-500/10 px-1.5 py-0.5 rounded">{t('share.fromVault')}</span>
+                            )}
+                            {r.source === 'other_character' && (
+                              <span className="text-[8px] text-purple-400/70 bg-purple-500/10 px-1.5 py-0.5 rounded">{t('share.fromChar')}</span>
+                            )}
+                          </div>
                         </div>
-                        {r.source === 'vault' && (
-                          <span className="text-[8px] text-indigo-400/70 bg-indigo-500/10 px-1.5 py-0.5 rounded">{t('share.fromVault')}</span>
+
+                        {r.wanted?.perks && r.wanted.perks.length > 0 && (
+                          <div className="flex flex-wrap gap-1 ml-11">
+                            {r.wanted.perks.filter(p => p.isActive).map((p, pi) => {
+                              const candidateActivePerks = r.matched?.perks?.filter(mp => mp.isActive) || [];
+                              const matched = r.status === 'exact' || candidateActivePerks.some(mp => mp.perkHash === p.perkHash || mp.name.toLowerCase() === p.name.toLowerCase());
+                              return (
+                                <div key={pi} className={`flex items-center gap-1 px-1.5 py-0.5 rounded text-[8px] border ${matched ? 'border-green-500/20 bg-green-500/5 text-green-400/80' : 'border-red-500/15 bg-red-500/5 text-red-400/60'}`} title={p.name}>
+                                  {p.icon && <img src={bungieIcon(p.icon)} alt="" className="w-3 h-3" />}
+                                  <span className="truncate max-w-[80px]">{p.name}</span>
+                                </div>
+                              );
+                            })}
+                          </div>
                         )}
-                        {r.source === 'other_character' && (
-                          <span className="text-[8px] text-purple-400/70 bg-purple-500/10 px-1.5 py-0.5 rounded">{t('share.fromChar')}</span>
+
+                        {r.statDiffs && r.statDiffs.length > 0 && (
+                          <div className="flex flex-wrap gap-x-3 gap-y-0.5 ml-11">
+                            {r.statDiffs.map(sd => (
+                              <span key={sd.name} className={`text-[8px] font-mono ${sd.diff > 0 ? 'text-green-400/70' : sd.diff < 0 ? 'text-red-400/70' : 'text-gray-500'}`}>
+                                {sd.name.slice(0, 3)}: {sd.matched} {sd.diff !== 0 && `(${sd.diff > 0 ? '+' : ''}${sd.diff})`}
+                              </span>
+                            ))}
+                          </div>
                         )}
                       </div>
                     );

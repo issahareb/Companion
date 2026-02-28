@@ -63,6 +63,7 @@ export interface InventoryItem {
   characterId?: string;
   description?: string;
   classType?: number;
+  stats?: { statHash: number; name: string; value: number }[];
   perks?: PerkInfo[];
   mods?: ModInfo[];
   sockets?: SocketInfo[];
@@ -139,12 +140,23 @@ export interface CharacterData {
   progressions: ProgressionInfo[];
 }
 
+export interface ItemStatValue {
+  statHash: number;
+  name: string;
+  value: number;
+}
+
 export interface InGameLoadoutItem {
   itemInstanceId: string;
   itemHash: number;
   name: string;
   icon: string;
   slot: string;
+  rarity: string;
+  power: number;
+  stats: ItemStatValue[];
+  perks: { perkHash: number; name: string; icon: string; isActive: boolean }[];
+  mods: { plugHash: number; name: string; icon: string }[];
 }
 
 export interface InGameLoadout {
