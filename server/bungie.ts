@@ -842,7 +842,7 @@ export async function fetchProfileState(
   const [manifestData, profileData] = await Promise.all([
     fetchManifest(),
     bungieGet(
-      `/Platform/Destiny2/${membershipType}/Profile/${membershipId}/?components=100,102,103,104,200,201,202,205,300,302,304,305,800,900,4000`,
+      `/Platform/Destiny2/${membershipType}/Profile/${membershipId}/?components=100,102,103,104,200,201,202,205,300,302,304,305,800,900,1200,4000`,
       accessToken
     ),
   ]);
@@ -1206,6 +1206,7 @@ export async function fetchProfileState(
     }
     inGameLoadouts[charId] = charLoadouts.filter(l => l.items.length > 0);
   }
+  console.log(`[bungie] in-game loadouts: ${Object.values(inGameLoadouts).flat().length} across ${Object.keys(inGameLoadouts).length} characters`);
 
   console.log(`[bungie] total postmaster items: ${postmasterItems.length}`);
   return { characters, vaultItems, postmasterItems, currencies, collectibles, records, artifact, inGameLoadouts };
