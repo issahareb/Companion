@@ -591,6 +591,8 @@ export default function Dashboard() {
                   setActiveTab={setActiveTab}
                   handleDeleteLoadout={handleDeleteLoadout}
                   toast={toast}
+                  inGameLoadouts={profileState?.inGameLoadouts || {}}
+                  characters={characters}
                 />
               )}
 

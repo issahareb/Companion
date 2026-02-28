@@ -474,6 +474,27 @@ export async function registerRoutes(
     res.json(loadout);
   });
 
+  app.post('/api/loadouts/share-ingame', requireAuth, async (req: Request, res: Response) => {
+    try {
+      const { name, items, classType } = req.body;
+      if (!name || !items) {
+        return res.status(400).json({ message: 'Missing name or items' });
+      }
+      const shareCode = nanoid(10);
+      const loadout = await storage.createLoadout({
+        bungieMembershipId: req.sessionMembershipId!,
+        name,
+        items,
+        classType: classType ?? null,
+        shareCode,
+        artifactMods: [],
+      });
+      res.status(201).json({ shareCode, id: loadout.id });
+    } catch (err: any) {
+      res.status(500).json({ message: 'Failed to share loadout' });
+    }
+  });
+
   app.post('/api/ai/analyze-playstyle', requireAuth, async (req: Request, res: Response) => {
     try {
       const { analyzePlaystyle, characterAnalysisInputSchema } = await import('./ai');

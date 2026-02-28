@@ -34,7 +34,7 @@ The project uses a monorepo with `client/` (React frontend), `server/` (Express 
     -   `VaultItemCard.tsx` — Vault item card with transfer/equip dropdown
     -   `CharacterPanel.tsx` — Character hero, stat rings, weapons/armor, subclass, artifact, quests
     -   `VaultPanel.tsx` — Vault search, filters, item grid, desktop loadout sidebar
-    -   `LoadoutsPanel.tsx` — Saved loadouts grid with share/load/delete
+    -   `LoadoutsPanel.tsx` — In-game loadouts per character with share buttons + saved loadouts grid with share/load/delete
     -   `PostmasterPanel.tsx` — Per-character postmaster items with pull button
     -   `CollectionsPanel.tsx` — Collections search, filter, collectibles grid
     -   `TriumphsPanel.tsx` — Triumphs search, filter, records with progress bars
@@ -47,7 +47,7 @@ The project uses a monorepo with `client/` (React frontend), `server/` (Express 
 
 ### Backend (server/)
 -   **Framework**: Express 5 on Node.js.
--   **API Routes**: Manages Bungie API interactions for fetching profile data, transferring items, equipping items, pulling from postmaster, locking items, inserting subclass plugs, and managing in-game loadouts. Also handles CRUD operations for user-saved loadouts.
+-   **API Routes**: Manages Bungie API interactions for fetching profile data, transferring items, equipping items, pulling from postmaster, locking items, inserting subclass plugs, and managing in-game loadouts. Also handles CRUD operations for user-saved loadouts. POST `/api/loadouts/share-ingame` creates a shared loadout from in-game data with a nanoid shareCode.
 
 ### Bungie API Integration
 -   The server fetches comprehensive player profile states, including characters, inventory, vault, postmaster, currencies, collectibles, records, seasonal artifact, and in-game loadouts using various Bungie API components.
