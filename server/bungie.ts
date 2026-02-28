@@ -1129,8 +1129,30 @@ export async function fetchProfileState(
     };
   }
 
+  const instanceToHash: Record<string, number> = {};
+  if (profileInventory) {
+    for (const item of profileInventory) {
+      if (item.itemInstanceId) instanceToHash[item.itemInstanceId] = item.itemHash;
+    }
+  }
+  for (const [, charInv] of Object.entries(characterInventories) as [string, any][]) {
+    if (charInv?.items) {
+      for (const item of charInv.items) {
+        if (item.itemInstanceId) instanceToHash[item.itemInstanceId] = item.itemHash;
+      }
+    }
+  }
+  for (const [, charEquip] of Object.entries(characterEquipment) as [string, any][]) {
+    if (charEquip?.items) {
+      for (const item of charEquip.items) {
+        if (item.itemInstanceId) instanceToHash[item.itemInstanceId] = item.itemHash;
+      }
+    }
+  }
+
   const inGameLoadouts: Record<string, InGameLoadout[]> = {};
   const characterLoadouts = response.characterLoadouts?.data || {};
+  console.log(`[bd] characterLoadouts present: ${!!response.characterLoadouts}, chars: ${Object.keys(characterLoadouts).length}, instanceMap size: ${Object.keys(instanceToHash).length}`);
   for (const [charId, loadoutData] of Object.entries(characterLoadouts) as [string, any][]) {
     const charLoadouts: InGameLoadout[] = [];
     const loadouts = loadoutData.loadouts || [];
@@ -1140,15 +1162,11 @@ export async function fetchProfileState(
       const colorDef = manifestData.loadoutColors[String(lo.colorHash)];
       const iconDef = manifestData.loadoutIcons[String(lo.iconHash)];
 
-      const ARMOR_STAT_HASHES: Record<string, string> = {
-        '2996146975': 'Mobility', '392767087': 'Resilience', '1943323491': 'Recovery',
-        '1735777505': 'Discipline', '144602215': 'Intellect', '4244567218': 'Strength',
-      };
-
       const loItems: InGameLoadoutItem[] = (lo.items || [])
         .filter((li: any) => li.itemInstanceId && li.itemInstanceId !== '0')
         .map((li: any) => {
-          const itemDef = manifest[String(li.itemHash)];
+          const resolvedHash = li.itemHash || instanceToHash[li.itemInstanceId];
+          const itemDef = resolvedHash ? manifest[String(resolvedHash)] : undefined;
           const instance = instanceDetails[li.itemInstanceId];
           const rarity = itemDef ? (TIER_TO_RARITY[itemDef.tierTypeName] || 'common') : 'common';
           const power = instance?.primaryStat?.value || 0;
@@ -1157,7 +1175,7 @@ export async function fetchProfileState(
           const itemStatEntry = itemStatsData[li.itemInstanceId];
           if (itemStatEntry?.stats) {
             for (const [hash, stat] of Object.entries(itemStatEntry.stats) as [string, any][]) {
-              const statName = ARMOR_STAT_HASHES[hash] || manifestData.stats[hash]?.name;
+              const statName = ARMOR_STAT_HASHES_MAP[hash] || manifestData.stats[hash]?.name;
               if (statName && stat.value) {
                 stats.push({ statHash: Number(hash), name: statName, value: stat.value });
               }
@@ -1190,7 +1208,7 @@ export async function fetchProfileState(
 
           return {
             itemInstanceId: li.itemInstanceId,
-            itemHash: li.itemHash,
+            itemHash: resolvedHash || 0,
             name: itemDef?.name || '',
             icon: itemDef?.icon || '',
             slot: itemDef ? (GEAR_BUCKET_TO_SLOT[itemDef.bucketHash] || 'unknown') : 'unknown',
