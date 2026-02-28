@@ -1282,3 +1282,55 @@ export async function clearLoadout(request: ClearLoadoutRequest, accessToken: st
 export async function fetchMembershipsRaw(accessToken: string) {
   return bungieGet('/Platform/User/GetMembershipsForCurrentUser/', accessToken);
 }
+
+export interface BungieNewsArticle {
+  title: string;
+  subtitle: string;
+  link: string;
+  image: string;
+  date: string;
+  description: string;
+  contentType: string;
+}
+
+const newsCacheMap = new Map<string, { articles: BungieNewsArticle[]; fetchedAt: number }>();
+const NEWS_CACHE_TTL = 10 * 60 * 1000;
+
+export async function fetchBungieNews(language: string = 'en'): Promise<BungieNewsArticle[]> {
+  const locale = language === 'de' ? 'de' : language === 'fr' ? 'fr' : 'en';
+  const cached = newsCacheMap.get(locale);
+  if (cached && Date.now() - cached.fetchedAt < NEWS_CACHE_TTL) {
+    return cached.articles;
+  }
+
+  const res = await bungieGet(`/Platform/Content/Rss/NewsArticles/0/?categoryfilter=&includebody=false&newsonly=true`);
+  const data = typeof res === 'string' ? JSON.parse(res) : res;
+
+  if (!data?.Response?.NewsArticles) {
+    return [];
+  }
+
+  const articles: BungieNewsArticle[] = data.Response.NewsArticles
+    .slice(0, 20)
+    .map((article: any) => ({
+      title: article.Title || '',
+      subtitle: article.Description || article.OptionalMobileTitle || '',
+      link: article.Link ? `https://www.bungie.net${article.Link}` : '',
+      image: article.ImagePath ? (article.ImagePath.startsWith('http') ? article.ImagePath : `https://www.bungie.net${article.ImagePath}`) : '',
+      date: article.PubDate || article.CreationDate || '',
+      description: article.Description || article.HtmlContent || '',
+      contentType: detectContentType(article.Title || '', article.Link || ''),
+    }));
+
+  newsCacheMap.set(locale, { articles, fetchedAt: Date.now() });
+  return articles;
+}
+
+function detectContentType(title: string, link: string): string {
+  const lower = title.toLowerCase();
+  if (lower.includes('this week in destiny') || lower.includes('this week at bungie') || lower.includes('twid') || lower.includes('twab')) return 'twid';
+  if (lower.includes('patch') || lower.includes('hotfix') || lower.includes('update')) return 'patch';
+  if (lower.includes('maintenance') || lower.includes('downtime')) return 'maintenance';
+  if (lower.includes('season') || lower.includes('expansion') || lower.includes('reveal')) return 'announcement';
+  return 'news';
+}

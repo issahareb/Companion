@@ -4,7 +4,7 @@ import { storage } from "./storage";
 import { api } from "@shared/routes";
 import { z } from "zod";
 import { nanoid } from "nanoid";
-import { exchangeToken, fetchMemberships, refreshBungieToken, fetchProfileState, transferItem, equipItem, pullFromPostmaster, setLockState, equipItems, insertSocketPlug, equipLoadout, snapshotLoadout, clearLoadout, BungieApiError } from "./bungie";
+import { exchangeToken, fetchMemberships, refreshBungieToken, fetchProfileState, transferItem, equipItem, pullFromPostmaster, setLockState, equipItems, insertSocketPlug, equipLoadout, snapshotLoadout, clearLoadout, fetchBungieNews, BungieApiError } from "./bungie";
 
 declare global {
   namespace Express {
@@ -161,6 +161,17 @@ export async function registerRoutes(
       res.json({ success: valid });
     } catch {
       res.status(500).json({ success: false, message: 'Verification failed' });
+    }
+  });
+
+  app.get('/api/bungie/news', async (_req, res) => {
+    try {
+      const language = (typeof _req.query.lang === 'string' ? _req.query.lang : 'en');
+      const articles = await fetchBungieNews(language);
+      res.json(articles);
+    } catch (err: any) {
+      console.error('[news] Failed to fetch Bungie news:', err.message);
+      res.status(500).json({ message: 'Failed to fetch news' });
     }
   });
 
@@ -478,6 +489,72 @@ export async function registerRoutes(
       res.json(result);
     } catch (err: any) {
       console.error('[ai] Playstyle analysis failed:', err.message);
+      if (err.status === 429 || err.code === 'rate_limit_exceeded') {
+        return res.status(429).json({ message: 'AI rate limit exceeded. Please try again later.' });
+      }
+      res.status(500).json({ message: 'AI analysis failed. Please try again.' });
+    }
+  });
+
+  app.post('/api/ai/recommend-build', requireAuth, async (req: Request, res: Response) => {
+    try {
+      const { generateBuildRecommendation, buildRecommendationInputSchema } = await import('./ai');
+      const { buildData, language } = req.body;
+
+      const parseResult = buildRecommendationInputSchema.safeParse(buildData);
+      if (!parseResult.success) {
+        return res.status(400).json({ message: 'Invalid build data', errors: parseResult.error.flatten().fieldErrors });
+      }
+
+      const lang = ['de', 'en', 'fr'].includes(language) ? language : 'de';
+      const result = await generateBuildRecommendation(parseResult.data, lang);
+      res.json(result);
+    } catch (err: any) {
+      console.error('[ai] Build recommendation failed:', err.message);
+      if (err.status === 429 || err.code === 'rate_limit_exceeded') {
+        return res.status(429).json({ message: 'AI rate limit exceeded. Please try again later.' });
+      }
+      res.status(500).json({ message: 'AI analysis failed. Please try again.' });
+    }
+  });
+
+  app.post('/api/ai/evaluate-roll', requireAuth, async (req: Request, res: Response) => {
+    try {
+      const { evaluateWeaponRoll, weaponRollInputSchema } = await import('./ai');
+      const { weaponData, language } = req.body;
+
+      const parseResult = weaponRollInputSchema.safeParse(weaponData);
+      if (!parseResult.success) {
+        return res.status(400).json({ message: 'Invalid weapon data', errors: parseResult.error.flatten().fieldErrors });
+      }
+
+      const lang = ['de', 'en', 'fr'].includes(language) ? language : 'de';
+      const result = await evaluateWeaponRoll(parseResult.data, lang);
+      res.json(result);
+    } catch (err: any) {
+      console.error('[ai] Weapon roll evaluation failed:', err.message);
+      if (err.status === 429 || err.code === 'rate_limit_exceeded') {
+        return res.status(429).json({ message: 'AI rate limit exceeded. Please try again later.' });
+      }
+      res.status(500).json({ message: 'AI analysis failed. Please try again.' });
+    }
+  });
+
+  app.post('/api/ai/triumph-advisor', requireAuth, async (req: Request, res: Response) => {
+    try {
+      const { suggestTriumphPath, triumphAdvisorInputSchema } = await import('./ai');
+      const { triumphData, language } = req.body;
+
+      const parseResult = triumphAdvisorInputSchema.safeParse(triumphData);
+      if (!parseResult.success) {
+        return res.status(400).json({ message: 'Invalid triumph data', errors: parseResult.error.flatten().fieldErrors });
+      }
+
+      const lang = ['de', 'en', 'fr'].includes(language) ? language : 'de';
+      const result = await suggestTriumphPath(parseResult.data, lang);
+      res.json(result);
+    } catch (err: any) {
+      console.error('[ai] Triumph advisor failed:', err.message);
       if (err.status === 429 || err.code === 'rate_limit_exceeded') {
         return res.status(429).json({ message: 'AI rate limit exceeded. Please try again later.' });
       }

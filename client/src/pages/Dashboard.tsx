@@ -4,7 +4,7 @@ import {
   Users, X, Package, Mail,
   Sparkles,
   BookOpen, Trophy, TrendingUp, LogOut,
-  ServerCrash, Clock, Menu, Archive, Brain,
+  ServerCrash, Clock, Menu, Archive, Brain, Newspaper,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import hunterBgImg from '@assets/IMG_0576_1772037013335.jpeg';
@@ -27,7 +27,7 @@ import { useI18n } from '@/lib/i18n';
 import { Crosshair, Zap, Flame, Shield } from 'lucide-react';
 import { Orbit } from 'lucide-react';
 
-import { type TabType, type FilterState, toItem, useItemFilter } from '@/components/dashboard/shared';
+import { type TabType, type AiSubTab, type FilterState, toItem, useItemFilter } from '@/components/dashboard/shared';
 import { BungieAutoRetry, OfflineBanner } from '@/components/dashboard/BungieStatus';
 import { CharacterPanel } from '@/components/dashboard/CharacterPanel';
 import { VaultPanel } from '@/components/dashboard/VaultPanel';
@@ -37,6 +37,10 @@ import { CollectionsPanel } from '@/components/dashboard/CollectionsPanel';
 import { TriumphsPanel } from '@/components/dashboard/TriumphsPanel';
 import { SeasonPanel } from '@/components/dashboard/SeasonPanel';
 import { PlaystylePanel } from '@/components/dashboard/PlaystylePanel';
+import { BuildAdvisorPanel } from '@/components/dashboard/BuildAdvisorPanel';
+import { WeaponRollPanel } from '@/components/dashboard/WeaponRollPanel';
+import { TriumphAdvisorPanel } from '@/components/dashboard/TriumphAdvisorPanel';
+import { NewsPanel } from '@/components/dashboard/NewsPanel';
 
 export default function Dashboard() {
   const { destinyProfile, logout, isAuthenticated, isFetchingProfile } = useBungieAuth();
@@ -93,8 +97,9 @@ export default function Dashboard() {
     { id: 'rare', label: t('filter.rare') },
   ];
 
-  const TAB_ORDER: TabType[] = ['characters', 'vault', 'loadouts', 'postmaster', 'collections', 'triumphs', 'season', 'playstyle'];
+  const TAB_ORDER: TabType[] = ['characters', 'vault', 'loadouts', 'postmaster', 'collections', 'triumphs', 'season', 'ai', 'news'];
   const [activeTab, setActiveTabRaw] = useState<TabType>('characters');
+  const [aiSubTab, setAiSubTab] = useState<AiSubTab>('playstyle');
   const [tabDirection, setTabDirection] = useState(0);
   const setActiveTab = (newTab: TabType) => {
     const oldIdx = TAB_ORDER.indexOf(activeTab);
@@ -279,7 +284,8 @@ export default function Dashboard() {
     collections: t('nav.collections'),
     triumphs: t('nav.triumphs'),
     season: t('nav.season'),
-    playstyle: t('nav.playstyle'),
+    ai: t('nav.playstyle'),
+    news: t('nav.news'),
   };
 
   if (isFetchingProfile) {
@@ -324,7 +330,8 @@ export default function Dashboard() {
           <DesktopNavButton icon={Trophy} label={t('nav.triumphs').toUpperCase()} active={activeTab === 'triumphs'} onClick={() => setActiveTab('triumphs')} />
           <DesktopNavButton icon={TrendingUp} label={t('nav.season').toUpperCase()} active={activeTab === 'season'} onClick={() => setActiveTab('season')} />
           <div className="h-px bg-white/[0.06] my-2" />
-          <DesktopNavButton icon={Brain} label={t('nav.playstyle').toUpperCase()} active={activeTab === 'playstyle'} onClick={() => setActiveTab('playstyle')} />
+          <DesktopNavButton icon={Brain} label={t('nav.playstyle').toUpperCase()} active={activeTab === 'ai'} onClick={() => setActiveTab('ai')} />
+          <DesktopNavButton icon={Newspaper} label={t('nav.news').toUpperCase()} active={activeTab === 'news'} onClick={() => setActiveTab('news')} />
         </nav>
         <UserProfile profile={destinyProfile} onLogout={logout} />
       </aside>
@@ -414,7 +421,8 @@ export default function Dashboard() {
                     { key: 'collections', id: 'collections' as TabType, icon: BookOpen, label: t('nav.collections') },
                     { key: 'triumphs', id: 'triumphs' as TabType, icon: Trophy, label: t('nav.triumphs') },
                     { key: 'season', id: 'season' as TabType, icon: TrendingUp, label: t('nav.season') },
-                    { key: 'playstyle', id: 'playstyle' as TabType, icon: Brain, label: t('nav.playstyle') },
+                    { key: 'ai', id: 'ai' as TabType, icon: Brain, label: t('nav.playstyle') },
+                    { key: 'news', id: 'news' as TabType, icon: Newspaper, label: t('nav.news') },
                   ].map((item, i) => (
                     <motion.button
                       key={item.key}
@@ -625,12 +633,76 @@ export default function Dashboard() {
                 />
               )}
 
-              {activeTab === 'playstyle' && (
-                <PlaystylePanel
-                  tabDirection={tabDirection}
-                  selectedCharacter={selectedCharacter}
-                  artifact={profileState?.artifact}
-                />
+              {activeTab === 'ai' && (
+                <motion.div
+                  key="ai-hub"
+                  initial={{ opacity: 0, x: tabDirection * 60 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: tabDirection * -60 }}
+                  transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+                >
+                  <div className="flex items-center gap-1 mb-6 p-1 bg-white/[0.03] border border-white/[0.06] rounded-lg w-fit" data-testid="ai-subtab-bar">
+                    {([
+                      { id: 'playstyle' as AiSubTab, label: t('advisor.playstyle') },
+                      { id: 'build' as AiSubTab, label: t('advisor.buildRec') },
+                      { id: 'roll' as AiSubTab, label: t('advisor.weaponRoll') },
+                      { id: 'triumph' as AiSubTab, label: t('advisor.triumphAdvisor') },
+                    ] as const).map(sub => (
+                      <button
+                        key={sub.id}
+                        onClick={() => setAiSubTab(sub.id)}
+                        className={`px-3 py-1.5 text-[10px] font-display tracking-[0.15em] uppercase transition-all rounded-md ${
+                          aiSubTab === sub.id
+                            ? 'bg-white/[0.08] text-white border border-white/[0.1]'
+                            : 'text-gray-500 hover:text-gray-300'
+                        }`}
+                        data-testid={`button-ai-subtab-${sub.id}`}
+                      >
+                        {sub.label}
+                      </button>
+                    ))}
+                  </div>
+
+                  <AnimatePresence mode="wait">
+                    {aiSubTab === 'playstyle' && (
+                      <PlaystylePanel
+                        key="playstyle-sub"
+                        tabDirection={0}
+                        selectedCharacter={selectedCharacter}
+                        artifact={profileState?.artifact}
+                      />
+                    )}
+                    {aiSubTab === 'build' && (
+                      <BuildAdvisorPanel
+                        key="build-sub"
+                        tabDirection={0}
+                        selectedCharacter={selectedCharacter}
+                        vaultItems={profileState?.vaultItems || []}
+                        artifact={profileState?.artifact}
+                      />
+                    )}
+                    {aiSubTab === 'roll' && (
+                      <WeaponRollPanel
+                        key="roll-sub"
+                        tabDirection={0}
+                        vaultItems={profileState?.vaultItems || []}
+                        characterItems={selectedCharacter?.inventory || []}
+                      />
+                    )}
+                    {aiSubTab === 'triumph' && (
+                      <TriumphAdvisorPanel
+                        key="triumph-sub"
+                        tabDirection={0}
+                        selectedCharacter={selectedCharacter}
+                        records={profileState?.records || []}
+                      />
+                    )}
+                  </AnimatePresence>
+                </motion.div>
+              )}
+
+              {activeTab === 'news' && (
+                <NewsPanel tabDirection={tabDirection} />
               )}
             </AnimatePresence>
           )}

@@ -40,6 +40,10 @@ The project uses a monorepo with `client/` (React frontend), `server/` (Express 
     -   `TriumphsPanel.tsx` — Triumphs search, filter, records with progress bars
     -   `SeasonPanel.tsx` — Season progression cards with level/reset info
     -   `PlaystylePanel.tsx` — AI playstyle analysis with rating ring, strengths/weaknesses/synergies/tips
+    -   `BuildAdvisorPanel.tsx` — AI build recommendation for specific activities
+    -   `WeaponRollPanel.tsx` — AI weapon roll evaluation with verdict/score/perk breakdown
+    -   `TriumphAdvisorPanel.tsx` — AI triumph path advisor with prioritized suggestions
+    -   `NewsPanel.tsx` — Bungie news feed with content type badges and filters
 
 ### Backend (server/)
 -   **Framework**: Express 5 on Node.js.
@@ -53,11 +57,21 @@ The project uses a monorepo with `client/` (React frontend), `server/` (Express 
 -   **Profile Cache**: Server-side 30s TTL in-memory cache for profile state responses. Bypass with `?fresh=true` query param. Cache invalidated on write operations.
 -   **Error Classification**: `BungieApiError` class with typed errors (`rate_limit`, `maintenance`, `auth`, `timeout`, `network`, `api`) passed to frontend for appropriate UI handling.
 
-### AI Playstyle Analysis
+### AI Advisor Suite
 -   **Module**: `server/ai.ts` — OpenAI GPT-4o integration via Replit AI Integrations (env vars: `AI_INTEGRATIONS_OPENAI_API_KEY`, `AI_INTEGRATIONS_OPENAI_BASE_URL`).
--   **Endpoint**: POST `/api/ai/analyze-playstyle` — Protected by `requireAuth` + rate limited (10/15min). Accepts character data + language, returns structured analysis JSON.
--   **Analysis Output**: `{ playstyle, summary, rating (1-10), strengths[], weaknesses[], synergies[], tips[] }`.
--   **Frontend**: `PlaystylePanel.tsx` with animated rating ring, staggered list reveals, and re-analyze button. Results cached in component state.
+-   **Dashboard Tab**: `ai` tab with 4 horizontal sub-tabs (AiSubTab type in `shared.ts`): Playstyle | Build Rec | Weapon Roll | Triumph Advisor.
+-   **Playstyle Analysis**: POST `/api/ai/analyze-playstyle` — Analyzes equipped build. Output: `{ playstyle, summary, rating (1-10), strengths[], weaknesses[], synergies[], tips[] }`. Frontend: `PlaystylePanel.tsx`.
+-   **Build Recommendation**: POST `/api/ai/recommend-build` — Suggests optimized loadout for a specific activity (raid/nightfall/pvp/gambit/dungeon). Output: `{ activity, recommendedWeapons[], recommendedArmor[], recommendedSubclass, statPriorities[], strategy }`. Frontend: `BuildAdvisorPanel.tsx`.
+-   **Weapon Roll Evaluation**: POST `/api/ai/evaluate-roll` — Evaluates a weapon's perk roll. Output: `{ verdict (god_roll/great/good/average/shard), score (1-10), perkBreakdown[], idealPerks[], summary }`. Frontend: `WeaponRollPanel.tsx`.
+-   **Triumph Advisor**: POST `/api/ai/triumph-advisor` — Prioritizes incomplete triumphs. Output: `{ prioritizedTriumphs[{name, reason, estimatedTime, tips[]}], generalAdvice }`. Frontend: `TriumphAdvisorPanel.tsx`.
+-   **All endpoints**: Protected by `requireAuth` + rate limited (10-15/15min). Results cached in component state per selection.
+
+### Bungie News Feed
+-   **Endpoint**: GET `/api/bungie/news?lang=en` — Public (no auth required). Returns up to 20 latest Bungie.net news articles.
+-   **Server Cache**: 10-minute TTL in-memory cache for news articles.
+-   **Content Type Detection**: Articles auto-tagged as `twid` (This Week in Destiny/TWAB), `patch`, `maintenance`, `announcement`, or `news` based on title keywords.
+-   **Frontend**: `NewsPanel.tsx` with filter bar (All/TWID/Patches/Announcements/General), article cards with images, content-type badges, relative date formatting, and external links to bungie.net.
+-   **Auto-refresh**: React Query refetches every 5 minutes with 2-minute stale time.
 
 ### Client-Side Data Management
 -   Extensive type definitions for game entities like perks, mods, sockets, artifacts, inventory items, collectibles, records, and progressions.
