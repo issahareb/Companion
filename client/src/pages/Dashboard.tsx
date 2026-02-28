@@ -640,8 +640,9 @@ export default function Dashboard() {
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: tabDirection * -60 }}
                   transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+                  className="h-full flex flex-col"
                 >
-                  <div className="flex items-center gap-1 mb-6 p-1 bg-white/[0.03] border border-white/[0.06] rounded-lg w-fit" data-testid="ai-subtab-bar">
+                  <div className="flex items-center gap-1 p-1 bg-white/[0.03] border border-white/[0.06] rounded-lg w-fit shrink-0 mx-4 md:mx-8 mt-4 mb-4" data-testid="ai-subtab-bar">
                     {([
                       { id: 'playstyle' as AiSubTab, label: t('advisor.playstyle') },
                       { id: 'build' as AiSubTab, label: t('advisor.buildRec') },
@@ -663,6 +664,7 @@ export default function Dashboard() {
                     ))}
                   </div>
 
+                  <div className="flex-1 min-h-0 overflow-hidden">
                   <AnimatePresence mode="wait">
                     {aiSubTab === 'playstyle' && (
                       <PlaystylePanel
@@ -698,6 +700,7 @@ export default function Dashboard() {
                       />
                     )}
                   </AnimatePresence>
+                  </div>
                 </motion.div>
               )}
 

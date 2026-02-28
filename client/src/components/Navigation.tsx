@@ -3,6 +3,12 @@ import { motion } from 'framer-motion';
 import { DestinyProfile } from '@/hooks/use-bungie-auth';
 import { useI18n } from '@/lib/i18n';
 
+function bungieIcon(url: string | undefined): string {
+  if (!url) return '';
+  if (url.startsWith('http')) return url;
+  return `https://www.bungie.net${url}`;
+}
+
 interface NavButtonProps {
   icon: React.ElementType;
   label: string;
@@ -96,7 +102,7 @@ export function UserProfile({ profile, onLogout }: UserProfileProps) {
         <div className="flex items-center space-x-3 overflow-hidden">
           <div className="w-10 h-10 rounded bg-white/10 overflow-hidden shrink-0 border border-white/20 relative">
             {profile.emblemPath ? (
-              <img src={`https://www.bungie.net${profile.emblemPath}`} alt="Emblem" className="w-full h-full object-cover" />
+              <img src={bungieIcon(profile.emblemPath)} alt="Emblem" className="w-full h-full object-cover" />
             ) : (
               <div className="w-full h-full flex items-center justify-center text-white/50 text-xs">D2</div>
             )}

@@ -5,6 +5,12 @@ import { useI18n } from '@/lib/i18n';
 import type { InventoryItem } from '@/hooks/use-profile-state';
 import { apiRequest } from '@/lib/queryClient';
 
+function bungieIcon(url: string | undefined): string {
+  if (!url) return '';
+  if (url.startsWith('http')) return url;
+  return `https://www.bungie.net${url}`;
+}
+
 interface PerkBreakdown {
   name: string;
   rating: 's' | 'a' | 'b' | 'c' | 'f';
@@ -225,7 +231,7 @@ export function WeaponRollPanel({ tabDirection, vaultItems, characterItems }: We
                 <div className="flex items-center gap-3 flex-1 min-w-0">
                   {selectedWeapon.icon && (
                     <img
-                      src={`https://www.bungie.net${selectedWeapon.icon}`}
+                      src={bungieIcon(selectedWeapon.icon)}
                       alt=""
                       className="w-8 h-8 rounded"
                     />
@@ -289,7 +295,7 @@ export function WeaponRollPanel({ tabDirection, vaultItems, characterItems }: We
                         >
                           {weapon.icon && (
                             <img
-                              src={`https://www.bungie.net${weapon.icon}`}
+                              src={bungieIcon(weapon.icon)}
                               alt=""
                               className={`w-8 h-8 rounded ${weapon.rarity === 'exotic' ? 'ring-1 ring-[#E5C76B]/30' : ''}`}
                             />
