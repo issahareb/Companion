@@ -839,19 +839,12 @@ export async function fetchProfileState(
   membershipId: string,
   accessToken: string
 ): Promise<ProfileState> {
-  const [manifestData, profileData, loadoutData] = await Promise.all([
+  const [manifestData, profileData] = await Promise.all([
     fetchManifest(),
     bungieGet(
-      `/Platform/Destiny2/${membershipType}/Profile/${membershipId}/?components=100,102,103,104,200,201,202,205,300,302,304,305,800,900,4000`,
+      `/Platform/Destiny2/${membershipType}/Profile/${membershipId}/?components=100,102,103,104,200,201,202,205,206,300,302,304,305,800,900,4000`,
       accessToken
     ),
-    bungieGet(
-      `/Platform/Destiny2/${membershipType}/Profile/${membershipId}/?components=1200`,
-      accessToken
-    ).catch(err => {
-      console.warn(`[bungie] loadout profile call failed: ${err.message}`);
-      return null;
-    }),
   ]);
 
   const manifest = manifestData.items;
@@ -860,27 +853,15 @@ export async function fetchProfileState(
     throw new Error('No profile data returned from Bungie');
   }
 
-  if (loadoutData?.Response) {
-    const loadoutResp = loadoutData.Response;
-    const loadoutKeys = Object.keys(loadoutResp);
-    console.log(`[bungie] loadout GetProfile response keys: ${loadoutKeys.join(', ')}`);
-    if (loadoutResp.characterLoadouts) {
-      response.characterLoadouts = loadoutResp.characterLoadouts;
-      const charIds = Object.keys(loadoutResp.characterLoadouts.data || {});
-      for (const cid of charIds) {
-        const cData = loadoutResp.characterLoadouts.data[cid];
-        const count = Array.isArray(cData) ? cData.length : (cData?.loadouts?.length || 'unknown');
-        console.log(`[bungie] char ${cid}: ${count} loadouts found`);
-      }
-    } else {
-      for (const key of loadoutKeys) {
-        const val = loadoutResp[key];
-        const info = val && typeof val === 'object' ? JSON.stringify(val).substring(0, 200) : typeof val;
-        console.log(`[bungie] loadout resp key "${key}": ${info}`);
-      }
+  if (response.characterLoadouts?.data) {
+    const charIds = Object.keys(response.characterLoadouts.data);
+    for (const cid of charIds) {
+      const cData = response.characterLoadouts.data[cid];
+      const count = Array.isArray(cData) ? cData.length : (cData?.loadouts?.length || 'unknown');
+      console.log(`[bungie] char ${cid}: ${count} loadouts found`);
     }
   } else {
-    console.log(`[bungie] loadout GetProfile returned no Response`);
+    console.log(`[bungie] characterLoadouts not in response, keys: ${Object.keys(response).join(', ')}`);
   }
 
   const instanceDetails = response.itemComponents?.instances?.data || {};
