@@ -1,4 +1,5 @@
 import { Mail, Sparkles, Download, Package } from 'lucide-react';
+import { TierStars } from './TierStars';
 import { motion } from 'framer-motion';
 import type { InventoryItem, CharacterData } from '@/hooks/use-profile-state';
 import { useI18n } from '@/lib/i18n';
@@ -81,6 +82,9 @@ function PostmasterCharSection({ char, charPostItems, handlePullPostmaster, isPu
                   ) : null}
                   <div className={`img-fallback w-full h-full flex items-center justify-center absolute inset-0 ${imgSrc ? 'hidden' : ''}`}>
                     <Package className="w-8 h-8 text-gray-600" />
+                  </div>
+                  <div className="absolute bottom-1 left-1 z-10">
+                    <TierStars rarity={item.rarity} />
                   </div>
                 </div>
                 <div className="px-1.5 py-1.5 bg-[#0a0e18]/90 rounded-b-lg">

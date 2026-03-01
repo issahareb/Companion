@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import type { InventoryItem, CharacterData } from '@/hooks/use-profile-state';
 import { useI18n } from '@/lib/i18n';
 import { rateWeaponRoll, type RollResult } from '@/lib/roll-ratings';
+import { TierStars } from './TierStars';
 
 function getRarityBg(rarity: string): string {
   switch (rarity) {
@@ -128,6 +129,9 @@ export function EquippedSlotRow({ slotId, slotLabel, SlotIcon, item, isExpanded,
               ) : (
                 <Package className="w-5 h-5 text-gray-600" />
               )}
+              <div className="absolute bottom-0.5 left-0.5 z-10">
+                <TierStars rarity={item.rarity} size="xs" />
+              </div>
             </>
           ) : (
             <div className="w-full h-full bg-gradient-to-br from-white/[0.04] to-transparent flex items-center justify-center">
@@ -246,6 +250,9 @@ export function EquippedSlotRow({ slotId, slotLabel, SlotIcon, item, isExpanded,
                           ) : (
                             <div className="w-full h-full flex items-center justify-center"><Package className="w-4 h-4 text-gray-600" /></div>
                           )}
+                          <div className="absolute bottom-0 left-0 z-10">
+                            <TierStars rarity={invItem.rarity} size="xs" />
+                          </div>
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="text-[10px] font-bold truncate tracking-wider uppercase" style={{ color: isItemExotic ? '#E5C76B' : '#e0e0e0' }}>{invItem.name}</p>

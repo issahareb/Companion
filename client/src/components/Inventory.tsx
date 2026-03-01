@@ -1,5 +1,6 @@
 import React from 'react';
 import { Crosshair, Sparkles, Package, ChevronDown, ChevronUp } from 'lucide-react';
+import { TierStars } from './dashboard/TierStars';
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -109,6 +110,9 @@ export function ItemCard({ item, isEquipped, onClick }: ItemCardProps) {
         <div className={`img-fallback w-full h-full flex items-center justify-center absolute inset-0 ${imgSrc ? 'hidden' : ''}`}>
           <Package className="w-8 h-8 text-gray-600" />
         </div>
+        <div className="absolute bottom-1 left-1 z-10">
+          <TierStars rarity={item.rarity} />
+        </div>
       </div>
       <div className="px-1.5 py-1.5 bg-[#0a0e18]/90 rounded-b-lg">
         <h4 className="text-[8px] font-bold truncate tracking-wider uppercase" style={{ color: isExotic ? '#E5C76B' : 'white' }}>
@@ -147,6 +151,9 @@ export function EquippedSlot({ slotInfo, item, onUnequip }: EquippedSlotProps) {
                 <Package className="w-6 h-6 text-gray-600 z-10" />
               )}
               <div className="absolute top-0 left-0 w-full h-1 z-20" style={{ backgroundColor: isSubclass ? '#a855f7' : rarityColor }} />
+              <div className="absolute bottom-0.5 left-0.5 z-20">
+                <TierStars rarity={item.rarity} size="xs" />
+              </div>
             </>
           ) : (
             <slotInfo.icon className="w-6 h-6 text-white/10" strokeWidth={1} />

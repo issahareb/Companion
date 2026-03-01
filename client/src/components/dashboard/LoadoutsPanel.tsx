@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Loader2, Share2, Check, Archive, Trash2, Gamepad2, ExternalLink } from 'lucide-react';
+import { TierStars } from './TierStars';
 import { motion } from 'framer-motion';
 import type { Item } from '@/components/Inventory';
 import type { InGameLoadout, CharacterData } from '@/hooks/use-profile-state';
@@ -239,6 +240,9 @@ export function LoadoutsPanel({
                     }`}
                   >
                     <img src={item.icon || item.screenshot || ''} alt={item.name} className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                    <div className="absolute bottom-0 left-0 z-10">
+                      <TierStars rarity={item.rarity} size="xs" />
+                    </div>
                   </motion.div>
                 ))}
               </div>
