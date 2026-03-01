@@ -753,7 +753,7 @@ function parseGearItem(
     slot: slot || 'unknown',
     rarity,
     power: instance?.primaryStat?.value || 0,
-    icon: manifestItem.icon,
+    icon: manifestItem.icon || manifestItem.screenshot,
     screenshot: manifestItem.screenshot,
     location,
     characterId,

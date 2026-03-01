@@ -63,7 +63,7 @@ function PostmasterCharSection({ char, charPostItems, handlePullPostmaster, isPu
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
           {charPostItems.map((item, i) => {
-            const imgSrc = item.icon || '';
+            const imgSrc = item.icon || item.screenshot || '';
             const isExotic = item.rarity === 'exotic';
             return (
               <motion.div

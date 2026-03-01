@@ -81,7 +81,7 @@ function getRarityBorder(rarity: string, isEquipped: boolean): string {
 export function ItemCard({ item, isEquipped, onClick }: ItemCardProps) {
   const isExotic = item.rarity === 'exotic';
   const rarityColor = isExotic ? '#ceae33' : item.rarity === 'legendary' ? '#522f65' : item.rarity === 'rare' ? '#5076a3' : '#333';
-  const imgSrc = item.icon || '';
+  const imgSrc = item.icon || item.screenshot || '';
 
   return (
     <motion.div 
@@ -141,8 +141,8 @@ export function EquippedSlot({ slotInfo, item, onUnequip }: EquippedSlotProps) {
         }`}>
           {item ? (
             <>
-              {item.icon ? (
-                <img src={item.icon} alt={item.name} className="w-full h-full object-cover z-10" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+              {(item.icon || item.screenshot) ? (
+                <img src={item.icon || item.screenshot} alt={item.name} className="w-full h-full object-cover z-10" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
               ) : (
                 <Package className="w-6 h-6 text-gray-600 z-10" />
               )}

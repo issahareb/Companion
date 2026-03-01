@@ -41,7 +41,7 @@ export function VaultItemCard({ item, characters, onTransferToChar, onEquipOnCha
   const rarityColor = isExotic ? '#ceae33' : item.rarity === 'legendary' ? '#522f65' : item.rarity === 'rare' ? '#5076a3' : '#333';
   const isWeapon = ['kinetic', 'energy', 'power'].includes(item.slot);
   const cardRef = useRef<HTMLDivElement>(null);
-  const imgSrc = item.icon || '';
+  const imgSrc = item.icon || item.screenshot || '';
 
   const rollResult = useMemo(() => {
     if (!isWeapon) return null;

@@ -123,8 +123,8 @@ export function EquippedSlotRow({ slotId, slotLabel, SlotIcon, item, isExpanded,
           {item ? (
             <>
               <div className="absolute top-0 left-0 w-full h-[2px] z-10" style={{ backgroundColor: rarityColor }} />
-              {item.icon ? (
-                <img src={item.icon} alt={item.name} className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+              {(item.icon || item.screenshot) ? (
+                <img src={item.icon || item.screenshot} alt={item.name} className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
               ) : (
                 <Package className="w-5 h-5 text-gray-600" />
               )}
@@ -241,8 +241,8 @@ export function EquippedSlotRow({ slotId, slotLabel, SlotIcon, item, isExpanded,
                       >
                         <div className="absolute left-0 top-0 bottom-0 w-[2px]" style={{ backgroundColor: isItemExotic ? '#E5C76B' : '#7D5C96' }} />
                         <div className={`w-9 h-9 shrink-0 overflow-hidden relative rounded ${getRarityBg(invItem.rarity)} ${isItemExotic ? 'ring-1 ring-yellow-500/20' : 'ring-1 ring-white/10'}`}>
-                          {invItem.icon ? (
-                            <img src={invItem.icon} alt={invItem.name} className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                          {(invItem.icon || invItem.screenshot) ? (
+                            <img src={invItem.icon || invItem.screenshot} alt={invItem.name} className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
                           ) : (
                             <div className="w-full h-full flex items-center justify-center"><Package className="w-4 h-4 text-gray-600" /></div>
                           )}

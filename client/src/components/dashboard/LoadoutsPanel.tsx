@@ -238,7 +238,7 @@ export function LoadoutsPanel({
                       : 'border-white/10 bg-black'
                     }`}
                   >
-                    <img src={item.icon || ''} alt={item.name} className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                    <img src={item.icon || item.screenshot || ''} alt={item.name} className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
                   </motion.div>
                 ))}
               </div>
