@@ -6,10 +6,23 @@ import { useI18n } from '@/lib/i18n';
 import { rateWeaponRoll } from '@/lib/roll-ratings';
 import { RollRatingBadge } from './EquippedSlotRow';
 
-function getItemImage(item: InventoryItem): string {
-  const isWeaponOrArmor = ['kinetic', 'energy', 'power', 'helmet', 'arms', 'chest', 'legs', 'class'].includes(item.slot);
-  if (isWeaponOrArmor && item.screenshot) return item.screenshot;
-  return item.icon || item.screenshot || '';
+function getRarityBg(rarity: string): string {
+  switch (rarity) {
+    case 'exotic': return 'bg-gradient-to-br from-[#ceae33]/30 via-[#ceae33]/10 to-[#ceae33]/5';
+    case 'legendary': return 'bg-gradient-to-br from-[#522f65]/40 via-[#522f65]/15 to-[#522f65]/5';
+    case 'rare': return 'bg-gradient-to-br from-[#5076a3]/30 via-[#5076a3]/10 to-transparent';
+    default: return 'bg-gradient-to-br from-white/[0.06] via-white/[0.02] to-transparent';
+  }
+}
+
+function getRarityBorder(rarity: string, isInLoadout: boolean): string {
+  if (isInLoadout) return 'border-white/5';
+  switch (rarity) {
+    case 'exotic': return 'border-[#ceae33]/30 hover:border-[#ceae33]/60';
+    case 'legendary': return 'border-[#522f65]/40 hover:border-[#522f65]/70';
+    case 'rare': return 'border-[#5076a3]/30 hover:border-[#5076a3]/60';
+    default: return 'border-white/[0.08] hover:border-white/20';
+  }
 }
 
 const spring = { type: 'spring' as const, damping: 25, stiffness: 300 };
@@ -25,9 +38,10 @@ export function VaultItemCard({ item, characters, onTransferToChar, onEquipOnCha
   const [showDropdown, setShowDropdown] = useState(false);
   const { t } = useI18n();
   const isExotic = item.rarity === 'exotic';
-  const rarityColor = isExotic ? '#E5C76B' : '#7D5C96';
+  const rarityColor = isExotic ? '#ceae33' : item.rarity === 'legendary' ? '#522f65' : item.rarity === 'rare' ? '#5076a3' : '#333';
   const isWeapon = ['kinetic', 'energy', 'power'].includes(item.slot);
   const cardRef = useRef<HTMLDivElement>(null);
+  const imgSrc = item.icon || '';
 
   const rollResult = useMemo(() => {
     if (!isWeapon) return null;
@@ -49,50 +63,36 @@ export function VaultItemCard({ item, characters, onTransferToChar, onEquipOnCha
     return () => document.removeEventListener('click', close);
   }, [showDropdown, item.id]);
 
-  const handleMouseMove = (e: React.MouseEvent) => {
-    if (!cardRef.current) return;
-    const rect = cardRef.current.getBoundingClientRect();
-    const x = (e.clientX - rect.left) / rect.width - 0.5;
-    const y = (e.clientY - rect.top) / rect.height - 0.5;
-    cardRef.current.style.transform = `perspective(600px) rotateY(${x * 6}deg) rotateX(${-y * 6}deg) scale(1.02)`;
-  };
-
-  const handleMouseLeave = () => {
-    if (!cardRef.current) return;
-    cardRef.current.style.transform = 'perspective(600px) rotateY(0deg) rotateX(0deg) scale(1)';
-  };
-
   return (
     <div
       ref={cardRef}
-      className={`group relative bg-gradient-to-b from-white/[0.03] to-transparent border transition-all duration-500 destiny-clip-sm card-3d card-sheen ${
-        isInLoadout
-          ? 'opacity-30 grayscale-[70%] border-white/5'
-          : isExotic
-            ? 'border-[#E5C76B]/20 hover:border-[#E5C76B]/40 rarity-exotic-glow'
-            : 'border-white/[0.08] hover:border-white/25'
-      }`}
+      className={`group relative border transition-all duration-300 rounded-lg ${
+        isInLoadout ? 'opacity-30 grayscale-[70%]' : ''
+      } ${getRarityBorder(item.rarity, isInLoadout)}`}
       style={{ overflow: showDropdown ? 'visible' : 'hidden' }}
       data-dropdown-id={item.id}
-      onMouseMove={!isInLoadout ? handleMouseMove : undefined}
-      onMouseLeave={handleMouseLeave}
     >
-      <div className="h-[2px] w-full" style={{ backgroundColor: rarityColor }} />
-      <div className="aspect-square relative overflow-hidden bg-black/80 cursor-pointer press-scale" onClick={() => setShowDropdown(!showDropdown)}>
-        {getItemImage(item) ? (
-          <img src={getItemImage(item)} alt={item.name} className="w-full h-full object-contain transition-transform duration-700 group-hover:scale-110 brightness-90 group-hover:brightness-110" loading="lazy" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; (e.target as HTMLImageElement).parentElement?.querySelector('.img-fallback')?.classList.remove('hidden'); }} />
+      <div className={`aspect-square relative overflow-hidden rounded-t-lg cursor-pointer ${getRarityBg(item.rarity)}`} onClick={() => setShowDropdown(!showDropdown)}>
+        <div className="absolute top-0 left-0 right-0 h-[2px]" style={{ backgroundColor: rarityColor }} />
+        {imgSrc ? (
+          <img
+            src={imgSrc}
+            alt={item.name}
+            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+            loading="lazy"
+            onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; (e.target as HTMLImageElement).parentElement?.querySelector('.img-fallback')?.classList.remove('hidden'); }}
+          />
         ) : null}
-        <div className={`img-fallback w-full h-full flex items-center justify-center absolute inset-0 ${getItemImage(item) ? 'hidden' : ''}`}>
-          <Package className="w-8 h-8 text-gray-700" />
+        <div className={`img-fallback w-full h-full flex items-center justify-center absolute inset-0 ${imgSrc ? 'hidden' : ''}`}>
+          <Package className="w-8 h-8 text-gray-600" />
         </div>
-        <div className="absolute inset-0 bg-gradient-to-t from-[#0a0e18] via-transparent to-transparent opacity-90" />
-        {showDropdown && <div className="absolute inset-0 bg-indigo-500/[0.06]" />}
+        {showDropdown && <div className="absolute inset-0 bg-indigo-500/[0.08] border-2 border-indigo-400/40 rounded-t-lg" />}
       </div>
-      <div className="px-2.5 py-2 relative z-10">
-        <h4 className="text-[9px] font-bold truncate tracking-wider uppercase" style={{ color: isExotic ? '#E5C76B' : 'white' }}>{item.name}</h4>
+      <div className="px-1.5 py-1.5 bg-[#0a0e18]/90 rounded-b-lg">
+        <h4 className="text-[8px] font-bold truncate tracking-wider uppercase" style={{ color: isExotic ? '#E5C76B' : 'white' }}>{item.name}</h4>
         <div className="flex items-center justify-between mt-0.5">
-          <div className="flex items-center gap-1.5 min-w-0">
-            <p className="text-[8px] text-gray-500 uppercase tracking-widest truncate">{item.type}</p>
+          <div className="flex items-center gap-1 min-w-0">
+            <p className="text-[7px] text-gray-500 uppercase tracking-widest truncate">{item.type}</p>
             {rollResult && <RollRatingBadge result={rollResult} />}
           </div>
           {item.power > 0 && (
@@ -110,7 +110,7 @@ export function VaultItemCard({ item, characters, onTransferToChar, onEquipOnCha
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -8, scale: 0.95 }}
             transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
-            className="absolute left-0 right-0 bottom-0 z-30 bg-[#0c1020]/95 backdrop-blur-md border-t border-indigo-500/20 shadow-xl shadow-black/60"
+            className="absolute left-0 right-0 bottom-0 z-30 bg-[#0c1020]/95 backdrop-blur-md border-t border-indigo-500/20 shadow-xl shadow-black/60 rounded-b-lg"
           >
             <div className="py-1">
               <motion.button

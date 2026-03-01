@@ -48,50 +48,62 @@ interface ItemCardProps {
   onClick: () => void;
 }
 
+function getRarityBg(rarity: string): string {
+  switch (rarity) {
+    case 'exotic': return 'bg-gradient-to-br from-[#ceae33]/30 via-[#ceae33]/10 to-[#ceae33]/5';
+    case 'legendary': return 'bg-gradient-to-br from-[#522f65]/40 via-[#522f65]/15 to-[#522f65]/5';
+    case 'rare': return 'bg-gradient-to-br from-[#5076a3]/30 via-[#5076a3]/10 to-transparent';
+    default: return 'bg-gradient-to-br from-white/[0.06] via-white/[0.02] to-transparent';
+  }
+}
+
+function getRarityBorder(rarity: string, isEquipped: boolean): string {
+  if (isEquipped) return 'border-white/5';
+  switch (rarity) {
+    case 'exotic': return 'border-[#ceae33]/30 hover:border-[#ceae33]/60';
+    case 'legendary': return 'border-[#522f65]/40 hover:border-[#522f65]/70';
+    case 'rare': return 'border-[#5076a3]/30 hover:border-[#5076a3]/60';
+    default: return 'border-white/[0.08] hover:border-white/20';
+  }
+}
+
 export function ItemCard({ item, isEquipped, onClick }: ItemCardProps) {
   const isExotic = item.rarity === 'exotic';
-  const rarityColor = isExotic ? '#E5C76B' : '#7D5C96'; 
-  
-  const isWeaponOrArmor = ['kinetic', 'energy', 'power', 'helmet', 'arms', 'chest', 'legs', 'class'].includes(item.slot);
-  const imgSrc = (isWeaponOrArmor && item.screenshot) ? item.screenshot : (item.icon || item.screenshot || '');
+  const rarityColor = isExotic ? '#ceae33' : item.rarity === 'legendary' ? '#522f65' : item.rarity === 'rare' ? '#5076a3' : '#333';
+  const imgSrc = item.icon || '';
 
   return (
     <motion.div 
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      whileHover={!isEquipped ? { y: -3, scale: 1.02 } : {}}
+      whileHover={!isEquipped ? { y: -2, scale: 1.03 } : {}}
       onClick={onClick} 
-      className={`group cursor-pointer relative bg-gradient-to-b from-white/[0.03] to-transparent border overflow-hidden transition-all duration-500 destiny-clip-sm ${
-        isEquipped 
-          ? 'opacity-30 grayscale-[70%] border-white/5' 
-          : isExotic
-            ? 'border-[#E5C76B]/20 hover:border-[#E5C76B]/50 rarity-exotic-glow hover:shadow-[0_10px_40px_rgba(229,199,107,0.15)]'
-            : 'border-white/[0.08] hover:border-white/30 hover:shadow-[0_10px_40px_rgba(0,0,0,0.8)]'
-      }`}
+      className={`group cursor-pointer relative border overflow-hidden rounded-lg transition-all duration-300 ${
+        isEquipped ? 'opacity-30 grayscale-[70%]' : ''
+      } ${getRarityBorder(item.rarity, isEquipped)}`}
     >
-      <div className="h-[2px] w-full" style={{ backgroundColor: rarityColor }} />
-      <div className="aspect-square relative overflow-hidden bg-black/80">
+      <div className={`aspect-square relative overflow-hidden rounded-t-lg ${getRarityBg(item.rarity)}`}>
+        <div className="absolute top-0 left-0 right-0 h-[2px] z-10" style={{ backgroundColor: rarityColor }} />
         {imgSrc ? (
           <img 
             src={imgSrc} 
             alt={item.name}
             loading="lazy"
-            className={`w-full h-full object-contain transition-transform duration-1000 ease-out group-hover:scale-110 ${
-              isEquipped ? '' : 'filter brightness-90 group-hover:brightness-110'
+            className={`w-full h-full object-cover transition-transform duration-500 group-hover:scale-105 ${
+              isEquipped ? '' : 'brightness-95 group-hover:brightness-110'
             }`}
             onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; (e.target as HTMLImageElement).parentElement?.querySelector('.img-fallback')?.classList.remove('hidden'); }}
           />
         ) : null}
         <div className={`img-fallback w-full h-full flex items-center justify-center absolute inset-0 ${imgSrc ? 'hidden' : ''}`}>
-          <Package className="w-8 h-8 text-gray-700" />
+          <Package className="w-8 h-8 text-gray-600" />
         </div>
-        <div className="absolute inset-0 bg-gradient-to-t from-[#0a0e18] via-transparent to-transparent opacity-60" />
       </div>
-      <div className="px-2.5 py-2 relative z-10">
-        <h4 className="text-[9px] font-bold truncate tracking-wider uppercase" style={{ color: isExotic ? '#E5C76B' : 'white' }}>
+      <div className="px-1.5 py-1.5 bg-[#0a0e18]/90 rounded-b-lg">
+        <h4 className="text-[8px] font-bold truncate tracking-wider uppercase" style={{ color: isExotic ? '#E5C76B' : 'white' }}>
           {item.name}
         </h4>
-        <p className="text-[8px] text-gray-500 mt-0.5 uppercase tracking-widest font-medium opacity-70">{item.type}</p>
+        <p className="text-[7px] text-gray-500 mt-0.5 uppercase tracking-widest truncate">{item.type}</p>
       </div>
     </motion.div>
   );
@@ -109,10 +121,16 @@ export function EquippedSlot({ slotInfo, item, onUnequip }: EquippedSlotProps) {
   
   return (
     <div className="group relative bg-gradient-to-r from-white/[0.03] to-transparent backdrop-blur-sm border border-white/[0.08] p-4 flex items-center space-x-5 transition-all duration-500 hover:border-white/25 destiny-clip-sm">
-      <div className="w-16 h-16 bg-black border border-white/10 flex-shrink-0 relative flex items-center justify-center destiny-clip-sm overflow-hidden shadow-inner">
+      <div className={`w-16 h-16 border border-white/10 flex-shrink-0 relative flex items-center justify-center rounded-lg overflow-hidden shadow-inner ${
+        item ? getRarityBg(item.rarity) : 'bg-black'
+      }`}>
         {item ? (
           <>
-            <img src={item.icon} alt={item.name} className="w-full h-full object-cover z-10 filter brightness-110" />
+            {item.icon ? (
+              <img src={item.icon} alt={item.name} className="w-full h-full object-cover z-10" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+            ) : (
+              <Package className="w-6 h-6 text-gray-600 z-10" />
+            )}
             <div className="absolute top-0 left-0 w-full h-1 z-20" style={{ backgroundColor: rarityColor }} />
           </>
         ) : (

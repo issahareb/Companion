@@ -232,9 +232,13 @@ export function LoadoutsPanel({
                     initial={{ opacity: 0, scale: 0.8 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ delay: i * 0.06 + idx * 0.03, duration: 0.3, ease: appleEase }}
-                    className="aspect-square border border-white/10 bg-black relative overflow-hidden destiny-clip-sm"
+                    className={`aspect-square border relative overflow-hidden rounded ${
+                      item.rarity === 'exotic' ? 'border-[#ceae33]/30 bg-gradient-to-br from-[#ceae33]/20 to-transparent'
+                      : item.rarity === 'legendary' ? 'border-[#522f65]/30 bg-gradient-to-br from-[#522f65]/30 to-transparent'
+                      : 'border-white/10 bg-black'
+                    }`}
                   >
-                    <img src={item.icon || item.screenshot || ''} alt={item.name} className="w-full h-full object-contain" />
+                    <img src={item.icon || ''} alt={item.name} className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
                   </motion.div>
                 ))}
               </div>

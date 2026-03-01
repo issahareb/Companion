@@ -1,11 +1,20 @@
 import { useState, useMemo } from 'react';
 import {
-  Search, Sparkles, ArrowRightLeft, ChevronUp, Plus,
+  Search, Sparkles, ArrowRightLeft, ChevronUp, Plus, Package,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { InventoryItem, CharacterData } from '@/hooks/use-profile-state';
 import { useI18n } from '@/lib/i18n';
 import { rateWeaponRoll, type RollResult } from '@/lib/roll-ratings';
+
+function getRarityBg(rarity: string): string {
+  switch (rarity) {
+    case 'exotic': return 'bg-gradient-to-br from-[#ceae33]/30 via-[#ceae33]/10 to-[#ceae33]/5';
+    case 'legendary': return 'bg-gradient-to-br from-[#522f65]/40 via-[#522f65]/15 to-[#522f65]/5';
+    case 'rare': return 'bg-gradient-to-br from-[#5076a3]/30 via-[#5076a3]/10 to-transparent';
+    default: return 'bg-gradient-to-br from-white/[0.06] via-white/[0.02] to-transparent';
+  }
+}
 
 function RollRatingBadge({ result }: { result: RollResult }) {
   const { t } = useI18n();
@@ -108,13 +117,17 @@ export function EquippedSlotRow({ slotId, slotLabel, SlotIcon, item, isExpanded,
         )}
         <div className="absolute left-0 top-0 bottom-0 w-[2px] transition-all duration-300" style={{ backgroundColor: isExpanded ? '#6366f1' : item ? rarityColor : 'transparent' }} />
 
-        <div className={`w-12 h-12 shrink-0 overflow-hidden relative flex items-center justify-center transition-all duration-300 ${
-          item ? (isExotic ? 'rarity-exotic-glow' : 'rarity-legendary-glow') : ''
+        <div className={`w-12 h-12 shrink-0 overflow-hidden relative flex items-center justify-center rounded-lg transition-all duration-300 ${
+          item ? getRarityBg(item.rarity) : ''
         } ${isExpanded ? 'ring-1 ring-indigo-500/40' : 'ring-1 ring-white/10'}`}>
           {item ? (
             <>
               <div className="absolute top-0 left-0 w-full h-[2px] z-10" style={{ backgroundColor: rarityColor }} />
-              <img src={item.icon} alt={item.name} className="w-full h-full object-cover" />
+              {item.icon ? (
+                <img src={item.icon} alt={item.name} className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+              ) : (
+                <Package className="w-5 h-5 text-gray-600" />
+              )}
             </>
           ) : (
             <div className="w-full h-full bg-gradient-to-br from-white/[0.04] to-transparent flex items-center justify-center">
@@ -227,8 +240,12 @@ export function EquippedSlotRow({ slotId, slotLabel, SlotIcon, item, isExpanded,
                         data-testid={`picker-item-${invItem.id}`}
                       >
                         <div className="absolute left-0 top-0 bottom-0 w-[2px]" style={{ backgroundColor: isItemExotic ? '#E5C76B' : '#7D5C96' }} />
-                        <div className={`w-9 h-9 shrink-0 overflow-hidden relative ${isItemExotic ? 'ring-1 ring-yellow-500/20' : 'ring-1 ring-white/10'}`}>
-                          <img src={invItem.icon} alt={invItem.name} className="w-full h-full object-cover" />
+                        <div className={`w-9 h-9 shrink-0 overflow-hidden relative rounded ${getRarityBg(invItem.rarity)} ${isItemExotic ? 'ring-1 ring-yellow-500/20' : 'ring-1 ring-white/10'}`}>
+                          {invItem.icon ? (
+                            <img src={invItem.icon} alt={invItem.name} className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center"><Package className="w-4 h-4 text-gray-600" /></div>
+                          )}
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="text-[10px] font-bold truncate tracking-wider uppercase" style={{ color: isItemExotic ? '#E5C76B' : '#e0e0e0' }}>{invItem.name}</p>
