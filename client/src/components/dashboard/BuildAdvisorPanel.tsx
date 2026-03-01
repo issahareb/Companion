@@ -129,7 +129,7 @@ export function BuildAdvisorPanel({ tabDirection, selectedCharacter, vaultItems,
       animate="center"
       exit="exit"
       transition={{ duration: 0.45, ease: appleEase as unknown as number[] }}
-      className="h-full overflow-y-auto scroll-container px-4 md:px-8 py-6"
+      className="h-full overflow-y-auto overflow-x-hidden scroll-container px-4 md:px-8 py-6"
       data-scroll-container
       data-testid="panel-build-advisor"
     >

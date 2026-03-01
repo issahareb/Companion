@@ -645,7 +645,7 @@ export default function Dashboard() {
                   transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
                   className="h-full flex flex-col"
                 >
-                  <div className="flex items-center gap-1 p-1 bg-white/[0.03] border border-white/[0.06] rounded-lg w-fit shrink-0 mx-4 md:mx-8 mt-4 mb-4" data-testid="ai-subtab-bar">
+                  <div className="flex items-center gap-1 p-1 bg-white/[0.03] border border-white/[0.06] rounded-lg shrink-0 mx-4 md:mx-8 mt-4 mb-4 overflow-x-auto scrollbar-hide" data-testid="ai-subtab-bar">
                     {([
                       { id: 'playstyle' as AiSubTab, label: t('advisor.playstyle') },
                       { id: 'build' as AiSubTab, label: t('advisor.buildRec') },
@@ -656,7 +656,7 @@ export default function Dashboard() {
                       <button
                         key={sub.id}
                         onClick={() => setAiSubTab(sub.id)}
-                        className={`px-3 py-1.5 text-[10px] font-display tracking-[0.15em] uppercase transition-all rounded-md ${
+                        className={`px-3 py-1.5 text-[10px] font-display tracking-[0.15em] uppercase transition-all rounded-md whitespace-nowrap shrink-0 ${
                           aiSubTab === sub.id
                             ? 'bg-white/[0.08] text-white border border-white/[0.1]'
                             : 'text-gray-500 hover:text-gray-300'

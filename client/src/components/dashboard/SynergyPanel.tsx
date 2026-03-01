@@ -183,7 +183,7 @@ export default function SynergyPanel({ tabDirection, selectedCharacter }: Synerg
       animate="center"
       exit="exit"
       transition={{ duration: 0.4, ease: appleEase as unknown as number[] }}
-      className="h-full overflow-y-auto px-4 md:px-8 pb-8"
+      className="h-full overflow-y-auto overflow-x-hidden px-4 md:px-8 pb-8"
       data-testid="synergy-panel"
     >
       {!result && !loading && (
@@ -340,10 +340,10 @@ export default function SynergyPanel({ tabDirection, selectedCharacter }: Synerg
                         </span>
                       ))}
                     </div>
-                    <p className="text-xs text-gray-400 leading-relaxed mb-2">{anti.explanation}</p>
-                    <div className="flex items-center gap-1.5 text-xs text-emerald-400/80">
-                      <Shield className="w-3 h-3" />
-                      <span>{anti.fix}</span>
+                    <p className="text-xs text-gray-400 leading-relaxed mb-2 break-words">{anti.explanation}</p>
+                    <div className="flex items-start gap-1.5 text-xs text-emerald-400/80">
+                      <Shield className="w-3 h-3 shrink-0 mt-0.5" />
+                      <span className="break-words">{anti.fix}</span>
                     </div>
                   </motion.div>
                 ))}
@@ -366,15 +366,15 @@ export default function SynergyPanel({ tabDirection, selectedCharacter }: Synerg
                     initial={{ opacity: 0, x: -10 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: (result.synergies.length + result.antiSynergies.length + i) * 0.08, duration: 0.3, ease: appleEase as unknown as number[] }}
-                    className="flex items-center gap-3 p-3 bg-white/[0.02] border border-white/[0.06] rounded-xl"
+                    className="p-3 bg-white/[0.02] border border-white/[0.06] rounded-xl"
                     data-testid={`card-suggestion-${i}`}
                   >
-                    <div className="flex items-center gap-2 flex-1 min-w-0">
-                      <span className="text-xs text-red-400/80 line-through shrink-0">{sug.current}</span>
+                    <div className="flex items-center gap-2 mb-1.5 flex-wrap">
+                      <span className="text-xs text-red-400/80 line-through truncate max-w-[40%]">{sug.current}</span>
                       <ChevronRight className="w-3 h-3 text-gray-600 shrink-0" />
-                      <span className="text-xs text-emerald-400 font-medium shrink-0">{sug.recommended}</span>
+                      <span className="text-xs text-emerald-400 font-medium truncate max-w-[40%]">{sug.recommended}</span>
                     </div>
-                    <p className="text-[10px] text-gray-500 text-right">{sug.reason}</p>
+                    <p className="text-[10px] text-gray-500 leading-relaxed break-words">{sug.reason}</p>
                   </motion.div>
                 ))}
               </div>
