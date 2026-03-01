@@ -13,9 +13,10 @@ const GOLD = '#E5C76B';
 export function TierStars({ rarity, size = 'sm' }: { rarity: string; size?: 'xs' | 'sm' }) {
   const count = TIER_MAP[rarity] || 1;
   const starSize = size === 'xs' ? 'w-[6px] h-[6px]' : 'w-[8px] h-[8px]';
+  const pad = size === 'xs' ? 'px-[2px] py-[1px]' : 'px-[3px] py-[2px]';
 
   return (
-    <div className="flex flex-col items-center gap-0" title={`Tier ${count}`}>
+    <div className={`flex flex-col items-center gap-0 ${pad} rounded-sm`} title={`Tier ${count}`} style={{ backgroundColor: 'rgba(0,0,0,0.45)' }}>
       {Array.from({ length: count }).map((_, i) => (
         <Star
           key={i}
