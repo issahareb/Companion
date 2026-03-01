@@ -1106,9 +1106,11 @@ export async function fetchProfileState(
   if (profileProgression?.seasonalArtifact) {
     const sa = profileProgression.seasonalArtifact;
     const artifactDef = manifest[String(sa.artifactHash)];
-    const tiers = (sa.tiers || []).map((tier: any) => ({
-      tierHash: tier.tierHash || 0,
-      items: (tier.items || []).map((ti: any) => {
+    console.log(`[bungie] artifact hash=${sa.artifactHash}, inManifest=${!!artifactDef}, name=${artifactDef?.name || 'N/A'}, powerBonus=${sa.powerBonus}, pointsUsed=${sa.pointsUsed}, pointsAcquired=${sa.pointsAcquired}, tierCount=${(sa.tiers || []).length}`);
+
+    const tiers = (sa.tiers || []).map((tier: any, tIdx: number) => {
+      const allItems = (tier.items || []);
+      const mapped = allItems.map((ti: any) => {
         const tiDef = manifest[String(ti.itemHash)];
         return {
           itemHash: ti.itemHash,
@@ -1116,8 +1118,15 @@ export async function fetchProfileState(
           icon: tiDef?.icon || '',
           isActive: ti.isActive || false,
         };
-      }).filter((i: any) => i.name),
-    }));
+      });
+      const named = mapped.filter((i: any) => i.name);
+      const active = named.filter((i: any) => i.isActive);
+      console.log(`[bungie] artifact tier ${tIdx}: ${allItems.length} raw items, ${named.length} with names, ${active.length} active`);
+      return {
+        tierHash: tier.tierHash || 0,
+        items: named,
+      };
+    });
 
     artifact = {
       artifactHash: sa.artifactHash,
@@ -1128,6 +1137,9 @@ export async function fetchProfileState(
       pointsAvailable: sa.pointsAcquired || 0,
       tiers,
     };
+    console.log(`[bungie] artifact result: name=${artifact.name}, icon=${artifact.icon ? 'yes' : 'no'}, tiers=${tiers.length}, totalActive=${tiers.reduce((s: number, t: any) => s + t.items.filter((i: any) => i.isActive).length, 0)}`);
+  } else {
+    console.log(`[bungie] no seasonalArtifact in profileProgression, keys: ${Object.keys(profileProgression || {}).join(', ')}`);
   }
 
   const instanceToHash: Record<string, number> = {};
