@@ -1,10 +1,16 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
-import { Sparkles, ArrowRightLeft, Shield } from 'lucide-react';
+import { Sparkles, ArrowRightLeft, Shield, Package } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { InventoryItem, CharacterData } from '@/hooks/use-profile-state';
 import { useI18n } from '@/lib/i18n';
 import { rateWeaponRoll } from '@/lib/roll-ratings';
 import { RollRatingBadge } from './EquippedSlotRow';
+
+function getItemImage(item: InventoryItem): string {
+  const isWeaponOrArmor = ['kinetic', 'energy', 'power', 'helmet', 'arms', 'chest', 'legs', 'class'].includes(item.slot);
+  if (isWeaponOrArmor && item.screenshot) return item.screenshot;
+  return item.icon || item.screenshot || '';
+}
 
 const spring = { type: 'spring' as const, damping: 25, stiffness: 300 };
 
@@ -72,8 +78,13 @@ export function VaultItemCard({ item, characters, onTransferToChar, onEquipOnCha
       onMouseLeave={handleMouseLeave}
     >
       <div className="h-[2px] w-full" style={{ backgroundColor: rarityColor }} />
-      <div className="aspect-[4/3] relative overflow-hidden bg-black/80 cursor-pointer press-scale" onClick={() => setShowDropdown(!showDropdown)}>
-        <img src={item.screenshot || item.icon} alt={item.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 brightness-90 group-hover:brightness-110" loading="lazy" />
+      <div className="aspect-square relative overflow-hidden bg-black/80 cursor-pointer press-scale" onClick={() => setShowDropdown(!showDropdown)}>
+        {getItemImage(item) ? (
+          <img src={getItemImage(item)} alt={item.name} className="w-full h-full object-contain transition-transform duration-700 group-hover:scale-110 brightness-90 group-hover:brightness-110" loading="lazy" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; (e.target as HTMLImageElement).parentElement?.querySelector('.img-fallback')?.classList.remove('hidden'); }} />
+        ) : null}
+        <div className={`img-fallback w-full h-full flex items-center justify-center absolute inset-0 ${getItemImage(item) ? 'hidden' : ''}`}>
+          <Package className="w-8 h-8 text-gray-700" />
+        </div>
         <div className="absolute inset-0 bg-gradient-to-t from-[#0a0e18] via-transparent to-transparent opacity-90" />
         {showDropdown && <div className="absolute inset-0 bg-indigo-500/[0.06]" />}
       </div>

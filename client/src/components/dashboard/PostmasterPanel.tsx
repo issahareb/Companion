@@ -1,7 +1,13 @@
-import { Mail, Sparkles, Download } from 'lucide-react';
+import { Mail, Sparkles, Download, Package } from 'lucide-react';
 import { motion } from 'framer-motion';
 import type { InventoryItem, CharacterData } from '@/hooks/use-profile-state';
 import { useI18n } from '@/lib/i18n';
+
+function getItemImage(item: InventoryItem): string {
+  const isWeaponOrArmor = ['kinetic', 'energy', 'power', 'helmet', 'arms', 'chest', 'legs', 'class'].includes(item.slot);
+  if (isWeaponOrArmor && item.screenshot) return item.screenshot;
+  return item.icon || item.screenshot || '';
+}
 
 const appleEase = [0.16, 1, 0.3, 1] as const;
 
@@ -45,9 +51,14 @@ function PostmasterCharSection({ char, charPostItems, handlePullPostmaster, isPu
               data-testid={`card-postmaster-${item.id}`}
             >
               <div className="h-[2px] w-full bg-amber-500/60" />
-              <div className="aspect-[4/3] relative overflow-hidden bg-black/80">
-                <img src={item.screenshot || item.icon} alt={item.name} className="w-full h-full object-cover brightness-90 transition-transform duration-700 group-hover:scale-110" />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#0a0e18] via-transparent to-transparent opacity-90" />
+              <div className="aspect-square relative overflow-hidden bg-black/80">
+                {getItemImage(item) ? (
+                  <img src={getItemImage(item)} alt={item.name} className="w-full h-full object-contain brightness-90 transition-transform duration-700 group-hover:scale-110" loading="lazy" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; (e.target as HTMLImageElement).parentElement?.querySelector('.img-fallback')?.classList.remove('hidden'); }} />
+                ) : null}
+                <div className={`img-fallback w-full h-full flex items-center justify-center absolute inset-0 ${getItemImage(item) ? 'hidden' : ''}`}>
+                  <Package className="w-8 h-8 text-gray-700" />
+                </div>
+                <div className="absolute inset-0 bg-gradient-to-t from-[#0a0e18] via-transparent to-transparent opacity-60" />
               </div>
               <div className="px-2.5 py-2">
                 <h4 className="text-[9px] font-bold truncate tracking-wider uppercase text-amber-400">{item.name}</h4>

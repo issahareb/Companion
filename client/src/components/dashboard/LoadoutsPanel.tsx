@@ -234,7 +234,7 @@ export function LoadoutsPanel({
                     transition={{ delay: i * 0.06 + idx * 0.03, duration: 0.3, ease: appleEase }}
                     className="aspect-square border border-white/10 bg-black relative overflow-hidden destiny-clip-sm"
                   >
-                    <img src={item.screenshot || item.icon} alt={item.name} className="w-full h-full object-cover" />
+                    <img src={item.icon || item.screenshot || ''} alt={item.name} className="w-full h-full object-contain" />
                   </motion.div>
                 ))}
               </div>

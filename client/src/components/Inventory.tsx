@@ -1,5 +1,5 @@
 import React from 'react';
-import { Crosshair, Sparkles } from 'lucide-react';
+import { Crosshair, Sparkles, Package } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export interface ItemStatValue {
@@ -52,7 +52,8 @@ export function ItemCard({ item, isEquipped, onClick }: ItemCardProps) {
   const isExotic = item.rarity === 'exotic';
   const rarityColor = isExotic ? '#E5C76B' : '#7D5C96'; 
   
-  const imgSrc = item.screenshot || item.icon;
+  const isWeaponOrArmor = ['kinetic', 'energy', 'power', 'helmet', 'arms', 'chest', 'legs', 'class'].includes(item.slot);
+  const imgSrc = (isWeaponOrArmor && item.screenshot) ? item.screenshot : (item.icon || item.screenshot || '');
 
   return (
     <motion.div 
@@ -69,16 +70,22 @@ export function ItemCard({ item, isEquipped, onClick }: ItemCardProps) {
       }`}
     >
       <div className="h-[2px] w-full" style={{ backgroundColor: rarityColor }} />
-      <div className="aspect-[4/3] relative overflow-hidden bg-black/80">
-        <img 
-          src={imgSrc} 
-          alt={item.name}
-          loading="lazy"
-          className={`w-full h-full object-cover transition-transform duration-1000 ease-out group-hover:scale-110 ${
-            isEquipped ? '' : 'filter brightness-90 group-hover:brightness-110'
-          }`} 
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#0a0e18] via-transparent to-transparent opacity-90" />
+      <div className="aspect-square relative overflow-hidden bg-black/80">
+        {imgSrc ? (
+          <img 
+            src={imgSrc} 
+            alt={item.name}
+            loading="lazy"
+            className={`w-full h-full object-contain transition-transform duration-1000 ease-out group-hover:scale-110 ${
+              isEquipped ? '' : 'filter brightness-90 group-hover:brightness-110'
+            }`}
+            onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; (e.target as HTMLImageElement).parentElement?.querySelector('.img-fallback')?.classList.remove('hidden'); }}
+          />
+        ) : null}
+        <div className={`img-fallback w-full h-full flex items-center justify-center absolute inset-0 ${imgSrc ? 'hidden' : ''}`}>
+          <Package className="w-8 h-8 text-gray-700" />
+        </div>
+        <div className="absolute inset-0 bg-gradient-to-t from-[#0a0e18] via-transparent to-transparent opacity-60" />
       </div>
       <div className="px-2.5 py-2 relative z-10">
         <h4 className="text-[9px] font-bold truncate tracking-wider uppercase" style={{ color: isExotic ? '#E5C76B' : 'white' }}>
