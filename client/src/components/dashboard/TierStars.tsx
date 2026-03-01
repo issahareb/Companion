@@ -12,10 +12,10 @@ const GOLD = '#E5C76B';
 
 export function TierStars({ rarity, size = 'sm' }: { rarity: string; size?: 'xs' | 'sm' }) {
   const count = TIER_MAP[rarity] || 1;
-  const starSize = size === 'xs' ? 'w-[7px] h-[7px]' : 'w-[9px] h-[9px]';
+  const starSize = size === 'xs' ? 'w-[6px] h-[6px]' : 'w-[8px] h-[8px]';
 
   return (
-    <div className="flex items-center gap-[1px]" title={`Tier ${count}`}>
+    <div className="flex flex-col items-center gap-0" title={`Tier ${count}`}>
       {Array.from({ length: count }).map((_, i) => (
         <Star
           key={i}
@@ -23,7 +23,10 @@ export function TierStars({ rarity, size = 'sm' }: { rarity: string; size?: 'xs'
           fill={GOLD}
           stroke="#000"
           strokeWidth={1}
-          style={{ filter: `drop-shadow(0 0 2px ${GOLD})` }}
+          style={{
+            filter: `drop-shadow(0 0 2px ${GOLD})`,
+            marginTop: i > 0 ? '-2px' : '0',
+          }}
         />
       ))}
     </div>
