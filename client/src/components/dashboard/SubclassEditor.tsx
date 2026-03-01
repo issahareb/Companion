@@ -1,12 +1,14 @@
 import { useState } from 'react';
-import { ChevronDown, ChevronUp } from 'lucide-react';
+import { ChevronDown, ChevronUp, Plus } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { CharacterData, SocketInfo } from '@/hooks/use-profile-state';
+import type { Item } from '@/components/Inventory';
 import { useInsertPlug } from '@/hooks/use-transfer';
 import { useToast } from '@/hooks/use-toast';
 import { useI18n } from '@/lib/i18n';
+import { toItem } from './shared';
 
-export function SubclassEditor({ character, membershipType }: { character: CharacterData; membershipType: number }) {
+export function SubclassEditor({ character, membershipType, addToLoadout }: { character: CharacterData; membershipType: number; addToLoadout?: (item: Item) => void }) {
   const { t } = useI18n();
   const { toast } = useToast();
   const insertPlug = useInsertPlug();
@@ -51,10 +53,19 @@ export function SubclassEditor({ character, membershipType }: { character: Chara
         <div className="w-12 h-12 shrink-0 overflow-hidden ring-1 ring-purple-500/30">
           <img src={subclass.icon} alt={subclass.name} className="w-full h-full object-cover" />
         </div>
-        <div>
+        <div className="flex-1 min-w-0">
           <p className="text-[11px] font-bold tracking-wider uppercase text-purple-300">{subclass.name}</p>
           <p className="text-[8px] text-gray-500 uppercase tracking-wider">{subclass.type}</p>
         </div>
+        {addToLoadout && (
+          <button
+            onClick={() => addToLoadout(toItem(subclass))}
+            className="shrink-0 flex items-center gap-1 px-2 py-1.5 text-[8px] uppercase tracking-widest text-purple-400 hover:text-white bg-purple-500/10 hover:bg-purple-500/25 border border-purple-500/20 rounded transition-all"
+            data-testid="button-add-subclass-loadout"
+          >
+            <Plus className="w-3 h-3" /> {t('action.toLoadout')}
+          </button>
+        )}
       </div>
 
       {SOCKET_CATEGORIES.map((cat) => {

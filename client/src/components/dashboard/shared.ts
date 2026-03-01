@@ -15,7 +15,7 @@ export interface FilterState {
 }
 
 export function toItem(inv: InventoryItem): Item {
-  return {
+  const item: Item = {
     id: inv.id,
     itemHash: inv.itemHash,
     name: inv.name,
@@ -26,6 +26,48 @@ export function toItem(inv: InventoryItem): Item {
     power: inv.power,
     icon: inv.icon,
   };
+
+  if (inv.perks && inv.perks.length > 0) {
+    item.perks = inv.perks.filter(p => p.name).map(p => ({
+      perkHash: p.perkHash,
+      name: p.name,
+      icon: p.icon,
+      isActive: p.isActive,
+    }));
+  }
+
+  if (inv.mods && inv.mods.length > 0) {
+    item.mods = inv.mods.filter(m => m.name).map(m => ({
+      plugHash: m.plugHash,
+      name: m.name,
+      icon: m.icon,
+    }));
+  }
+
+  if (inv.stats && inv.stats.length > 0) {
+    item.stats = inv.stats.map(s => ({
+      statHash: s.statHash,
+      name: s.name,
+      value: s.value,
+    }));
+  }
+
+  if (inv.sockets && inv.sockets.length > 0 && inv.slot === 'subclass') {
+    const SOCKET_CATS: Record<number, string> = {
+      0: 'super', 1: 'classAbility', 2: 'movement', 3: 'melee', 4: 'grenade',
+      5: 'aspect', 6: 'aspect', 7: 'fragment', 8: 'fragment', 9: 'fragment', 10: 'fragment', 11: 'fragment',
+    };
+    item.sockets = inv.sockets.filter(s => s.name).map(s => ({
+      socketIndex: s.socketIndex,
+      plugHash: s.plugHash,
+      name: s.name,
+      icon: s.icon,
+      description: s.description,
+      category: SOCKET_CATS[s.socketIndex] || 'other',
+    }));
+  }
+
+  return item;
 }
 
 export function useItemFilter(items: InventoryItem[], filters: FilterState): InventoryItem[] {

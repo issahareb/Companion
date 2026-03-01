@@ -19,6 +19,7 @@ The project is organized as a monorepo with `client/` (React frontend), `server/
     -   **Animations**: Cinematic animation system using Framer Motion + CSS, Apple ease curve, spring physics. Includes reveal, lift, scale, 3D card effects, and various hover interactions. Supports `prefers-reduced-motion` for accessibility.
     -   **Layout**: Consolidated header, tab-style character selector, responsive design with hamburger menu and desktop sidebar.
 -   **Core Pages**: Home/Login, Dashboard (characters, vault, loadouts, postmaster, collections, triumphs, season progression, AI analysis), and a loadout sharing page with smart matching capabilities.
+-   **Loadout Builder**: Items added to loadouts automatically include perks, mods, and stats. Subclass can be added with full socket configuration (super, abilities, aspects, fragments). EquippedSlot in the loadout sidebar shows expandable perk/mod/socket details.
 
 ### Backend
 -   **Framework**: Express 5 on Node.js.

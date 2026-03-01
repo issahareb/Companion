@@ -310,6 +310,7 @@ export function CharacterPanel({
               <SubclassEditor
                 character={selectedCharacter}
                 membershipType={membershipType}
+                addToLoadout={(item) => addToLoadout(item)}
               />
             </ScrollRevealSection>
 
