@@ -772,6 +772,12 @@ export default function Dashboard() {
       </AnimatePresence>
 
       <SaveLoadoutModal isOpen={isSaveModalOpen} onClose={() => setIsSaveModalOpen(false)} onSave={handleSaveLoadout} />
+
+      <footer className="w-full py-4 mt-8 border-t border-white/[0.04]">
+        <p className="text-[9px] text-white/20 text-center tracking-[0.2em] uppercase px-4">
+          {t('login.disclaimer')}
+        </p>
+      </footer>
     </div>
   );
 }
