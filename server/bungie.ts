@@ -839,12 +839,19 @@ export async function fetchProfileState(
   membershipId: string,
   accessToken: string
 ): Promise<ProfileState> {
-  const [manifestData, profileData] = await Promise.all([
+  const [manifestData, profileData, loadoutData] = await Promise.all([
     fetchManifest(),
     bungieGet(
       `/Platform/Destiny2/${membershipType}/Profile/${membershipId}/?components=100,102,103,104,200,201,202,205,300,302,304,305,800,900,4000`,
       accessToken
     ),
+    bungieGet(
+      `/Platform/Destiny2/${membershipType}/Profile/${membershipId}/?components=1200`,
+      accessToken
+    ).catch(err => {
+      console.warn(`[bungie] loadout profile call failed: ${err.message}`);
+      return null;
+    }),
   ]);
 
   const manifest = manifestData.items;
@@ -853,53 +860,27 @@ export async function fetchProfileState(
     throw new Error('No profile data returned from Bungie');
   }
 
-  const characterIds = Object.keys(response.characters?.data || {});
-  console.log(`[bungie] fetching loadouts for ${characterIds.length} characters via GetCharacter`);
-
-  const perCharLoadouts: Record<string, any> = {};
-  if (characterIds.length > 0) {
-    const loadoutResults = await Promise.all(
-      characterIds.map(charId =>
-        bungieGet(
-          `/Platform/Destiny2/${membershipType}/Profile/${membershipId}/Character/${charId}/?components=1200`,
-          accessToken
-        ).then(data => ({ charId, data }))
-         .catch(err => {
-           console.warn(`[bungie] loadout fetch for char ${charId} failed: ${err.message}`);
-           return { charId, data: null };
-         })
-      )
-    );
-
-    for (const { charId, data } of loadoutResults) {
-      if (!data?.Response) continue;
-      const charResp = data.Response;
-      const respKeys = Object.keys(charResp).join(',');
-      console.log(`[bungie] char ${charId} loadout keys: ${respKeys}`);
-      if (charResp.loadouts?.data?.loadouts) {
-        perCharLoadouts[charId] = { loadouts: charResp.loadouts.data.loadouts };
-        console.log(`[bungie] char ${charId}: found ${charResp.loadouts.data.loadouts.length} loadouts`);
-      } else if (charResp.characterLoadouts?.data) {
-        const charLoadoutData = charResp.characterLoadouts.data;
-        if (charLoadoutData.loadouts) {
-          perCharLoadouts[charId] = { loadouts: charLoadoutData.loadouts };
-          console.log(`[bungie] char ${charId}: found ${charLoadoutData.loadouts.length} loadouts via characterLoadouts`);
-        }
-      } else {
-        for (const key of Object.keys(charResp)) {
-          const val = charResp[key];
-          const subKeys = val && typeof val === 'object' ? Object.keys(val).join(',') : typeof val;
-          console.log(`[bungie] char ${charId} response key "${key}": ${subKeys}`);
-        }
+  if (loadoutData?.Response) {
+    const loadoutResp = loadoutData.Response;
+    const loadoutKeys = Object.keys(loadoutResp);
+    console.log(`[bungie] loadout GetProfile response keys: ${loadoutKeys.join(', ')}`);
+    if (loadoutResp.characterLoadouts) {
+      response.characterLoadouts = loadoutResp.characterLoadouts;
+      const charIds = Object.keys(loadoutResp.characterLoadouts.data || {});
+      for (const cid of charIds) {
+        const cData = loadoutResp.characterLoadouts.data[cid];
+        const count = Array.isArray(cData) ? cData.length : (cData?.loadouts?.length || 'unknown');
+        console.log(`[bungie] char ${cid}: ${count} loadouts found`);
+      }
+    } else {
+      for (const key of loadoutKeys) {
+        const val = loadoutResp[key];
+        const info = val && typeof val === 'object' ? JSON.stringify(val).substring(0, 200) : typeof val;
+        console.log(`[bungie] loadout resp key "${key}": ${info}`);
       }
     }
-  }
-
-  if (Object.keys(perCharLoadouts).length > 0) {
-    response.characterLoadouts = { data: perCharLoadouts };
-    console.log(`[bungie] merged per-char loadouts for ${Object.keys(perCharLoadouts).length} characters`);
   } else {
-    console.log(`[bungie] no loadouts found via per-character calls`);
+    console.log(`[bungie] loadout GetProfile returned no Response`);
   }
 
   const instanceDetails = response.itemComponents?.instances?.data || {};
@@ -1194,7 +1175,8 @@ export async function fetchProfileState(
   console.log(`[bd] characterLoadouts present: ${!!response.characterLoadouts}, chars: ${Object.keys(characterLoadouts).length}, instanceMap size: ${Object.keys(instanceToHash).length}`);
   for (const [charId, loadoutData] of Object.entries(characterLoadouts) as [string, any][]) {
     const charLoadouts: InGameLoadout[] = [];
-    const loadouts = loadoutData.loadouts || [];
+    const loadouts = Array.isArray(loadoutData) ? loadoutData
+      : (loadoutData.loadouts || []);
     for (let idx = 0; idx < loadouts.length; idx++) {
       const lo = loadouts[idx];
       const nameDef = manifestData.loadoutNames[String(lo.nameHash)];
