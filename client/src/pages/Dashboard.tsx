@@ -177,7 +177,7 @@ export default function Dashboard() {
     try {
       await pullPostmasterMutation.mutateAsync({
         itemReferenceHash: item.itemHash,
-        itemId: item.id,
+        itemId: item.isInstanced ? item.id : "0",
         characterId: item.characterId,
         membershipType: destinyProfile.membershipType,
       });
@@ -777,6 +777,11 @@ export default function Dashboard() {
         <p className="text-[9px] text-white/20 text-center tracking-[0.2em] uppercase px-4">
           {t('login.disclaimer')}
         </p>
+        <div className="flex items-center justify-center gap-3 mt-2">
+          <a href="/imprint" className="text-[8px] tracking-[0.2em] uppercase text-gray-600 hover:text-gray-400 transition-colors" data-testid="link-dashboard-imprint">{t('footer.imprint')}</a>
+          <span className="text-gray-700 text-[7px]">|</span>
+          <a href="/privacy" className="text-[8px] tracking-[0.2em] uppercase text-gray-600 hover:text-gray-400 transition-colors" data-testid="link-dashboard-privacy">{t('footer.privacy')}</a>
+        </div>
       </footer>
     </div>
   );

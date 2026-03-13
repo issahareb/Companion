@@ -11,6 +11,7 @@ import Home from "@/pages/Home";
 import Dashboard from "@/pages/Dashboard";
 import SharePage from "@/pages/SharePage";
 import DemoDashboard from "@/pages/Demo";
+import { ImprintPage, PrivacyPage } from "@/pages/Legal";
 
 function Router() {
   return (
@@ -19,6 +20,8 @@ function Router() {
       <Route path="/dashboard" component={Dashboard} />
       <Route path="/share/:shareCode" component={SharePage} />
       <Route path="/demo" component={DemoDashboard} />
+      <Route path="/imprint" component={ImprintPage} />
+      <Route path="/privacy" component={PrivacyPage} />
       <Route component={NotFound} />
     </Switch>
   );

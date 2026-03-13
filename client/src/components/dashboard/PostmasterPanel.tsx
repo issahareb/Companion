@@ -99,7 +99,7 @@ function PostmasterCharSection({ char, charPostItems, handlePullPostmaster, isPu
                     <motion.button
                       onClick={() => handlePullPostmaster(item)}
                       disabled={isPullPending}
-                      className="flex items-center gap-1 px-2 py-1 text-[7px] uppercase tracking-widest text-amber-400 hover:text-white bg-amber-500/10 hover:bg-amber-500/30 border border-amber-500/20 rounded transition-all opacity-0 group-hover:opacity-100"
+                      className="flex items-center gap-1 px-2 py-1 text-[7px] uppercase tracking-widest text-amber-400 hover:text-white bg-amber-500/10 hover:bg-amber-500/30 border border-amber-500/20 rounded transition-all sm:opacity-0 sm:group-hover:opacity-100"
                       whileTap={{ scale: 0.92 }}
                       data-testid={`button-pull-${item.id}`}
                     >

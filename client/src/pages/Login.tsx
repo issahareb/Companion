@@ -5,6 +5,7 @@ import ghostImg from '@assets/IMG_0547_1772026484289.gif';
 import bgImg from '@assets/IMG_0553_1772027873435.jpeg';
 import logoImg from '@assets/IMG_0604_1772050774054.png';
 import { useI18n, LANGUAGES } from '@/lib/i18n';
+import { LegalFooter } from '@/pages/Legal';
 
 interface TurnstileConfig {
   enabled: boolean;
@@ -102,7 +103,7 @@ export default function Login({ onLogin, isAuthenticating, error }: LoginProps) 
   const currentLang = LANGUAGES.find(l => l.id === language)!;
 
   return (
-    <div ref={containerRef} className="min-h-screen text-gray-200 flex flex-col items-center justify-center p-6 relative overflow-hidden pt-0" style={{ justifyContent: 'start', paddingTop: '10vh' }}>
+    <div ref={containerRef} className="h-[100dvh] text-gray-200 flex flex-col items-center justify-center p-6 relative overflow-hidden pt-0" style={{ justifyContent: 'start', paddingTop: '10vh', overscrollBehavior: 'none' }}>
       <motion.img
         src={bgImg}
         alt=""
@@ -314,10 +315,19 @@ export default function Login({ onLogin, isAuthenticating, error }: LoginProps) 
           initial={{ opacity: 0 }}
           animate={{ opacity: 0.4 }}
           transition={{ delay: 1.3, duration: 1.2 }}
-          className="text-[10px] tracking-[0.2em] text-white/40 mt-6 mb-8"
+          className="text-[10px] tracking-[0.2em] text-white/40 mt-6"
         >
           {t('login.disclaimer')}
         </motion.p>
+
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1.5, duration: 1 }}
+          className="w-full z-10"
+        >
+          <LegalFooter />
+        </motion.div>
       </div>
     </div>
   );

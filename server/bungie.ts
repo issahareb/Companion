@@ -588,6 +588,7 @@ export interface InventoryItem {
   characterId?: string;
   description?: string;
   classType?: number;
+  isInstanced?: boolean;
   stats?: ItemStatValue[];
   perks?: PerkInfo[];
   mods?: ModInfo[];
@@ -745,6 +746,8 @@ function parseGearItem(
     }
   }
 
+  const hasInstance = !!item.itemInstanceId;
+
   return {
     id: instanceId,
     itemHash: item.itemHash,
@@ -758,6 +761,7 @@ function parseGearItem(
     location,
     characterId,
     classType: manifestItem.classType,
+    isInstanced: hasInstance,
     stats: stats.length > 0 ? stats : undefined,
   };
 }
