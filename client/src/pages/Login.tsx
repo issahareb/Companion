@@ -90,6 +90,58 @@ export default function Login({ onLogin, isAuthenticating, error }: LoginProps) 
   const bgYSmooth = useSpring(bgY, { damping: 30, stiffness: 100 });
   const bgScaleSmooth = useSpring(bgScale, { damping: 30, stiffness: 100 });
 
+  const [overscrollBlur, setOverscrollBlur] = useState(0);
+  const [overscrollScale, setOverscrollScale] = useState(1);
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    let ticking = false;
+    const onScroll = () => {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(() => {
+        const scrollTop = window.scrollY || document.documentElement.scrollTop;
+        const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+        let over = 0;
+        if (scrollTop < 0) over = Math.abs(scrollTop);
+        else if (scrollTop > maxScroll && maxScroll > 0) over = scrollTop - maxScroll;
+        const pct = Math.min(over / 120, 1);
+        setOverscrollBlur(pct * 16);
+        setOverscrollScale(1 + pct * 0.08);
+        ticking = false;
+      });
+    };
+    let startY = 0;
+    const onTouchStart = (e: TouchEvent) => { startY = e.touches[0].clientY; };
+    const onTouchMove = (e: TouchEvent) => {
+      const currentY = e.touches[0].clientY;
+      const scrollTop = window.scrollY || document.documentElement.scrollTop;
+      const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+      const dy = currentY - startY;
+      let over = 0;
+      if (scrollTop <= 0 && dy > 0) over = Math.min(dy, 150);
+      else if (scrollTop >= maxScroll && dy < 0) over = Math.min(Math.abs(dy), 150);
+      const pct = Math.min(over / 120, 1);
+      setOverscrollBlur(pct * 16);
+      setOverscrollScale(1 + pct * 0.08);
+    };
+    const onTouchEnd = () => {
+      setOverscrollBlur(0);
+      setOverscrollScale(1);
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('touchstart', onTouchStart, { passive: true });
+    window.addEventListener('touchmove', onTouchMove, { passive: true });
+    window.addEventListener('touchend', onTouchEnd, { passive: true });
+    return () => {
+      window.removeEventListener('scroll', onScroll);
+      window.removeEventListener('touchstart', onTouchStart);
+      window.removeEventListener('touchmove', onTouchMove);
+      window.removeEventListener('touchend', onTouchEnd);
+    };
+  }, []);
+
   useEffect(() => {
     function handleClick(e: MouseEvent) {
       if (langRef.current && !langRef.current.contains(e.target as Node)) {
@@ -103,23 +155,31 @@ export default function Login({ onLogin, isAuthenticating, error }: LoginProps) 
   const currentLang = LANGUAGES.find(l => l.id === language)!;
 
   return (
-    <div ref={containerRef} className="h-[100dvh] text-gray-200 flex flex-col items-center justify-center p-6 relative overflow-hidden pt-0" style={{ justifyContent: 'start', paddingTop: '10vh', overscrollBehavior: 'none' }}>
-      <motion.img
-        src={bgImg}
-        alt=""
-        className="absolute inset-0 w-full h-full object-cover z-0"
-        style={{ y: bgYSmooth, scale: bgScaleSmooth }}
-        initial={{ scale: 1.15, opacity: 0 }}
-        animate={{ scale: 1.1, opacity: 1 }}
-        transition={{ duration: 1.8, ease: appleEase }}
-      />
+    <div ref={containerRef} className="min-h-screen text-gray-200 flex flex-col items-center justify-center p-6 relative pt-0" style={{ justifyContent: 'start', paddingTop: '10vh' }}>
+      <div
+        className="fixed inset-[-60px] z-0 transition-[filter,transform] duration-300 ease-out"
+        style={{
+          filter: overscrollBlur > 0 ? `blur(${overscrollBlur}px)` : 'none',
+          transform: overscrollScale > 1 ? `scale(${overscrollScale})` : 'none',
+        }}
+      >
+        <motion.img
+          src={bgImg}
+          alt=""
+          className="w-full h-full object-cover"
+          style={{ y: bgYSmooth, scale: bgScaleSmooth }}
+          initial={{ scale: 1.15, opacity: 0 }}
+          animate={{ scale: 1.1, opacity: 1 }}
+          transition={{ duration: 1.8, ease: appleEase }}
+        />
+      </div>
       <motion.div
-        className="absolute inset-0 bg-black/50 z-0"
+        className="fixed inset-[-60px] bg-black/50 z-0"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 1.2 }}
       />
-      <div className="absolute inset-0 bg-gradient-to-t from-[#080b14] via-transparent to-[#080b14]/80 z-0" />
+      <div className="fixed inset-[-60px] bg-gradient-to-t from-[#080b14] via-transparent to-[#080b14]/80 z-0" />
 
       <motion.div
         className="absolute top-4 right-4 z-20"
