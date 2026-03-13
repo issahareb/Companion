@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
+import { Link } from 'wouter';
 import { 
   Hexagon, Loader2, AlertTriangle, RefreshCw,
   Users, X, Package, Mail,
@@ -778,9 +779,9 @@ export default function Dashboard() {
           {t('login.disclaimer')}
         </p>
         <div className="flex items-center justify-center gap-3 mt-2">
-          <a href="/imprint" className="text-[8px] tracking-[0.2em] uppercase text-gray-600 hover:text-gray-400 transition-colors" data-testid="link-dashboard-imprint">{t('footer.imprint')}</a>
+          <Link href="/imprint"><span className="text-[8px] tracking-[0.2em] uppercase text-gray-600 hover:text-gray-400 transition-colors cursor-pointer" data-testid="link-dashboard-imprint">{t('footer.imprint')}</span></Link>
           <span className="text-gray-700 text-[7px]">|</span>
-          <a href="/privacy" className="text-[8px] tracking-[0.2em] uppercase text-gray-600 hover:text-gray-400 transition-colors" data-testid="link-dashboard-privacy">{t('footer.privacy')}</a>
+          <Link href="/privacy"><span className="text-[8px] tracking-[0.2em] uppercase text-gray-600 hover:text-gray-400 transition-colors cursor-pointer" data-testid="link-dashboard-privacy">{t('footer.privacy')}</span></Link>
         </div>
       </footer>
     </div>
