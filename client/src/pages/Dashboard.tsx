@@ -774,16 +774,13 @@ export default function Dashboard() {
 
       <SaveLoadoutModal isOpen={isSaveModalOpen} onClose={() => setIsSaveModalOpen(false)} onSave={handleSaveLoadout} />
 
-      <footer className="w-full py-4 mt-8 border-t border-white/[0.04]">
-        <p className="text-[9px] text-white/20 text-center tracking-[0.2em] uppercase px-4">
-          {t('login.disclaimer')}
-        </p>
-        <div className="flex items-center justify-center gap-3 mt-2">
+      <div className="fixed bottom-0 left-0 right-0 z-50 bg-[#080b14]/90 backdrop-blur-sm border-t border-white/[0.04] py-2 px-4">
+        <div className="flex items-center justify-center gap-3">
           <Link href="/imprint"><span className="text-[8px] tracking-[0.2em] uppercase text-gray-600 hover:text-gray-400 transition-colors cursor-pointer" data-testid="link-dashboard-imprint">{t('footer.imprint')}</span></Link>
           <span className="text-gray-700 text-[7px]">|</span>
           <Link href="/privacy"><span className="text-[8px] tracking-[0.2em] uppercase text-gray-600 hover:text-gray-400 transition-colors cursor-pointer" data-testid="link-dashboard-privacy">{t('footer.privacy')}</span></Link>
         </div>
-      </footer>
+      </div>
     </div>
   );
 }

@@ -846,7 +846,7 @@ export async function fetchProfileState(
   const [manifestData, profileData] = await Promise.all([
     fetchManifest(),
     bungieGet(
-      `/Platform/Destiny2/${membershipType}/Profile/${membershipId}/?components=100,102,103,104,200,201,202,205,206,300,302,304,305,800,900,4000`,
+      `/Platform/Destiny2/${membershipType}/Profile/${membershipId}/?components=100,102,103,104,200,201,202,205,206,300,302,304,305,800,900,1200,4000`,
       accessToken
     ),
   ]);
@@ -857,6 +857,24 @@ export async function fetchProfileState(
     throw new Error('No profile data returned from Bungie');
   }
 
+  if (!response.characterLoadouts?.data) {
+    console.log(`[bungie] characterLoadouts missing from main call, trying separate 1200 request...`);
+    try {
+      const loadoutData = await bungieGet(
+        `/Platform/Destiny2/${membershipType}/Profile/${membershipId}/?components=1200`,
+        accessToken
+      );
+      if (loadoutData.Response?.characterLoadouts?.data) {
+        response.characterLoadouts = loadoutData.Response.characterLoadouts;
+        console.log(`[bungie] separate 1200 call succeeded, got characterLoadouts`);
+      } else {
+        console.log(`[bungie] separate 1200 call response keys: ${Object.keys(loadoutData.Response || {}).join(', ')}`);
+      }
+    } catch (err: any) {
+      console.log(`[bungie] separate 1200 call failed: ${err.message}`);
+    }
+  }
+
   if (response.characterLoadouts?.data) {
     const charIds = Object.keys(response.characterLoadouts.data);
     for (const cid of charIds) {
@@ -865,7 +883,7 @@ export async function fetchProfileState(
       console.log(`[bungie] char ${cid}: ${count} loadouts found`);
     }
   } else {
-    console.log(`[bungie] characterLoadouts not in response, keys: ${Object.keys(response).join(', ')}`);
+    console.log(`[bungie] characterLoadouts still not available after fallback, response keys: ${Object.keys(response).join(', ')}`);
   }
 
   const instanceDetails = response.itemComponents?.instances?.data || {};
