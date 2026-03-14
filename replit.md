@@ -35,9 +35,10 @@ The project is organized as a monorepo with `client/` (React frontend), `server/
 -   **Shared Layer**: `shared/` directory contains `schema.ts` (Drizzle ORM/Zod schemas) and `routes.ts` (type-safe API route definitions with Zod validation).
 
 ### Security & Robustness
--   **Security**: Helmet for security headers, `express-rate-limit` for API rate limiting, CORS configured, bot protection, request size limits, and Cloudflare integration readiness.
--   **Error Handling**: React Error Boundary, `useOnlineStatus` hook for offline support, React Query retry logic, mutation locking to prevent concurrent Bungie mutations, and AbortController for fetch cleanup.
--   **Internationalization**: Supports German, English, and French.
+-   **Security**: Helmet for security headers, `express-rate-limit` for API rate limiting, CORS configured, bot protection, request size limits, Cloudflare integration readiness. SESSION_SECRET is required in production (no fallback). Duplicate `/api/bungie/token` endpoint removed.
+-   **Error Handling**: React Error Boundary, `useOnlineStatus` hook for offline support (disables action buttons when offline), React Query retry logic (rate-limit-aware — skips retries on 429), mutation locking to prevent concurrent Bungie mutations, and AbortController for fetch cleanup. AI error handling uses `handleAiError` helper with robust status extraction.
+-   **Internationalization**: Supports German, English, and French. Language preference stored under `guardiangrid_language` localStorage key (migrated from legacy `forge_language`).
+-   **Code Splitting**: Secondary Dashboard tabs (Collections, Triumphs, Season, AI panels, News) are lazy-loaded with `React.lazy()` and `Suspense` to reduce initial bundle size.
 
 ## External Dependencies
 

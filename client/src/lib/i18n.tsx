@@ -891,13 +891,17 @@ const I18nContext = createContext<I18nContextType | null>(null);
 
 export function I18nProvider({ children }: { children: ReactNode }) {
   const [language, setLanguageState] = useState<Language>(() => {
-    const saved = localStorage.getItem('forge_language');
+    const saved = localStorage.getItem('guardiangrid_language') || localStorage.getItem('forge_language');
+    if (saved && !localStorage.getItem('guardiangrid_language')) {
+      localStorage.setItem('guardiangrid_language', saved);
+      localStorage.removeItem('forge_language');
+    }
     return (saved as Language) || 'de';
   });
 
   const setLanguage = useCallback((lang: Language) => {
     setLanguageState(lang);
-    localStorage.setItem('forge_language', lang);
+    localStorage.setItem('guardiangrid_language', lang);
   }, []);
 
   const t = useCallback((key: string): string => {

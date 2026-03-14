@@ -72,8 +72,11 @@ app.use(cors({
   maxAge: 86400,
 }));
 
-const sessionSecret = process.env.SESSION_SECRET || 'dev-secret-change-me';
-app.use(cookieParser(sessionSecret));
+const sessionSecret = process.env.SESSION_SECRET;
+if (!sessionSecret && process.env.NODE_ENV === 'production') {
+  throw new Error('SESSION_SECRET environment variable is required in production');
+}
+app.use(cookieParser(sessionSecret || 'dev-secret-change-me'));
 
 function getClientIp(req: express.Request): string {
   return (req.headers['cf-connecting-ip'] as string) || req.ip || 'unknown';
@@ -120,7 +123,7 @@ const aiLimiter = rateLimit({
   keyGenerator: (req) => getClientIp(req),
 });
 
-app.use('/api/bungie/token', authLimiter);
+app.use('/api/auth/login', authLimiter);
 app.use('/api/bungie/transfer', writeLimiter);
 app.use('/api/bungie/equip', writeLimiter);
 app.use('/api/bungie/equip-items', writeLimiter);

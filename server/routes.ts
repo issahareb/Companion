@@ -70,6 +70,15 @@ function handleBungieError(err: any, res: any, defaultMessage: string) {
   res.status(502).json({ message: err.message || defaultMessage });
 }
 
+function handleAiError(err: any, res: any, label: string) {
+  console.error(`[ai] ${label} failed:`, err.message);
+  const status = err?.status ?? err?.response?.status ?? err?.statusCode;
+  if (status === 429 || err?.code === 'rate_limit_exceeded' || err?.type === 'rate_limit_error') {
+    return res.status(429).json({ message: 'AI rate limit exceeded. Please try again later.' });
+  }
+  res.status(500).json({ message: 'AI analysis failed. Please try again.' });
+}
+
 async function verifyTurnstileToken(token: string): Promise<boolean> {
   const secret = process.env.TURNSTILE_SECRET_KEY;
   if (!secret) return true;
@@ -282,28 +291,6 @@ export async function registerRoutes(
     }
   });
 
-  app.post('/api/bungie/token', async (req, res) => {
-    try {
-      const { code, turnstileToken } = req.body;
-      if (!code) {
-        return res.status(400).json({ message: 'Authorization code required' });
-      }
-      if (process.env.TURNSTILE_SECRET_KEY) {
-        if (!turnstileToken) {
-          return res.status(403).json({ message: 'CAPTCHA verification required' });
-        }
-        const valid = await verifyTurnstileToken(turnstileToken);
-        if (!valid) {
-          return res.status(403).json({ message: 'CAPTCHA verification failed' });
-        }
-      }
-      const tokenData = await exchangeToken(code);
-      res.json(tokenData);
-    } catch (err: any) {
-      handleBungieError(err, res, 'Failed to exchange token');
-    }
-  });
-
   app.get('/api/bungie/membership', requireAuth, async (req, res) => {
     try {
       const membership = await fetchMemberships(req.sessionAccessToken!);
@@ -393,6 +380,17 @@ export async function registerRoutes(
       invalidateProfileCaches(req.body.membershipType);
       res.json(result);
     } catch (err: any) {
+      if (err instanceof BungieApiError && err.errorCode) {
+        const plugErrors: Record<number, string> = {
+          1671: 'This mod requires materials you do not have.',
+          1672: 'This plug socket is not available for free insertion.',
+          1076: 'The item cannot accept this mod in its current state.',
+        };
+        const specificMsg = plugErrors[err.errorCode];
+        if (specificMsg) {
+          return res.status(400).json({ message: specificMsg, errorType: err.errorType, errorCode: err.errorCode });
+        }
+      }
       handleBungieError(err, res, 'Insert plug failed');
     }
   });
@@ -509,11 +507,7 @@ export async function registerRoutes(
       const result = await analyzePlaystyle(parseResult.data, lang);
       res.json(result);
     } catch (err: any) {
-      console.error('[ai] Playstyle analysis failed:', err.message);
-      if (err.status === 429 || err.code === 'rate_limit_exceeded') {
-        return res.status(429).json({ message: 'AI rate limit exceeded. Please try again later.' });
-      }
-      res.status(500).json({ message: 'AI analysis failed. Please try again.' });
+      handleAiError(err, res, 'Playstyle analysis');
     }
   });
 
@@ -531,11 +525,7 @@ export async function registerRoutes(
       const result = await generateBuildRecommendation(parseResult.data, lang);
       res.json(result);
     } catch (err: any) {
-      console.error('[ai] Build recommendation failed:', err.message);
-      if (err.status === 429 || err.code === 'rate_limit_exceeded') {
-        return res.status(429).json({ message: 'AI rate limit exceeded. Please try again later.' });
-      }
-      res.status(500).json({ message: 'AI analysis failed. Please try again.' });
+      handleAiError(err, res, 'Build recommendation');
     }
   });
 
@@ -553,11 +543,7 @@ export async function registerRoutes(
       const result = await evaluateWeaponRoll(parseResult.data, lang);
       res.json(result);
     } catch (err: any) {
-      console.error('[ai] Weapon roll evaluation failed:', err.message);
-      if (err.status === 429 || err.code === 'rate_limit_exceeded') {
-        return res.status(429).json({ message: 'AI rate limit exceeded. Please try again later.' });
-      }
-      res.status(500).json({ message: 'AI analysis failed. Please try again.' });
+      handleAiError(err, res, 'Weapon roll evaluation');
     }
   });
 
@@ -575,11 +561,7 @@ export async function registerRoutes(
       const result = await suggestTriumphPath(parseResult.data, lang);
       res.json(result);
     } catch (err: any) {
-      console.error('[ai] Triumph advisor failed:', err.message);
-      if (err.status === 429 || err.code === 'rate_limit_exceeded') {
-        return res.status(429).json({ message: 'AI rate limit exceeded. Please try again later.' });
-      }
-      res.status(500).json({ message: 'AI analysis failed. Please try again.' });
+      handleAiError(err, res, 'Triumph advisor');
     }
   });
 
@@ -597,11 +579,7 @@ export async function registerRoutes(
       const result = await analyzeSynergies(parseResult.data, lang);
       res.json(result);
     } catch (err: any) {
-      console.error('[ai] Synergy analysis failed:', err.message);
-      if (err.status === 429 || err.code === 'rate_limit_exceeded') {
-        return res.status(429).json({ message: 'AI rate limit exceeded. Please try again later.' });
-      }
-      res.status(500).json({ message: 'AI analysis failed. Please try again.' });
+      handleAiError(err, res, 'Synergy analysis');
     }
   });
 

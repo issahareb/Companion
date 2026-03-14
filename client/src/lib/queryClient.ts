@@ -52,8 +52,10 @@ export const getQueryFn: <T>(options: {
 
 function shouldRetry(failureCount: number, error: any): boolean {
   if (error?.status === 401 || error?.status === 403) return false;
+  if (error?.status === 429) return false;
   if (error?.errorType === 'auth') return false;
   if (error?.errorType === 'maintenance') return false;
+  if (error?.errorType === 'rate_limit') return false;
   return failureCount < 2;
 }
 

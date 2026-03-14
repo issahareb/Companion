@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback, lazy, Suspense } from 'react';
 import { Link } from 'wouter';
 import { 
   Hexagon, Loader2, AlertTriangle, RefreshCw,
@@ -34,15 +34,23 @@ import { CharacterPanel } from '@/components/dashboard/CharacterPanel';
 import { VaultPanel } from '@/components/dashboard/VaultPanel';
 import { LoadoutsPanel } from '@/components/dashboard/LoadoutsPanel';
 import { PostmasterPanel } from '@/components/dashboard/PostmasterPanel';
-import { CollectionsPanel } from '@/components/dashboard/CollectionsPanel';
-import { TriumphsPanel } from '@/components/dashboard/TriumphsPanel';
-import { SeasonPanel } from '@/components/dashboard/SeasonPanel';
-import { PlaystylePanel } from '@/components/dashboard/PlaystylePanel';
-import { BuildAdvisorPanel } from '@/components/dashboard/BuildAdvisorPanel';
-import { WeaponRollPanel } from '@/components/dashboard/WeaponRollPanel';
-import { TriumphAdvisorPanel } from '@/components/dashboard/TriumphAdvisorPanel';
-import { NewsPanel } from '@/components/dashboard/NewsPanel';
-import SynergyPanel from '@/components/dashboard/SynergyPanel';
+const CollectionsPanel = lazy(() => import('@/components/dashboard/CollectionsPanel').then(m => ({ default: m.CollectionsPanel })));
+const TriumphsPanel = lazy(() => import('@/components/dashboard/TriumphsPanel').then(m => ({ default: m.TriumphsPanel })));
+const SeasonPanel = lazy(() => import('@/components/dashboard/SeasonPanel').then(m => ({ default: m.SeasonPanel })));
+const PlaystylePanel = lazy(() => import('@/components/dashboard/PlaystylePanel').then(m => ({ default: m.PlaystylePanel })));
+const BuildAdvisorPanel = lazy(() => import('@/components/dashboard/BuildAdvisorPanel').then(m => ({ default: m.BuildAdvisorPanel })));
+const WeaponRollPanel = lazy(() => import('@/components/dashboard/WeaponRollPanel').then(m => ({ default: m.WeaponRollPanel })));
+const TriumphAdvisorPanel = lazy(() => import('@/components/dashboard/TriumphAdvisorPanel').then(m => ({ default: m.TriumphAdvisorPanel })));
+const NewsPanel = lazy(() => import('@/components/dashboard/NewsPanel').then(m => ({ default: m.NewsPanel })));
+const SynergyPanel = lazy(() => import('@/components/dashboard/SynergyPanel'));
+
+function LazyTabLoader() {
+  return (
+    <div className="flex items-center justify-center h-64">
+      <Loader2 className="w-6 h-6 text-indigo-400 animate-spin" />
+    </div>
+  );
+}
 
 export default function Dashboard() {
   const { destinyProfile, logout, isAuthenticated, isFetchingProfile } = useBungieAuth();
@@ -175,7 +183,7 @@ export default function Dashboard() {
   }, [records, triumphsSearch, triumphsFilter]);
 
   const handlePullPostmaster = async (item: InventoryItem) => {
-    if (!destinyProfile || !item.characterId || isBungieMutating) return;
+    if (!destinyProfile || !item.characterId || isBungieMutating || !isOnline) return;
     setPendingItemIds(prev => new Set(prev).add(item.id));
     try {
       await pullPostmasterMutation.mutateAsync({
@@ -229,7 +237,7 @@ export default function Dashboard() {
   };
 
   const handleTransfer = async (item: InventoryItem, toVault: boolean, characterId: string) => {
-    if (!destinyProfile || isBungieMutating) return;
+    if (!destinyProfile || isBungieMutating || !isOnline) return;
     setPendingItemIds(prev => new Set(prev).add(item.id));
     try {
       await transferMutation.mutateAsync({
@@ -248,7 +256,7 @@ export default function Dashboard() {
   };
 
   const handleEquip = async (item: InventoryItem, characterId: string) => {
-    if (isBungieMutating) return;
+    if (isBungieMutating || !isOnline) return;
     if (!destinyProfile) return;
     setPendingItemIds(prev => new Set(prev).add(item.id));
     try {
@@ -622,6 +630,7 @@ export default function Dashboard() {
               )}
 
               {activeTab === 'collections' && (
+                <Suspense fallback={<LazyTabLoader />}>
                 <CollectionsPanel
                   tabDirection={tabDirection}
                   collectionsSearch={collectionsSearch}
@@ -630,9 +639,11 @@ export default function Dashboard() {
                   setCollectionsFilter={setCollectionsFilter}
                   filteredCollectibles={filteredCollectibles}
                 />
+                </Suspense>
               )}
 
               {activeTab === 'triumphs' && (
+                <Suspense fallback={<LazyTabLoader />}>
                 <TriumphsPanel
                   tabDirection={tabDirection}
                   triumphsSearch={triumphsSearch}
@@ -641,13 +652,16 @@ export default function Dashboard() {
                   setTriumphsFilter={setTriumphsFilter}
                   filteredRecords={filteredRecords}
                 />
+                </Suspense>
               )}
 
               {activeTab === 'season' && (
+                <Suspense fallback={<LazyTabLoader />}>
                 <SeasonPanel
                   tabDirection={tabDirection}
                   selectedCharacter={selectedCharacter}
                 />
+                </Suspense>
               )}
 
               {activeTab === 'ai' && (
@@ -683,6 +697,7 @@ export default function Dashboard() {
                   </div>
 
                   <div className="flex-1 min-h-0 overflow-hidden">
+                  <Suspense fallback={<LazyTabLoader />}>
                   <AnimatePresence mode="wait">
                     {!selectedCharacter && aiSubTab !== 'roll' && (
                       <motion.div
@@ -740,12 +755,15 @@ export default function Dashboard() {
                       />
                     )}
                   </AnimatePresence>
+                  </Suspense>
                   </div>
                 </motion.div>
               )}
 
               {activeTab === 'news' && (
+                <Suspense fallback={<LazyTabLoader />}>
                 <NewsPanel tabDirection={tabDirection} />
+                </Suspense>
               )}
             </AnimatePresence>
           )}

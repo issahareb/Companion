@@ -39,6 +39,7 @@ interface MatchResult {
   perkMatchCount?: number;
   perkTotal?: number;
   matchScore?: number;
+  substituteReason?: string;
 }
 
 function bungieIcon(url?: string) {
@@ -213,6 +214,16 @@ export default function SharePage() {
 
       if (best) {
         const powerDiff = ARMOR_SLOTS.includes(slot.id) ? best.item.power - (wanted.power || 0) : undefined;
+        let substituteReason: string | undefined;
+        if (best.item.name === wanted.name) {
+          substituteReason = best.item.itemHash !== wanted.itemHash
+            ? `Same weapon, different variant`
+            : undefined;
+        } else if (best.item.type === wanted.type) {
+          substituteReason = `${wanted.name} not in inventory — best ${wanted.type} match`;
+        } else {
+          substituteReason = `${wanted.name} not found — closest match by slot`;
+        }
         results.push({
           slot: slot.id, wanted, matched: best.item, status: 'substitute', source: best.src, sourceCharId: best.srcCharId,
           note: `${best.item.name} (${best.item.power})`, powerDiff,
@@ -220,6 +231,7 @@ export default function SharePage() {
           perkMatchCount: best.perkMatches,
           perkTotal: best.perkTotal,
           matchScore: best.score,
+          substituteReason,
         });
       } else {
         results.push({ slot: slot.id, wanted, matched: null, status: 'missing', note: wanted.name });
@@ -446,7 +458,7 @@ export default function SharePage() {
                             </p>
                             {r.status === 'substitute' && (
                               <p className="text-[9px] text-amber-400/60">
-                                {t('share.substitute')} · {r.wanted!.name}
+                                {r.substituteReason || t('share.substitute')} · {r.wanted!.name}
                                 {r.powerDiff !== undefined && r.powerDiff !== 0 && (
                                   <span className={`ml-1 ${r.powerDiff > 0 ? 'text-green-400' : 'text-red-400'}`}>
                                     ({r.powerDiff > 0 ? '+' : ''}{r.powerDiff} PL)
