@@ -1,0 +1,21 @@
+Funktionale Verbesserungen
+1. SynergyPanel sendet falsche Daten
+Das ist ein echter Bug. In SynergyPanel.tsx werden equippedItems aus selectedCharacter.inventory gefiltert mit item.isEquipped, aber dein InventoryItem-Typ hat kein isEquipped-Feld. Die equipped Items liegen in selectedCharacter.equippedItems. Dadurch wird die Synergy-Analyse immer mit leeren Daten aufgerufen.
+2. Loadout-Endpunkte haben keine Auth-Prüfung
+In routes.ts sind die Loadout-CRUD-Endpunkte (GET /api/loadouts/:id, POST /api/loadouts, DELETE /api/loadouts/:id) nicht durch requireAuth geschützt. Jeder kann Loadouts eines anderen Users lesen oder löschen, wenn er die Bungie Membership ID oder Loadout-ID kennt.
+3. Race Condition bei Profilcache-Invalidierung
+invalidateProfileCaches() wird vor dem eigentlichen API-Call aufgerufen (z.B. bei Transfer/Equip). Wenn der Call fehlschlägt, ist der Cache trotzdem weg, und der nächste Request trifft die Bungie API unnötig. Besser wäre, den Cache erst nach erfolgreichem Response zu invalidieren.
+4. Manifest-Fetch ist nicht parallelisiert gegen Fehler
+In fetchManifest() werden 10 parallele Fetches gemacht, aber nur einige haben .catch(() => ({})). Wenn DestinyInventoryItemDefinition fehlschlägt, crasht der gesamte Server. Das ist das kritischste Definition-Set und sollte ebenfalls einen Fallback haben oder zumindest einen aussagekräftigen Fehler werfen.
+5. Memory Leak im Profilcache
+Der profileCache in routes.ts hat ein Limit von 100 Einträgen, aber das Eviction-Verfahren (ältesten Eintrag löschen) wird nur getriggert, wenn die Größe 100 übersteigt. Bei einem Server mit vielen gleichzeitigen Usern wächst der Cache auf 101, wird auf 100 reduziert, und das wiederholt sich. Das ist okay, aber es gibt keinen Mechanismus, der alte Einträge proaktiv entfernt — TTL-basierte Einträge bleiben bis zum nächsten Zugriff bestehen.
+6. useCharacters und useInventory Hooks werden nie verwendet
+use-characters.ts und use-inventory.ts referenzieren API-Endpunkte (/api/bungie/characters/..., /api/bungie/inventory/...), die gar nicht existieren. Diese Hooks sind toter Code.
+7. Demo-Seite dupliziert ~1100 Zeilen Dashboard-Logik
+Demo.tsx kopiert fast die gesamte Dashboard-Logik mit Dummy-Daten. Jede Änderung am Dashboard muss manuell in die Demo-Seite übertragen werden. Besser wäre eine gemeinsame Basis-Komponente mit einem dataProvider-Pattern.
+8. i18n-Translations sind hart-codiert in einer riesigen Datei
+i18n.tsx hat 915 Zeilen. Das wird bei weiteren Sprachen oder Features schnell unhandlich. Eine Aufteilung in separate JSON-Dateien pro Sprache und lazy-loading wäre sinnvoller.
+9. Kein Debouncing bei Vault-Suche
+Die Vault-Suche filtert bei jedem Tastendruck alle Items. Bei 500+ Vault-Items kann das auf schwächeren Geräten spürbar sein. Ein useDeferredValue oder simples Debounce würde helfen.
+10. queryClient Retry-Logik ist inkonsistent
+In queryClient.ts werden Queries maximal 2× wiederholt, aber useProfileState hat retry: failureCount < 1 (also max 1 Retry). Die globale Retry-Konfiguration wird dadurch überschrieben, was verwirrend ist.

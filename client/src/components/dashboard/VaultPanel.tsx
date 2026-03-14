@@ -1,5 +1,7 @@
+import { useRef, useCallback, useMemo } from 'react';
 import { Search, Package, Sparkles } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useVirtualizer } from '@tanstack/react-virtual';
 import type { InventoryItem, CharacterData } from '@/hooks/use-profile-state';
 import type { Item, SlotInfo } from '@/components/Inventory';
 import { EquippedSlot } from '@/components/Inventory';
@@ -10,6 +12,19 @@ import { VaultItemCard } from './VaultItemCard';
 import { toItem } from './shared';
 
 const appleEase = [0.16, 1, 0.3, 1] as const;
+
+function useColumns() {
+  const ref = useRef<HTMLDivElement>(null);
+  const getColumns = useCallback(() => {
+    if (!ref.current) return 4;
+    const w = ref.current.clientWidth;
+    if (w >= 1536) return 7;
+    if (w >= 1280) return 5;
+    if (w >= 640) return 4;
+    return 3;
+  }, []);
+  return { ref, getColumns };
+}
 
 interface VaultPanelProps {
   tabDirection: number;
@@ -26,14 +41,27 @@ interface VaultPanelProps {
   ITEM_SLOTS: SlotInfo[];
   SLOT_FILTERS: { id: string; label: string }[];
   RARITY_FILTERS: { id: string; label: string }[];
+  pendingItemIds?: Set<string>;
 }
 
 export function VaultPanel({
   tabDirection, vaultFilters, setVaultFilters, filteredVaultItems, characters,
   loadout, addToLoadout, unequipItem, handleTransfer, handleEquip,
-  setIsSaveModalOpen, ITEM_SLOTS, SLOT_FILTERS, RARITY_FILTERS,
+  setIsSaveModalOpen, ITEM_SLOTS, SLOT_FILTERS, RARITY_FILTERS, pendingItemIds,
 }: VaultPanelProps) {
   const { t } = useI18n();
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const { ref: gridMeasureRef, getColumns } = useColumns();
+
+  const cols = getColumns();
+  const rowCount = Math.ceil(filteredVaultItems.length / cols);
+
+  const virtualizer = useVirtualizer({
+    count: rowCount,
+    getScrollElement: () => scrollRef.current,
+    estimateSize: () => 200,
+    overscan: 3,
+  });
 
   return (
     <motion.div key="vault" initial={{ opacity: 0, x: tabDirection * 40 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: tabDirection * -40 }} transition={{ duration: 0.4, ease: appleEase }} className="h-full flex flex-col lg:flex-row">
@@ -59,7 +87,7 @@ export function VaultPanel({
           <p className="text-[10px] text-gray-600 tracking-widest uppercase">{filteredVaultItems.length} Gegenstande</p>
         </motion.div>
 
-        <div className="flex-1 overflow-y-auto p-4 md:p-6 pt-2 scroll-container" data-scroll-container>
+        <div ref={(el) => { (scrollRef as any).current = el; (gridMeasureRef as any).current = el; }} className="flex-1 overflow-y-auto p-4 md:p-6 pt-2 scroll-container" data-scroll-container>
           {filteredVaultItems.length === 0 ? (
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
@@ -75,24 +103,37 @@ export function VaultPanel({
               </p>
             </motion.div>
           ) : (
-            <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-7 gap-2 md:gap-3">
-              {filteredVaultItems.map((item, i) => (
-                <motion.div
-                  key={item.id}
-                  initial={{ opacity: 0, y: 16, scale: 0.95 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  transition={{ delay: Math.min(i * 0.02, 0.4), duration: 0.4, ease: appleEase }}
-                >
-                  <VaultItemCard
-                    item={item}
-                    characters={characters}
-                    onTransferToChar={(charId) => handleTransfer(item, false, charId)}
-                    onEquipOnChar={(charId) => handleEquip(item, charId)}
-                    onAddToLoadout={() => addToLoadout(toItem(item))}
-                    isInLoadout={loadout[item.slot]?.id === item.id}
-                  />
-                </motion.div>
-              ))}
+            <div style={{ height: virtualizer.getTotalSize(), position: 'relative', width: '100%' }}>
+              {virtualizer.getVirtualItems().map((virtualRow) => {
+                const startIdx = virtualRow.index * cols;
+                const rowItems = filteredVaultItems.slice(startIdx, startIdx + cols);
+                return (
+                  <div
+                    key={virtualRow.key}
+                    style={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      width: '100%',
+                      transform: `translateY(${virtualRow.start}px)`,
+                    }}
+                    className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-7 gap-2 md:gap-3 pb-2 md:pb-3"
+                  >
+                    {rowItems.map((item) => (
+                      <VaultItemCard
+                        key={item.id}
+                        item={item}
+                        characters={characters}
+                        onTransferToChar={(charId) => handleTransfer(item, false, charId)}
+                        onEquipOnChar={(charId) => handleEquip(item, charId)}
+                        onAddToLoadout={() => addToLoadout(toItem(item))}
+                        isInLoadout={loadout[item.slot]?.id === item.id}
+                        isPending={pendingItemIds?.has(item.id)}
+                      />
+                    ))}
+                  </div>
+                );
+              })}
             </div>
           )}
         </div>

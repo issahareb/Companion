@@ -106,8 +106,7 @@ export default function SynergyPanel({ tabDirection, selectedCharacter }: Synerg
     setError(null);
 
     try {
-      const equippedItems = (selectedCharacter.inventory || [])
-        .filter((item: any) => item.isEquipped)
+      const equippedItems = (selectedCharacter.equippedItems || [])
         .map((item: any) => ({
           slot: item.slot || '',
           name: item.name || 'Unknown',

@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Link } from 'wouter';
 import { 
   Hexagon, Loader2, AlertTriangle, RefreshCw,
@@ -116,6 +116,7 @@ export default function Dashboard() {
   const [vaultFilters, setVaultFilters] = useState<FilterState>({ search: '', slot: 'all', rarity: 'all', minPower: '', maxPower: '' });
   const [slotPickerSlot, setSlotPickerSlot] = useState<string | null>(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [pendingItemIds, setPendingItemIds] = useState<Set<string>>(new Set());
   const [collectionsSearch, setCollectionsSearch] = useState('');
   const [collectionsFilter, setCollectionsFilter] = useState<'all' | 'acquired' | 'notAcquired'>('all');
   const [triumphsSearch, setTriumphsSearch] = useState('');
@@ -175,6 +176,7 @@ export default function Dashboard() {
 
   const handlePullPostmaster = async (item: InventoryItem) => {
     if (!destinyProfile || !item.characterId || isBungieMutating) return;
+    setPendingItemIds(prev => new Set(prev).add(item.id));
     try {
       await pullPostmasterMutation.mutateAsync({
         itemReferenceHash: item.itemHash,
@@ -185,6 +187,8 @@ export default function Dashboard() {
       toast({ title: t('toast.pulled'), description: `${item.name} ${t('toast.pulledDesc')}` });
     } catch (err: any) {
       toast({ title: t('error.generic'), description: err.message, variant: "destructive" });
+    } finally {
+      setPendingItemIds(prev => { const n = new Set(prev); n.delete(item.id); return n; });
     }
   };
 
@@ -226,6 +230,7 @@ export default function Dashboard() {
 
   const handleTransfer = async (item: InventoryItem, toVault: boolean, characterId: string) => {
     if (!destinyProfile || isBungieMutating) return;
+    setPendingItemIds(prev => new Set(prev).add(item.id));
     try {
       await transferMutation.mutateAsync({
         itemReferenceHash: item.itemHash,
@@ -237,12 +242,15 @@ export default function Dashboard() {
       toast({ title: t('toast.moved'), description: `${item.name} ${t('toast.movedDesc')}` });
     } catch (err: any) {
       toast({ title: t('error.generic'), description: err.message, variant: "destructive" });
+    } finally {
+      setPendingItemIds(prev => { const n = new Set(prev); n.delete(item.id); return n; });
     }
   };
 
   const handleEquip = async (item: InventoryItem, characterId: string) => {
     if (isBungieMutating) return;
     if (!destinyProfile) return;
+    setPendingItemIds(prev => new Set(prev).add(item.id));
     try {
       if (item.location === 'vault') {
         await swapMutation.mutateAsync({
@@ -268,6 +276,8 @@ export default function Dashboard() {
       toast({ title: t('toast.equipped'), description: `${item.name} ${t('toast.equippedDesc')}` });
     } catch (err: any) {
       toast({ title: t('error.generic'), description: err.message, variant: "destructive" });
+    } finally {
+      setPendingItemIds(prev => { const n = new Set(prev); n.delete(item.id); return n; });
     }
   };
 
@@ -343,7 +353,7 @@ export default function Dashboard() {
           <div className="flex items-center gap-3">
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="p-2 -ml-1 text-white hover:text-indigo-400 transition-colors"
+              className="hidden md:block p-2 -ml-1 text-white hover:text-indigo-400 transition-colors"
               data-testid="button-menu-toggle"
             >
               <AnimatePresence mode="wait">
@@ -561,6 +571,7 @@ export default function Dashboard() {
                   vaultItems={vaultItems}
                   artifact={profileState?.artifact}
                   membershipType={destinyProfile!.membershipType}
+                  pendingItemIds={pendingItemIds}
                 />
               )}
 
@@ -580,6 +591,7 @@ export default function Dashboard() {
                   ITEM_SLOTS={ITEM_SLOTS}
                   SLOT_FILTERS={SLOT_FILTERS}
                   RARITY_FILTERS={RARITY_FILTERS}
+                  pendingItemIds={pendingItemIds}
                 />
               )}
 
@@ -605,6 +617,7 @@ export default function Dashboard() {
                   postmasterItems={postmasterItems}
                   handlePullPostmaster={handlePullPostmaster}
                   isPullPending={pullPostmasterMutation.isPending}
+                  pendingItemIds={pendingItemIds}
                 />
               )}
 
@@ -671,7 +684,22 @@ export default function Dashboard() {
 
                   <div className="flex-1 min-h-0 overflow-hidden">
                   <AnimatePresence mode="wait">
-                    {aiSubTab === 'playstyle' && (
+                    {!selectedCharacter && aiSubTab !== 'roll' && (
+                      <motion.div
+                        key="ai-no-char"
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                        className="flex flex-col items-center justify-center h-full gap-4 px-8 text-center"
+                      >
+                        <div className="w-16 h-16 rounded-full bg-white/[0.04] border border-white/[0.08] flex items-center justify-center">
+                          <Users className="w-7 h-7 text-gray-500" />
+                        </div>
+                        <p className="text-sm text-gray-500 max-w-xs" data-testid="text-ai-no-character">{t('advisor.noCharacter')}</p>
+                      </motion.div>
+                    )}
+                    {(selectedCharacter || aiSubTab === 'roll') && aiSubTab === 'playstyle' && (
                       <PlaystylePanel
                         key="playstyle-sub"
                         tabDirection={0}
@@ -679,7 +707,7 @@ export default function Dashboard() {
                         artifact={profileState?.artifact}
                       />
                     )}
-                    {aiSubTab === 'build' && (
+                    {(selectedCharacter || aiSubTab === 'roll') && aiSubTab === 'build' && (
                       <BuildAdvisorPanel
                         key="build-sub"
                         tabDirection={0}
@@ -696,7 +724,7 @@ export default function Dashboard() {
                         characterItems={selectedCharacter?.inventory || []}
                       />
                     )}
-                    {aiSubTab === 'triumph' && (
+                    {(selectedCharacter || aiSubTab === 'roll') && aiSubTab === 'triumph' && (
                       <TriumphAdvisorPanel
                         key="triumph-sub"
                         tabDirection={0}
@@ -704,7 +732,7 @@ export default function Dashboard() {
                         records={profileState?.records || []}
                       />
                     )}
-                    {aiSubTab === 'synergy' && (
+                    {(selectedCharacter || aiSubTab === 'roll') && aiSubTab === 'synergy' && (
                       <SynergyPanel
                         key="synergy-sub"
                         tabDirection={0}
@@ -726,7 +754,7 @@ export default function Dashboard() {
 
       {(activeTab === 'vault' || activeTab === 'characters') && (
         <button onClick={() => setShowMobileLoadout(true)}
-          className="lg:hidden fixed bottom-20 right-4 z-30 w-14 h-14 bg-indigo-600 hover:bg-indigo-500 text-white rounded-full flex items-center justify-center shadow-lg shadow-indigo-900/50 transition-all"
+          className="lg:hidden fixed bottom-24 md:bottom-20 right-4 z-30 w-14 h-14 bg-indigo-600 hover:bg-indigo-500 text-white rounded-full flex items-center justify-center shadow-lg shadow-indigo-900/50 transition-all"
           data-testid="button-mobile-loadout">
           <Sparkles className="w-5 h-5" />
           {Object.keys(loadout).length > 0 && (
@@ -774,11 +802,49 @@ export default function Dashboard() {
 
       <SaveLoadoutModal isOpen={isSaveModalOpen} onClose={() => setIsSaveModalOpen(false)} onSave={handleSaveLoadout} />
 
-      <div className="fixed bottom-0 left-0 right-0 z-50 bg-[#080b14]/90 backdrop-blur-sm border-t border-white/[0.04] py-2 px-4">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-[#080b14]/95 backdrop-blur-xl border-t border-white/[0.08]" data-testid="mobile-bottom-tabs">
+        <div className="flex items-stretch justify-around">
+          {([
+            { id: 'characters' as TabType, icon: Users, label: t('nav.characters').split('-')[0].split(' ')[0] },
+            { id: 'vault' as TabType, icon: Package, label: t('nav.vault') },
+            { id: 'loadouts' as TabType, icon: Archive, label: 'Loadouts' },
+            { id: 'postmaster' as TabType, icon: Mail, label: t('nav.postmaster').slice(0, 8) },
+          ]).map(item => (
+            <button
+              key={item.id}
+              onClick={() => setActiveTab(item.id)}
+              className={`flex flex-col items-center justify-center gap-0.5 py-2 px-3 flex-1 transition-colors ${
+                activeTab === item.id ? 'text-indigo-400' : 'text-gray-600'
+              }`}
+              data-testid={`bottom-tab-${item.id}`}
+            >
+              <item.icon className="w-5 h-5" />
+              <span className="text-[8px] tracking-[0.1em] uppercase font-display">{item.label}</span>
+            </button>
+          ))}
+          <button
+            onClick={() => setIsMenuOpen(true)}
+            className={`flex flex-col items-center justify-center gap-0.5 py-2 px-3 flex-1 transition-colors ${
+              !['characters', 'vault', 'loadouts', 'postmaster'].includes(activeTab) ? 'text-indigo-400' : 'text-gray-600'
+            }`}
+            data-testid="bottom-tab-more"
+          >
+            <Menu className="w-5 h-5" />
+            <span className="text-[8px] tracking-[0.1em] uppercase font-display">Mehr</span>
+          </button>
+        </div>
+        <div className="flex items-center justify-center gap-3 pb-1">
+          <Link href="/imprint"><span className="text-[8px] tracking-[0.2em] uppercase text-gray-500 hover:text-gray-300 transition-colors cursor-pointer" data-testid="link-dashboard-imprint">{t('footer.imprint')}</span></Link>
+          <span className="text-gray-600 text-[7px]">|</span>
+          <Link href="/privacy"><span className="text-[8px] tracking-[0.2em] uppercase text-gray-500 hover:text-gray-300 transition-colors cursor-pointer" data-testid="link-dashboard-privacy">{t('footer.privacy')}</span></Link>
+        </div>
+      </nav>
+
+      <div className="hidden md:block fixed bottom-0 left-0 right-0 z-50 bg-[#080b14]/90 backdrop-blur-sm border-t border-white/[0.04] py-2 px-4">
         <div className="flex items-center justify-center gap-3">
-          <Link href="/imprint"><span className="text-[8px] tracking-[0.2em] uppercase text-gray-600 hover:text-gray-400 transition-colors cursor-pointer" data-testid="link-dashboard-imprint">{t('footer.imprint')}</span></Link>
-          <span className="text-gray-700 text-[7px]">|</span>
-          <Link href="/privacy"><span className="text-[8px] tracking-[0.2em] uppercase text-gray-600 hover:text-gray-400 transition-colors cursor-pointer" data-testid="link-dashboard-privacy">{t('footer.privacy')}</span></Link>
+          <Link href="/imprint"><span className="text-[8px] tracking-[0.2em] uppercase text-gray-500 hover:text-gray-300 transition-colors cursor-pointer" data-testid="link-desktop-imprint">{t('footer.imprint')}</span></Link>
+          <span className="text-gray-600 text-[7px]">|</span>
+          <Link href="/privacy"><span className="text-[8px] tracking-[0.2em] uppercase text-gray-500 hover:text-gray-300 transition-colors cursor-pointer" data-testid="link-desktop-privacy">{t('footer.privacy')}</span></Link>
         </div>
       </div>
     </div>

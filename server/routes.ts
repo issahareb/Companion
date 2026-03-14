@@ -339,8 +339,8 @@ export async function registerRoutes(
 
   app.post('/api/bungie/transfer', requireAuth, async (req, res) => {
     try {
-      invalidateProfileCaches(req.body.membershipType);
       const result = await transferItem(req.body, req.sessionAccessToken!);
+      invalidateProfileCaches(req.body.membershipType);
       res.json(result);
     } catch (err: any) {
       handleBungieError(err, res, 'Transfer failed');
@@ -349,8 +349,8 @@ export async function registerRoutes(
 
   app.post('/api/bungie/equip', requireAuth, async (req, res) => {
     try {
-      invalidateProfileCaches(req.body.membershipType);
       const result = await equipItem(req.body, req.sessionAccessToken!);
+      invalidateProfileCaches(req.body.membershipType);
       res.json(result);
     } catch (err: any) {
       handleBungieError(err, res, 'Equip failed');
@@ -359,8 +359,8 @@ export async function registerRoutes(
 
   app.post('/api/bungie/pull-postmaster', requireAuth, async (req, res) => {
     try {
-      invalidateProfileCaches(req.body.membershipType);
       const result = await pullFromPostmaster(req.body, req.sessionAccessToken!);
+      invalidateProfileCaches(req.body.membershipType);
       res.json(result);
     } catch (err: any) {
       handleBungieError(err, res, 'Pull from postmaster failed');
@@ -369,8 +369,8 @@ export async function registerRoutes(
 
   app.post('/api/bungie/lock', requireAuth, async (req, res) => {
     try {
-      invalidateProfileCaches(req.body.membershipType);
       const result = await setLockState(req.body, req.sessionAccessToken!);
+      invalidateProfileCaches(req.body.membershipType);
       res.json(result);
     } catch (err: any) {
       handleBungieError(err, res, 'Lock state change failed');
@@ -379,8 +379,8 @@ export async function registerRoutes(
 
   app.post('/api/bungie/equip-items', requireAuth, async (req, res) => {
     try {
-      invalidateProfileCaches(req.body.membershipType);
       const result = await equipItems(req.body, req.sessionAccessToken!);
+      invalidateProfileCaches(req.body.membershipType);
       res.json(result);
     } catch (err: any) {
       handleBungieError(err, res, 'Batch equip failed');
@@ -389,8 +389,8 @@ export async function registerRoutes(
 
   app.post('/api/bungie/insert-plug', requireAuth, async (req, res) => {
     try {
-      invalidateProfileCaches(req.body.membershipType);
       const result = await insertSocketPlug(req.body, req.sessionAccessToken!);
+      invalidateProfileCaches(req.body.membershipType);
       res.json(result);
     } catch (err: any) {
       handleBungieError(err, res, 'Insert plug failed');
@@ -399,8 +399,8 @@ export async function registerRoutes(
 
   app.post('/api/bungie/equip-loadout', requireAuth, async (req, res) => {
     try {
-      invalidateProfileCaches(req.body.membershipType);
       const result = await equipLoadout(req.body, req.sessionAccessToken!);
+      invalidateProfileCaches(req.body.membershipType);
       res.json(result);
     } catch (err: any) {
       handleBungieError(err, res, 'Equip loadout failed');
@@ -409,8 +409,8 @@ export async function registerRoutes(
 
   app.post('/api/bungie/snapshot-loadout', requireAuth, async (req, res) => {
     try {
-      invalidateProfileCaches(req.body.membershipType);
       const result = await snapshotLoadout(req.body, req.sessionAccessToken!);
+      invalidateProfileCaches(req.body.membershipType);
       res.json(result);
     } catch (err: any) {
       handleBungieError(err, res, 'Snapshot loadout failed');
@@ -419,21 +419,21 @@ export async function registerRoutes(
 
   app.post('/api/bungie/clear-loadout', requireAuth, async (req, res) => {
     try {
-      invalidateProfileCaches(req.body.membershipType);
       const result = await clearLoadout(req.body, req.sessionAccessToken!);
+      invalidateProfileCaches(req.body.membershipType);
       res.json(result);
     } catch (err: any) {
       handleBungieError(err, res, 'Clear loadout failed');
     }
   });
 
-  app.get(api.loadouts.list.path, async (req, res) => {
+  app.get(api.loadouts.list.path, requireAuth, async (req, res) => {
     const bungieMembershipId = req.params.bungieMembershipId;
     const loadouts = await storage.getLoadouts(bungieMembershipId);
     res.json(loadouts);
   });
 
-  app.post(api.loadouts.create.path, async (req, res) => {
+  app.post(api.loadouts.create.path, requireAuth, async (req, res) => {
     try {
       const input = api.loadouts.create.input.parse(req.body);
       const loadout = await storage.createLoadout(input);
@@ -449,7 +449,7 @@ export async function registerRoutes(
     }
   });
 
-  app.delete('/api/loadouts/:id', async (req, res) => {
+  app.delete('/api/loadouts/:id', requireAuth, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       if (isNaN(id)) {

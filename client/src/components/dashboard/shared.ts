@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useDeferredValue } from 'react';
 import type { InventoryItem } from '@/hooks/use-profile-state';
 import type { Item } from '@/components/Inventory';
 
@@ -71,17 +71,18 @@ export function toItem(inv: InventoryItem): Item {
 }
 
 export function useItemFilter(items: InventoryItem[], filters: FilterState): InventoryItem[] {
+  const deferredFilters = useDeferredValue(filters);
   return useMemo(() => {
     return items.filter(item => {
-      if (filters.search) {
-        const q = filters.search.toLowerCase();
+      if (deferredFilters.search) {
+        const q = deferredFilters.search.toLowerCase();
         if (!item.name.toLowerCase().includes(q) && !item.type.toLowerCase().includes(q)) return false;
       }
-      if (filters.slot !== 'all' && item.slot !== filters.slot) return false;
-      if (filters.rarity !== 'all' && item.rarity !== filters.rarity) return false;
-      if (filters.minPower && item.power < parseInt(filters.minPower)) return false;
-      if (filters.maxPower && item.power > parseInt(filters.maxPower)) return false;
+      if (deferredFilters.slot !== 'all' && item.slot !== deferredFilters.slot) return false;
+      if (deferredFilters.rarity !== 'all' && item.rarity !== deferredFilters.rarity) return false;
+      if (deferredFilters.minPower && item.power < parseInt(deferredFilters.minPower)) return false;
+      if (deferredFilters.maxPower && item.power > parseInt(deferredFilters.maxPower)) return false;
       return true;
     });
-  }, [items, filters]);
+  }, [items, deferredFilters]);
 }

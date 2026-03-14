@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
-import { Sparkles, ArrowRightLeft, Shield, Package } from 'lucide-react';
+import { Sparkles, ArrowRightLeft, Shield, Package, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { InventoryItem, CharacterData } from '@/hooks/use-profile-state';
 import { useI18n } from '@/lib/i18n';
@@ -28,13 +28,14 @@ function getRarityBorder(rarity: string, isInLoadout: boolean): string {
 
 const spring = { type: 'spring' as const, damping: 25, stiffness: 300 };
 
-export function VaultItemCard({ item, characters, onTransferToChar, onEquipOnChar, onAddToLoadout, isInLoadout }: {
+export function VaultItemCard({ item, characters, onTransferToChar, onEquipOnChar, onAddToLoadout, isInLoadout, isPending }: {
   item: InventoryItem;
   characters: CharacterData[];
   onTransferToChar: (charId: string) => void;
   onEquipOnChar: (charId: string) => void;
   onAddToLoadout: () => void;
   isInLoadout: boolean;
+  isPending?: boolean;
 }) {
   const [showDropdown, setShowDropdown] = useState(false);
   const { t } = useI18n();
@@ -73,7 +74,12 @@ export function VaultItemCard({ item, characters, onTransferToChar, onEquipOnCha
       style={{ overflow: showDropdown ? 'visible' : 'hidden' }}
       data-dropdown-id={item.id}
     >
-      <div className={`aspect-square relative overflow-hidden rounded-t-lg cursor-pointer ${getRarityBg(item.rarity)}`} onClick={() => setShowDropdown(!showDropdown)}>
+      <div className={`aspect-square relative overflow-hidden rounded-t-lg cursor-pointer ${getRarityBg(item.rarity)}`} onClick={() => !isPending && setShowDropdown(!showDropdown)}>
+        {isPending && (
+          <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/50 backdrop-blur-[2px]">
+            <Loader2 className="w-6 h-6 text-indigo-400 animate-spin" />
+          </div>
+        )}
         <div className="absolute top-0 left-0 right-0 h-[2px]" style={{ backgroundColor: rarityColor }} />
         {imgSrc ? (
           <img

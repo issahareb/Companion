@@ -1,0 +1,17 @@
+Visuelle Verbesserungen
+1. Kein visuelles Feedback bei Bungie-Aktionen
+Wenn ein Item transferiert, equipped oder vom Postmaster gezogen wird, gibt es nur einen Toast. Es fehlt ein visueller Indikator direkt am Item (z.B. ein kurzer Shimmer-Effekt oder ein Spinner-Overlay auf der Item-Card), damit der User weiß, welches Item gerade verarbeitet wird.
+2. Stat-Werte über 100 sind visuell unklar
+Die Stat-Ringe skalieren auf 200 als Maximum, aber in Destiny 2 bringen Stats über 100 oft keinen Nutzen. Es wäre hilfreich, bei 100 einen visuellen Marker im Ring zu haben (z.B. einen kleinen Tick) und den Bereich 100-200 farblich abzusetzen, um “verschwendete” Stat-Punkte sichtbar zu machen.
+3. Vault-Grid hat keine virtualisierte Liste
+Bei 500+ Vault-Items werden alle gleichzeitig gerendert. Das erzeugt hunderte DOM-Nodes und macht Scrolling auf Mobile spürbar langsamer. Eine Virtual-Scroll-Lösung (z.B. react-window oder @tanstack/virtual) würde die Performance deutlich verbessern.
+4. Mobile Navigation ist versteckt
+Auf Mobile gibt es nur den Hamburger-Button. Die wichtigsten Tabs (Hüter, Tresor, Loadouts) könnten als Bottom-Tab-Bar angezeigt werden, wie es in den meisten Mobile-Apps üblich ist. Das spart einen Tap pro Navigation.
+5. Kein Empty-State für AI-Features ohne Charakter
+Wenn kein Charakter ausgewählt ist und man einen AI-Tab öffnet, bekommt man entweder einen generischen Fehler oder einen disabled Button. Ein visueller Hinweis wie “Wähle zuerst einen Hüter aus” mit einem Pfeil zur Charakter-Auswahl wäre nutzerfreundlicher.
+6. Item-Detail fehlt komplett
+Es gibt keinen Detail-View für Items. Wenn man ein Item im Vault oder Inventar anklickt, öffnet sich nur ein Action-Dropdown. Ein expandierbares Panel oder Modal mit allen Stats, Perks, Masterwork und Screenshot wäre ein großes UX-Upgrade.
+7. Loadout-Karten zeigen nur Item-Icons
+Die gespeicherten Loadouts zeigen 8 kleine Icons ohne weitere Info. Es fehlen: Gesamtpower, Stat-Zusammenfassung, Klassen-Zuordnung und ein Hinweis, ob Exotic-Armor/Weapon enthalten ist.
+8. Farbkontrast im Footer
+Der Footer (text-[8px] text-gray-600) auf dem dunklen Hintergrund hat einen sehr niedrigen Kontrast-Ratio. Für Accessibility sollte der Text mindestens text-gray-500 sein.

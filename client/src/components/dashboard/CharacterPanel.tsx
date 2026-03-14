@@ -42,12 +42,13 @@ interface CharacterPanelProps {
   vaultItems: InventoryItem[];
   artifact?: ArtifactInfo;
   membershipType: number;
+  pendingItemIds?: Set<string>;
 }
 
 export function CharacterPanel({
   characters, selectedCharacterId, setSelectedCharacterId, selectedCharacter,
   tabDirection, slotPickerSlot, setSlotPickerSlot, addToLoadout, handleEquip,
-  vaultItems, artifact, membershipType,
+  vaultItems, artifact, membershipType, pendingItemIds,
 }: CharacterPanelProps) {
   const { t } = useI18n();
 
@@ -265,6 +266,7 @@ export function CharacterPanel({
                       vaultItems={vaultItems}
                       onEquip={(item) => { handleEquip(item, selectedCharacter.characterId); setSlotPickerSlot(null); }}
                       onAddToLoadoutItem={(item) => addToLoadout(toItem(item))}
+                      isPending={equipped ? pendingItemIds?.has(equipped.id) : false}
                     />
                   );
                 })}
@@ -295,6 +297,7 @@ export function CharacterPanel({
                       vaultItems={vaultItems}
                       onEquip={(item) => { handleEquip(item, selectedCharacter.characterId); setSlotPickerSlot(null); }}
                       onAddToLoadoutItem={(item) => addToLoadout(toItem(item))}
+                      isPending={equipped ? pendingItemIds?.has(equipped.id) : false}
                     />
                   );
                 })}

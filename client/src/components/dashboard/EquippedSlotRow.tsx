@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import {
-  Search, Sparkles, ArrowRightLeft, ChevronUp, Plus, Package,
+  Search, Sparkles, ArrowRightLeft, ChevronUp, Plus, Package, Loader2,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { InventoryItem, CharacterData } from '@/hooks/use-profile-state';
@@ -62,7 +62,7 @@ function RollRatingBadge({ result }: { result: RollResult }) {
 
 export { RollRatingBadge };
 
-export function EquippedSlotRow({ slotId, slotLabel, SlotIcon, item, isExpanded, onTogglePicker, onAddToLoadout, character, vaultItems, onEquip, onAddToLoadoutItem }: {
+export function EquippedSlotRow({ slotId, slotLabel, SlotIcon, item, isExpanded, onTogglePicker, onAddToLoadout, character, vaultItems, onEquip, onAddToLoadoutItem, isPending }: {
   slotId: string;
   slotLabel: string;
   SlotIcon: React.ElementType;
@@ -74,6 +74,7 @@ export function EquippedSlotRow({ slotId, slotLabel, SlotIcon, item, isExpanded,
   vaultItems: InventoryItem[];
   onEquip: (item: InventoryItem) => void;
   onAddToLoadoutItem: (item: InventoryItem) => void;
+  isPending?: boolean;
 }) {
   const [searchText, setSearchText] = useState('');
   const [showVault, setShowVault] = useState(false);
@@ -128,6 +129,11 @@ export function EquippedSlotRow({ slotId, slotLabel, SlotIcon, item, isExpanded,
                 <img src={item.icon || item.screenshot} alt={item.name} className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
               ) : (
                 <Package className="w-5 h-5 text-gray-600" />
+              )}
+              {isPending && (
+                <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/50 backdrop-blur-[2px] rounded-lg">
+                  <Loader2 className="w-5 h-5 text-indigo-400 animate-spin" />
+                </div>
               )}
               <div className="absolute bottom-0.5 left-0.5 z-10">
                 <TierStars rarity={item.rarity} size="xs" />

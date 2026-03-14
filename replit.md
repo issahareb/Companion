@@ -50,5 +50,10 @@ The project is organized as a monorepo with `client/` (React frontend), `server/
 ### Key NPM Packages
 -   **Database**: `drizzle-orm`, `drizzle-kit`, `drizzle-zod`.
 -   **Backend**: `express`, `helmet`, `express-rate-limit`, `cors`, `cookie-parser`.
--   **Frontend**: `@tanstack/react-query`, `wouter`, `framer-motion`, `shadcn/ui`, `radix-ui`.
+-   **Frontend**: `@tanstack/react-query`, `@tanstack/react-virtual`, `wouter`, `framer-motion`, `shadcn/ui`, `radix-ui`.
 -   **Utilities**: `zod`, `nanoid`.
+
+### UX Patterns
+-   **Pending Item Overlay**: When items are being transferred/equipped/pulled, a spinning loader overlay appears on the item card (VaultItemCard, EquippedSlotRow, PostmasterPanel items) using `pendingItemIds` state tracked in Dashboard.
+-   **Vault Virtualization**: VaultPanel uses `@tanstack/react-virtual` for row-based virtualization with responsive column detection, improving performance for large vaults.
+-   **Mobile Bottom Tab Bar**: 4 main tabs (characters/vault/loadouts/postmaster) + "Mehr" overflow button on mobile; hamburger menu hidden on mobile.

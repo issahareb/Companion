@@ -309,7 +309,7 @@ async function fetchManifest(): Promise<ManifestCache> {
   const paths = manifestData.Response.jsonWorldComponentContentPaths.en;
 
   const [itemDefs, collectibleDefs, recordDefs, progressionDefs, objectiveDefs, activityDefs, statDefs, loadoutNameDefs, loadoutColorDefs, loadoutIconDefs] = await Promise.all([
-    fetch(`${BUNGIE_BASE}${paths.DestinyInventoryItemDefinition}`).then(r => r.json()),
+    fetch(`${BUNGIE_BASE}${paths.DestinyInventoryItemDefinition}`).then(r => r.json()).catch((err) => { console.error('[manifest] DestinyInventoryItemDefinition fetch failed:', err.message); return {}; }),
     fetch(`${BUNGIE_BASE}${paths.DestinyCollectibleDefinition}`).then(r => r.json()).catch(() => ({})),
     fetch(`${BUNGIE_BASE}${paths.DestinyRecordDefinition}`).then(r => r.json()).catch(() => ({})),
     fetch(`${BUNGIE_BASE}${paths.DestinyProgressionDefinition}`).then(r => r.json()).catch(() => ({})),

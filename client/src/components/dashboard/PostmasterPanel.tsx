@@ -1,4 +1,4 @@
-import { Mail, Sparkles, Download, Package } from 'lucide-react';
+import { Mail, Sparkles, Download, Package, Loader2 } from 'lucide-react';
 import { TierStars } from './TierStars';
 import { motion } from 'framer-motion';
 import type { InventoryItem, CharacterData } from '@/hooks/use-profile-state';
@@ -76,6 +76,11 @@ function PostmasterCharSection({ char, charPostItems, handlePullPostmaster, isPu
                 data-testid={`card-postmaster-${item.id}`}
               >
                 <div className={`aspect-square relative overflow-hidden rounded-t-lg ${getRarityBg(item.rarity)}`}>
+                  {pendingItemIds?.has(item.id) && (
+                    <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/50 backdrop-blur-[2px]">
+                      <Loader2 className="w-6 h-6 text-indigo-400 animate-spin" />
+                    </div>
+                  )}
                   <div className="absolute top-0 left-0 right-0 h-[2px] z-10" style={{ backgroundColor: getRarityColor(item.rarity) }} />
                   {imgSrc ? (
                     <img src={imgSrc} alt={item.name} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; (e.target as HTMLImageElement).parentElement?.querySelector('.img-fallback')?.classList.remove('hidden'); }} />
@@ -122,10 +127,11 @@ interface PostmasterPanelProps {
   postmasterItems: InventoryItem[];
   handlePullPostmaster: (item: InventoryItem) => void;
   isPullPending: boolean;
+  pendingItemIds?: Set<string>;
 }
 
 export function PostmasterPanel({
-  tabDirection, characters, postmasterItems, handlePullPostmaster, isPullPending,
+  tabDirection, characters, postmasterItems, handlePullPostmaster, isPullPending, pendingItemIds,
 }: PostmasterPanelProps) {
   const { t } = useI18n();
 
