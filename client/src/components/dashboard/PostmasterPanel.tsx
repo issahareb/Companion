@@ -1,9 +1,11 @@
+import { useState } from 'react';
 import { Mail, Sparkles, Download, Package, Loader2 } from 'lucide-react';
 import { appleEase } from './shared';
 import { TierStars } from './TierStars';
 import { motion } from 'framer-motion';
 import type { InventoryItem, CharacterData } from '@/hooks/use-profile-state';
 import { useI18n } from '@/lib/i18n';
+import { ItemDetailModal } from './ItemDetailModal';
 
 function getRarityBg(rarity: string): string {
   switch (rarity) {
@@ -42,6 +44,7 @@ function PostmasterCharSection({ char, charPostItems, handlePullPostmaster, isPu
   pendingItemIds?: Set<string>;
 }) {
   const { t } = useI18n();
+  const [detailItem, setDetailItem] = useState<InventoryItem | null>(null);
 
   return (
     <div data-testid={`section-postmaster-${char.characterId}`}>
@@ -65,8 +68,9 @@ function PostmasterCharSection({ char, charPostItems, handlePullPostmaster, isPu
             return (
               <div
                 key={item.id}
-                className={`border overflow-hidden rounded-lg transition-all duration-300 group item-card-hover ${getRarityBorder(item.rarity)}`}
+                className={`border overflow-hidden rounded-lg transition-all duration-300 group item-card-hover cursor-pointer ${getRarityBorder(item.rarity)}`}
                 data-testid={`card-postmaster-${item.id}`}
+                onClick={() => setDetailItem(item)}
               >
                 <div className={`aspect-square relative overflow-hidden rounded-t-lg ${getRarityBg(item.rarity)}`}>
                   {pendingItemIds?.has(item.id) && (
@@ -95,7 +99,7 @@ function PostmasterCharSection({ char, charPostItems, handlePullPostmaster, isPu
                       </p>
                     )}
                     <motion.button
-                      onClick={() => handlePullPostmaster(item)}
+                      onClick={(e) => { e.stopPropagation(); handlePullPostmaster(item); }}
                       disabled={isPullPending}
                       className="flex items-center gap-1 px-2 py-1 text-[11px] tracking-destiny text-amber-400 hover:text-white bg-amber-500/10 hover:bg-amber-500/30 border border-amber-500/20 rounded transition-all sm:opacity-0 sm:group-hover:opacity-100"
                       whileTap={{ scale: 0.92 }}
@@ -109,6 +113,14 @@ function PostmasterCharSection({ char, charPostItems, handlePullPostmaster, isPu
             );
           })}
         </div>
+      )}
+
+      {detailItem && (
+        <ItemDetailModal
+          item={detailItem}
+          characters={[]}
+          onClose={() => setDetailItem(null)}
+        />
       )}
     </div>
   );

@@ -61,6 +61,7 @@ The project is organized as a monorepo with `client/` (React frontend), `server/
 -   **Utilities**: `zod`, `nanoid`.
 
 ### UX Patterns
+-   **Item Detail Modal**: Tapping any item in the Vault or Postmaster opens a full detail modal (`ItemDetailModal.tsx`) showing screenshot, icon, name, description, stats (with animated bars), active/inactive perks, mods, and action buttons (add to loadout, transfer, equip). Uses `z-[70]` to layer above all other UI. Supports all three languages.
 -   **Pending Item Overlay**: When items are being transferred/equipped/pulled, a spinning loader overlay appears on the item card (VaultItemCard, EquippedSlotRow, PostmasterPanel items) using `pendingItemIds` state tracked in Dashboard.
 -   **Vault Virtualization**: VaultPanel uses `@tanstack/react-virtual` for row-based virtualization with responsive column detection, improving performance for large vaults.
 -   **Mobile Bottom Tab Bar**: 4 main tabs (characters/vault/loadouts/postmaster) + "Mehr" overflow button on mobile; hamburger menu hidden on mobile.
