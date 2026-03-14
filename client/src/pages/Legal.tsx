@@ -1,4 +1,4 @@
-import { ArrowLeft, AlertTriangle } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Link } from 'wouter';
 import { useI18n } from '@/lib/i18n';
@@ -47,16 +47,6 @@ export function ImprintPage() {
           {t('imprint.title')}
         </motion.h1>
 
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.15, duration: 0.5, ease: appleEase }}
-          className="mb-8 p-4 border border-amber-500/20 bg-amber-500/5 rounded-lg flex items-start gap-3"
-        >
-          <AlertTriangle className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
-          <p className="text-[10px] text-amber-300/80 tracking-wide leading-relaxed">{t('imprint.placeholder')}</p>
-        </motion.div>
-
         <Section title={t('imprint.info')} delay={0.2}>
           <p className="font-semibold text-gray-300 mb-1">{t('imprint.name')}</p>
           <p>{t('imprint.address')}</p>
@@ -64,14 +54,17 @@ export function ImprintPage() {
 
         <Section title={t('imprint.contact')} delay={0.3}>
           <p>{t('imprint.email')}</p>
-          <p>{t('imprint.phone')}</p>
         </Section>
 
-        <Section title={t('imprint.responsibility')} delay={0.4}>
+        <Section title={t('imprint.responsibility')} delay={0.35}>
           <p>{t('imprint.responsibilityText')}</p>
         </Section>
 
-        <Section title={t('imprint.dispute')} delay={0.5}>
+        <Section title={t('imprint.authority')} delay={0.4}>
+          <p>{t('imprint.authorityText')}</p>
+        </Section>
+
+        <Section title={t('imprint.dispute')} delay={0.45}>
           <p>{t('imprint.disputeText')}</p>
         </Section>
 
