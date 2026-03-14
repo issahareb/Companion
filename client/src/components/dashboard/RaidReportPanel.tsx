@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery } from '@tanstack/react-query';
-import { Loader2, Skull, Trophy, Clock, Crosshair, Shield, Flame, Zap, AlertTriangle, ChevronDown, CheckCircle2, XCircle, Users } from 'lucide-react';
+import { Loader2, Skull, Trophy, Clock, Crosshair, Shield, Flame, Zap, AlertTriangle, ChevronDown, CheckCircle2, XCircle, Users, Calendar, Percent } from 'lucide-react';
 import { useI18n } from '@/lib/i18n';
 import { appleEase } from './shared';
 
@@ -32,6 +32,7 @@ interface RaidReportPanelProps {
 }
 
 type ActivityMode = 'raid' | 'dungeon' | 'nightfall' | 'crucible' | 'gambit' | 'trials' | 'strike';
+type TimePeriod = 'allTime' | 'season' | 'thisWeek';
 
 function formatDuration(seconds: number): string {
   const h = Math.floor(seconds / 3600);
@@ -50,9 +51,36 @@ function formatDate(dateStr: string): string {
   }
 }
 
+function getSeasonStart(): Date {
+  const now = new Date();
+  const y = now.getFullYear();
+  const seasonStarts = [
+    new Date(y, 0, 1),
+    new Date(y, 2, 1),
+    new Date(y, 5, 1),
+    new Date(y, 8, 1),
+  ];
+  let closest = seasonStarts[0];
+  for (const s of seasonStarts) {
+    if (s <= now) closest = s;
+  }
+  return closest;
+}
+
+function getWeekStart(): Date {
+  const now = new Date();
+  const day = now.getDay();
+  const diff = now.getDate() - day + (day === 0 ? -6 : 1);
+  const monday = new Date(now);
+  monday.setDate(diff);
+  monday.setHours(0, 0, 0, 0);
+  return monday;
+}
+
 export function RaidReportPanel({ tabDirection, membershipType, membershipId, characterIds }: RaidReportPanelProps) {
   const { t } = useI18n();
   const [activeMode, setActiveMode] = useState<ActivityMode>('raid');
+  const [timePeriod, setTimePeriod] = useState<TimePeriod>('allTime');
   const [page, setPage] = useState(0);
 
   const modes: { id: ActivityMode; label: string; icon: typeof Trophy }[] = [
@@ -64,6 +92,12 @@ export function RaidReportPanel({ tabDirection, membershipType, membershipId, ch
     { id: 'trials', label: t('activity.trials'), icon: Trophy },
   ];
 
+  const timePeriods: { id: TimePeriod; label: string }[] = [
+    { id: 'allTime', label: t('activity.allTime') },
+    { id: 'season', label: t('activity.season') },
+    { id: 'thisWeek', label: t('activity.thisWeek') },
+  ];
+
   const allCharacterIds = characterIds || [];
   const primaryCharacterId = allCharacterIds[0];
   const [allActivities, setAllActivities] = useState<ActivityEntry[]>([]);
@@ -73,10 +107,10 @@ export function RaidReportPanel({ tabDirection, membershipType, membershipId, ch
     queryKey: ['/api/bungie/activity-history', membershipType, membershipId, primaryCharacterId, activeMode, page],
     queryFn: async () => {
       if (!membershipType || !membershipId || !primaryCharacterId) return [];
-      const res = await fetch(`/api/bungie/activity-history/${membershipType}/${membershipId}/${primaryCharacterId}?mode=${activeMode}&count=25&page=${page}`);
+      const res = await fetch(`/api/bungie/activity-history/${membershipType}/${membershipId}/${primaryCharacterId}?mode=${activeMode}&count=50&page=${page}`);
       if (!res.ok) throw new Error('Failed to fetch activities');
       const data: ActivityEntry[] = await res.json();
-      if (data.length < 25) setHasMore(false);
+      if (data.length < 50) setHasMore(false);
       if (page === 0) {
         setAllActivities(data);
       } else {
@@ -88,7 +122,15 @@ export function RaidReportPanel({ tabDirection, membershipType, membershipId, ch
     staleTime: 5 * 60 * 1000,
   });
 
-  const activities = allActivities;
+  const filteredActivities = useMemo(() => {
+    if (timePeriod === 'allTime') return allActivities;
+    const cutoff = timePeriod === 'season' ? getSeasonStart() : getWeekStart();
+    return allActivities.filter(a => {
+      try { return new Date(a.date) >= cutoff; } catch { return true; }
+    });
+  }, [allActivities, timePeriod]);
+
+  const activities = filteredActivities;
 
   const summary = useMemo(() => {
     if (!activities.length) return null;
@@ -101,6 +143,7 @@ export function RaidReportPanel({ tabDirection, membershipType, membershipId, ch
     const fastest = completedActivities.length > 0
       ? Math.min(...completedActivities.map(a => a.duration))
       : 0;
+    const winRate = activities.length > 0 ? Math.round((completions / activities.length) * 100) : 0;
 
     const byName: Record<string, { count: number; completions: number; flawless: number; fastest: number }> = {};
     for (const a of activities) {
@@ -111,7 +154,7 @@ export function RaidReportPanel({ tabDirection, membershipType, membershipId, ch
       if (a.completed && a.duration > 0) byName[a.activityName].fastest = Math.min(byName[a.activityName].fastest, a.duration);
     }
 
-    return { completions, flawless, totalKills, totalDeaths, avgKd, fastest, total: activities.length, byName };
+    return { completions, flawless, totalKills, totalDeaths, avgKd, fastest, total: activities.length, winRate, byName };
   }, [activities]);
 
   if (!membershipType || !membershipId || !primaryCharacterId) {
@@ -141,25 +184,45 @@ export function RaidReportPanel({ tabDirection, membershipType, membershipId, ch
       transition={{ duration: 0.5, ease: appleEase }}
       className="h-full flex flex-col"
     >
-      <div className="flex items-center gap-1 p-1 bg-white/[0.03] border border-white/[0.06] rounded-lg shrink-0 mx-4 md:mx-8 mt-4 mb-4 overflow-x-auto scrollbar-hide" data-testid="activity-mode-bar">
-        {modes.map(mode => (
-          <button
-            key={mode.id}
-            onClick={() => { setActiveMode(mode.id); setPage(0); setAllActivities([]); setHasMore(true); }}
-            className={`px-3 py-1.5 text-[11px] font-display tracking-destiny uppercase transition-all rounded-md whitespace-nowrap shrink-0 flex items-center gap-1.5 ${
-              activeMode === mode.id
-                ? 'bg-white/[0.08] text-white border border-white/[0.1]'
-                : 'text-gray-500 hover:text-gray-300'
-            }`}
-            data-testid={`button-activity-mode-${mode.id}`}
-          >
-            <mode.icon className="w-3 h-3" />
-            {mode.label}
-          </button>
-        ))}
+      <div className="shrink-0 px-4 md:px-8 pt-4 space-y-3">
+        <div className="flex items-center gap-1 p-1 bg-white/[0.03] border border-white/[0.06] rounded-lg overflow-x-auto scrollbar-hide" data-testid="activity-mode-bar">
+          {modes.map(mode => (
+            <button
+              key={mode.id}
+              onClick={() => { setActiveMode(mode.id); setPage(0); setAllActivities([]); setHasMore(true); }}
+              className={`px-3 py-1.5 text-[11px] font-display tracking-destiny uppercase transition-all rounded-md whitespace-nowrap shrink-0 flex items-center gap-1.5 ${
+                activeMode === mode.id
+                  ? 'bg-white/[0.08] text-white border border-white/[0.1]'
+                  : 'text-gray-500 hover:text-gray-300'
+              }`}
+              data-testid={`button-activity-mode-${mode.id}`}
+            >
+              <mode.icon className="w-3 h-3" />
+              {mode.label}
+            </button>
+          ))}
+        </div>
+
+        <div className="flex items-center gap-1.5" data-testid="activity-time-filter">
+          <Calendar className="w-3.5 h-3.5 text-gray-500 shrink-0" />
+          {timePeriods.map(tp => (
+            <button
+              key={tp.id}
+              onClick={() => setTimePeriod(tp.id)}
+              className={`px-2.5 py-1 text-[11px] tracking-destiny transition-all rounded-md whitespace-nowrap ${
+                timePeriod === tp.id
+                  ? 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/30'
+                  : 'text-gray-500 hover:text-gray-300 border border-transparent'
+              }`}
+              data-testid={`button-time-${tp.id}`}
+            >
+              {tp.label}
+            </button>
+          ))}
+        </div>
       </div>
 
-      <div className="flex-1 min-h-0 overflow-y-auto px-4 md:px-8 pb-8 space-y-6">
+      <div className="flex-1 min-h-0 overflow-y-auto px-4 md:px-8 pb-8 pt-4 space-y-6">
         {isLoading ? (
           <div className="flex items-center justify-center h-64">
             <Loader2 className="w-6 h-6 text-indigo-400 animate-spin" />
@@ -177,11 +240,16 @@ export function RaidReportPanel({ tabDirection, membershipType, membershipId, ch
         ) : (
           <>
             {summary && (
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3" data-testid="activity-summary">
-                <StatCard icon={Trophy} label={t('activity.completions')} value={`${summary.completions}/${summary.total}`} color="text-green-400" />
-                <StatCard icon={Flame} label={t('activity.flawless')} value={summary.flawless.toString()} color="text-[var(--color-gold-accent)]" />
-                <StatCard icon={Clock} label={t('activity.fastest')} value={summary.fastest > 0 ? formatDuration(summary.fastest) : '—'} color="text-blue-400" />
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3" data-testid="activity-summary">
+                <StatCard icon={Trophy} label={t('activity.totalGames')} value={summary.total.toString()} color="text-white" />
+                <StatCard icon={CheckCircle2} label={t('activity.completions')} value={summary.completions.toString()} color="text-green-400" />
+                <StatCard icon={Percent} label={t('activity.winRate')} value={`${summary.winRate}%`} color="text-indigo-400" />
                 <StatCard icon={Crosshair} label={t('activity.kd')} value={summary.avgKd} color="text-red-400" />
+                {summary.flawless > 0 ? (
+                  <StatCard icon={Flame} label={t('activity.flawless')} value={summary.flawless.toString()} color="text-[var(--color-gold-accent)]" />
+                ) : (
+                  <StatCard icon={Clock} label={t('activity.fastest')} value={summary.fastest > 0 ? formatDuration(summary.fastest) : '—'} color="text-blue-400" />
+                )}
               </div>
             )}
 
@@ -189,19 +257,27 @@ export function RaidReportPanel({ tabDirection, membershipType, membershipId, ch
               <div className="space-y-2">
                 <h3 className="text-xs font-display tracking-destiny-wide uppercase text-gray-400" data-testid="text-activity-breakdown">{t('activity.summary')}</h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                  {Object.entries(summary.byName).map(([name, stats]) => (
-                    <div key={name} className="bg-white/[0.02] border border-white/[0.06] rounded-lg p-3 flex items-center gap-3">
-                      <div className="flex-1 min-w-0">
-                        <p className="text-xs font-bold text-white truncate tracking-destiny">{name}</p>
-                        <div className="flex items-center gap-3 mt-1">
-                          <span className="text-[11px] text-green-400">{stats.completions} {t('activity.completed').toLowerCase()}</span>
-                          {stats.flawless > 0 && <span className="text-[11px] text-[var(--color-gold-accent)]">{stats.flawless} {t('activity.flawless').toLowerCase()}</span>}
-                          {stats.fastest < Infinity && <span className="text-[11px] text-blue-400">{formatDuration(stats.fastest)}</span>}
+                  {Object.entries(summary.byName)
+                    .sort((a, b) => b[1].count - a[1].count)
+                    .map(([name, stats]) => {
+                      const wr = stats.count > 0 ? Math.round((stats.completions / stats.count) * 100) : 0;
+                      return (
+                        <div key={name} className="bg-white/[0.02] border border-white/[0.06] rounded-lg p-3 flex items-center gap-3">
+                          <div className="flex-1 min-w-0">
+                            <p className="text-xs font-bold text-white truncate tracking-destiny">{name}</p>
+                            <div className="flex items-center gap-3 mt-1">
+                              <span className="text-[11px] text-gray-400">{stats.count}x</span>
+                              <span className="text-[11px] text-green-400">{stats.completions} {t('activity.completed').toLowerCase()}</span>
+                              <span className="text-[11px] text-indigo-400">{wr}%</span>
+                              {stats.flawless > 0 && <span className="text-[11px] text-[var(--color-gold-accent)]">{stats.flawless}x {t('activity.flawless').toLowerCase()}</span>}
+                            </div>
+                          </div>
+                          {stats.fastest < Infinity && (
+                            <span className="text-[11px] text-blue-400 font-mono shrink-0">{formatDuration(stats.fastest)}</span>
+                          )}
                         </div>
-                      </div>
-                      <span className="text-lg font-mono font-bold text-white/40">{stats.count}</span>
-                    </div>
-                  ))}
+                      );
+                    })}
                 </div>
               </div>
             )}
@@ -215,7 +291,7 @@ export function RaidReportPanel({ tabDirection, membershipType, membershipId, ch
                       key={activity.instanceId}
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.3, delay: i * 0.02, ease: appleEase }}
+                      transition={{ duration: 0.3, delay: Math.min(i * 0.02, 0.5), ease: appleEase }}
                       className={`group bg-white/[0.02] border rounded-lg p-3 transition-all hover:bg-white/[0.04] ${
                         activity.isFlawless
                           ? 'border-yellow-500/20 hover:border-yellow-500/40'
@@ -284,7 +360,7 @@ export function RaidReportPanel({ tabDirection, membershipType, membershipId, ch
               </div>
             </div>
 
-            {hasMore && activities.length > 0 && (
+            {hasMore && allActivities.length > 0 && (
               <div className="flex justify-center pt-2">
                 <button
                   onClick={() => setPage(p => p + 1)}
@@ -306,7 +382,7 @@ export function RaidReportPanel({ tabDirection, membershipType, membershipId, ch
 
 function StatCard({ icon: Icon, label, value, color }: { icon: typeof Trophy; label: string; value: string; color: string }) {
   return (
-    <div className="bg-white/[0.02] border border-white/[0.06] rounded-lg p-3 flex items-center gap-3" data-testid={`stat-card-${label.toLowerCase()}`}>
+    <div className="bg-white/[0.02] border border-white/[0.06] rounded-lg p-3 flex items-center gap-3" data-testid={`stat-card-${label.toLowerCase().replace(/\s/g, '-')}`}>
       <div className={`w-8 h-8 rounded-lg bg-white/[0.04] flex items-center justify-center ${color}`}>
         <Icon className="w-4 h-4" />
       </div>
