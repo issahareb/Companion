@@ -9,6 +9,9 @@ const router = Router();
 
 router.get(api.loadouts.list.path, requireAuth, async (req, res) => {
   const bungieMembershipId = req.params.bungieMembershipId as string;
+  if (req.sessionMembershipId !== bungieMembershipId) {
+    return res.status(403).json({ message: 'Access denied' });
+  }
   const loadouts = await storage.getLoadouts(bungieMembershipId);
   res.json(loadouts);
 });
@@ -45,7 +48,7 @@ router.delete('/api/loadouts/:id', requireAuth, async (req, res) => {
     if (isNaN(id)) {
       return res.status(400).json({ message: 'Invalid loadout ID' });
     }
-    const deleted = await storage.deleteLoadout(id);
+    const deleted = await storage.deleteLoadout(id, req.sessionMembershipId!);
     if (!deleted) {
       return res.status(404).json({ message: 'Loadout not found' });
     }

@@ -37,7 +37,7 @@ app.use(
     crossOriginResourcePolicy: { policy: "cross-origin" },
     referrerPolicy: { policy: "strict-origin-when-cross-origin" },
     hsts: {
-      maxAge: 31536000,
+      maxAge: 63072000,
       includeSubDomains: true,
       preload: true,
     },
@@ -222,16 +222,17 @@ app.use((req, res, next) => {
   await registerRoutes(httpServer, app);
 
   app.use((err: any, _req: Request, res: Response, next: NextFunction) => {
-    const status = err.status || err.statusCode || 500;
-    const message = err.message || "Internal Server Error";
-
     console.error("Internal Server Error:", err);
 
     if (res.headersSent) {
       return next(err);
     }
 
-    return res.status(status).json({ message });
+    const status = err.status || err.statusCode || 500;
+    if (status < 500) {
+      return res.status(status).json({ message: err.message || 'Request error' });
+    }
+    return res.status(500).json({ message: 'Internal server error' });
   });
 
   // importantly only setup vite in development and after

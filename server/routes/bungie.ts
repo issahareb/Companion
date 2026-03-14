@@ -1,6 +1,88 @@
 import { Router } from "express";
+import { z } from "zod";
 import { fetchMemberships, fetchProfileState, transferItem, equipItem, pullFromPostmaster, setLockState, equipItems, insertSocketPlug, equipLoadout, snapshotLoadout, clearLoadout, fetchBungieNews, fetchActivityHistory, BungieApiError } from "../bungie";
 import { handleBungieError, requireAuth } from "./shared";
+
+const transferSchema = z.object({
+  itemReferenceHash: z.number(),
+  stackSize: z.number().int().min(1).default(1),
+  transferToVault: z.boolean(),
+  itemId: z.string(),
+  characterId: z.string(),
+  membershipType: z.string(),
+});
+
+const equipSchema = z.object({
+  itemId: z.string(),
+  characterId: z.string(),
+  membershipType: z.string(),
+});
+
+const pullPostmasterSchema = z.object({
+  itemReferenceHash: z.number(),
+  stackSize: z.number().int().min(1).default(1),
+  itemId: z.string(),
+  characterId: z.string(),
+  membershipType: z.string(),
+});
+
+const lockSchema = z.object({
+  itemId: z.string(),
+  characterId: z.string(),
+  membershipType: z.string(),
+  state: z.boolean(),
+});
+
+const equipItemsSchema = z.object({
+  itemIds: z.array(z.string()).min(1).max(10),
+  characterId: z.string(),
+  membershipType: z.string(),
+});
+
+const insertPlugSchema = z.object({
+  itemInstanceId: z.string(),
+  socketIndex: z.number().int().min(0),
+  socketArrayType: z.number().int(),
+  plug: z.object({ plugItemHash: z.number() }),
+  characterId: z.string(),
+  membershipType: z.string(),
+});
+
+const equipLoadoutSchema = z.object({
+  loadoutIndex: z.number().int().min(0),
+  characterId: z.string(),
+  membershipType: z.string(),
+});
+
+const snapshotLoadoutSchema = z.object({
+  loadoutIndex: z.number().int().min(0),
+  characterId: z.string(),
+  membershipType: z.string(),
+  colorHash: z.number().optional(),
+  iconHash: z.number().optional(),
+  nameHash: z.number().optional(),
+  items: z.array(z.any()).optional(),
+});
+
+const clearLoadoutSchema = z.object({
+  loadoutIndex: z.number().int().min(0),
+  characterId: z.string(),
+  membershipType: z.string(),
+});
+
+function validateBody<T>(schema: z.ZodSchema<T>) {
+  return (req: any, res: any, next: any) => {
+    const result = schema.safeParse(req.body);
+    if (!result.success) {
+      return res.status(400).json({
+        message: result.error.errors[0]?.message || 'Invalid request body',
+        field: result.error.errors[0]?.path?.join('.'),
+      });
+    }
+    req.body = result.data;
+    next();
+  };
+}
 
 interface CacheEntry {
   data: any;
@@ -101,7 +183,7 @@ function filterProfileFields(state: any, include?: string): any {
   return result;
 }
 
-router.post('/api/bungie/transfer', requireAuth, async (req, res) => {
+router.post('/api/bungie/transfer', requireAuth, validateBody(transferSchema), async (req, res) => {
   try {
     const result = await transferItem(req.body, req.sessionAccessToken!);
     invalidateProfileCaches(req.body.membershipType);
@@ -111,7 +193,7 @@ router.post('/api/bungie/transfer', requireAuth, async (req, res) => {
   }
 });
 
-router.post('/api/bungie/equip', requireAuth, async (req, res) => {
+router.post('/api/bungie/equip', requireAuth, validateBody(equipSchema), async (req, res) => {
   try {
     const result = await equipItem(req.body, req.sessionAccessToken!);
     invalidateProfileCaches(req.body.membershipType);
@@ -121,7 +203,7 @@ router.post('/api/bungie/equip', requireAuth, async (req, res) => {
   }
 });
 
-router.post('/api/bungie/pull-postmaster', requireAuth, async (req, res) => {
+router.post('/api/bungie/pull-postmaster', requireAuth, validateBody(pullPostmasterSchema), async (req, res) => {
   try {
     const result = await pullFromPostmaster(req.body, req.sessionAccessToken!);
     invalidateProfileCaches(req.body.membershipType);
@@ -131,7 +213,7 @@ router.post('/api/bungie/pull-postmaster', requireAuth, async (req, res) => {
   }
 });
 
-router.post('/api/bungie/lock', requireAuth, async (req, res) => {
+router.post('/api/bungie/lock', requireAuth, validateBody(lockSchema), async (req, res) => {
   try {
     const result = await setLockState(req.body, req.sessionAccessToken!);
     invalidateProfileCaches(req.body.membershipType);
@@ -141,7 +223,7 @@ router.post('/api/bungie/lock', requireAuth, async (req, res) => {
   }
 });
 
-router.post('/api/bungie/equip-items', requireAuth, async (req, res) => {
+router.post('/api/bungie/equip-items', requireAuth, validateBody(equipItemsSchema), async (req, res) => {
   try {
     const result = await equipItems(req.body, req.sessionAccessToken!);
     invalidateProfileCaches(req.body.membershipType);
@@ -151,7 +233,7 @@ router.post('/api/bungie/equip-items', requireAuth, async (req, res) => {
   }
 });
 
-router.post('/api/bungie/insert-plug', requireAuth, async (req, res) => {
+router.post('/api/bungie/insert-plug', requireAuth, validateBody(insertPlugSchema), async (req, res) => {
   try {
     const result = await insertSocketPlug(req.body, req.sessionAccessToken!);
     invalidateProfileCaches(req.body.membershipType);
@@ -172,7 +254,7 @@ router.post('/api/bungie/insert-plug', requireAuth, async (req, res) => {
   }
 });
 
-router.post('/api/bungie/equip-loadout', requireAuth, async (req, res) => {
+router.post('/api/bungie/equip-loadout', requireAuth, validateBody(equipLoadoutSchema), async (req, res) => {
   try {
     const result = await equipLoadout(req.body, req.sessionAccessToken!);
     invalidateProfileCaches(req.body.membershipType);
@@ -182,7 +264,7 @@ router.post('/api/bungie/equip-loadout', requireAuth, async (req, res) => {
   }
 });
 
-router.post('/api/bungie/snapshot-loadout', requireAuth, async (req, res) => {
+router.post('/api/bungie/snapshot-loadout', requireAuth, validateBody(snapshotLoadoutSchema), async (req, res) => {
   try {
     const result = await snapshotLoadout(req.body, req.sessionAccessToken!);
     invalidateProfileCaches(req.body.membershipType);
@@ -192,7 +274,7 @@ router.post('/api/bungie/snapshot-loadout', requireAuth, async (req, res) => {
   }
 });
 
-router.post('/api/bungie/clear-loadout', requireAuth, async (req, res) => {
+router.post('/api/bungie/clear-loadout', requireAuth, validateBody(clearLoadoutSchema), async (req, res) => {
   try {
     const result = await clearLoadout(req.body, req.sessionAccessToken!);
     invalidateProfileCaches(req.body.membershipType);

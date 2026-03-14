@@ -1,4 +1,5 @@
 import type { Request, Response, NextFunction } from "express";
+import { createHash } from "crypto";
 import { storage } from "../storage";
 import { refreshBungieToken, BungieApiError } from "../bungie";
 
@@ -27,7 +28,7 @@ export function handleBungieError(err: any, res: any, defaultMessage: string) {
     });
   }
   console.error(`[bungie] ${defaultMessage}:`, err.message);
-  res.status(502).json({ message: err.message || defaultMessage });
+  res.status(502).json({ message: defaultMessage });
 }
 
 export function handleAiError(err: any, res: any, label: string) {
@@ -37,6 +38,12 @@ export function handleAiError(err: any, res: any, label: string) {
     return res.status(429).json({ message: 'AI rate limit exceeded. Please try again later.' });
   }
   res.status(500).json({ message: 'AI analysis failed. Please try again.' });
+}
+
+export const ABSOLUTE_SESSION_TTL = 90 * 24 * 60 * 60 * 1000;
+
+export function hashUserAgent(ua: string | undefined): string {
+  return createHash('sha256').update(ua || 'unknown').digest('hex').slice(0, 16);
 }
 
 export async function verifyTurnstileToken(token: string): Promise<boolean> {
@@ -65,6 +72,22 @@ export async function requireAuth(req: Request, res: Response, next: NextFunctio
   if (!session) {
     res.clearCookie(COOKIE_NAME, { path: '/' });
     return res.status(401).json({ message: 'Session expired' });
+  }
+
+  if (session.absoluteExpiry && session.absoluteExpiry < new Date()) {
+    await storage.deleteSession(session.id);
+    res.clearCookie(COOKIE_NAME, { path: '/' });
+    return res.status(401).json({ message: 'Session expired, please log in again' });
+  }
+
+  if (session.userAgentHash) {
+    const currentHash = hashUserAgent(req.headers['user-agent']);
+    if (session.userAgentHash !== currentHash) {
+      console.warn(`[auth] UA mismatch for session ${session.id.slice(0, 8)}… — expected ${session.userAgentHash}, got ${currentHash}`);
+      await storage.deleteSession(session.id);
+      res.clearCookie(COOKIE_NAME, { path: '/' });
+      return res.status(401).json({ message: 'Session invalid' });
+    }
   }
 
   if (session.tokenExpiresAt < new Date()) {

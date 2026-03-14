@@ -18,7 +18,7 @@ export interface IStorage {
   getLoadouts(bungieMembershipId: string): Promise<SavedLoadout[]>;
   getLoadoutByShareCode(shareCode: string): Promise<SavedLoadout | undefined>;
   createLoadout(loadout: InsertLoadout): Promise<SavedLoadout>;
-  deleteLoadout(id: number): Promise<boolean>;
+  deleteLoadout(id: number, bungieMembershipId: string): Promise<boolean>;
 
   createSession(session: InsertSession): Promise<Session>;
   getSession(id: string): Promise<Session | undefined>;
@@ -48,8 +48,10 @@ export class DatabaseStorage implements IStorage {
     return created;
   }
 
-  async deleteLoadout(id: number): Promise<boolean> {
-    const result = await db.delete(savedLoadouts).where(eq(savedLoadouts.id, id)).returning();
+  async deleteLoadout(id: number, bungieMembershipId: string): Promise<boolean> {
+    const result = await db.delete(savedLoadouts)
+      .where(and(eq(savedLoadouts.id, id), eq(savedLoadouts.bungieMembershipId, bungieMembershipId)))
+      .returning();
     return result.length > 0;
   }
 
@@ -73,7 +75,10 @@ export class DatabaseStorage implements IStorage {
 
   async deleteExpiredSessions(): Promise<void> {
     const cutoff = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
-    await db.delete(sessions).where(lt(sessions.createdAt, cutoff));
+    const now = new Date();
+    await db.delete(sessions).where(
+      sql`${sessions.createdAt} < ${cutoff} OR (${sessions.absoluteExpiry} IS NOT NULL AND ${sessions.absoluteExpiry} < ${now})`
+    );
   }
 
   async getAiUsage(bungieMembershipId: string, date: string): Promise<AiUsage | undefined> {

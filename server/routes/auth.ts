@@ -2,7 +2,7 @@ import { Router, type Request, type Response } from "express";
 import { nanoid } from "nanoid";
 import { storage } from "../storage";
 import { exchangeToken, fetchMemberships, refreshBungieToken } from "../bungie";
-import { handleBungieError, verifyTurnstileToken, COOKIE_NAME, COOKIE_OPTIONS, requireAuth } from "./shared";
+import { handleBungieError, verifyTurnstileToken, COOKIE_NAME, COOKIE_OPTIONS, requireAuth, hashUserAgent, ABSOLUTE_SESSION_TTL } from "./shared";
 
 const router = Router();
 
@@ -55,6 +55,8 @@ router.post('/api/auth/login', async (req, res) => {
       accessToken: tokenData.access_token,
       refreshToken: tokenData.refresh_token || null,
       tokenExpiresAt,
+      userAgentHash: hashUserAgent(req.headers['user-agent']),
+      absoluteExpiry: new Date(Date.now() + ABSOLUTE_SESSION_TTL),
     });
 
     res.cookie(COOKIE_NAME, sessionId, COOKIE_OPTIONS);
@@ -88,6 +90,21 @@ router.get('/api/auth/me', async (req, res) => {
   if (!session) {
     res.clearCookie(COOKIE_NAME, { path: '/' });
     return res.status(401).json({ message: 'Session expired' });
+  }
+
+  if (session.absoluteExpiry && session.absoluteExpiry < new Date()) {
+    await storage.deleteSession(session.id);
+    res.clearCookie(COOKIE_NAME, { path: '/' });
+    return res.status(401).json({ message: 'Session expired, please log in again' });
+  }
+
+  if (session.userAgentHash) {
+    const currentHash = hashUserAgent(req.headers['user-agent']);
+    if (session.userAgentHash !== currentHash) {
+      await storage.deleteSession(session.id);
+      res.clearCookie(COOKIE_NAME, { path: '/' });
+      return res.status(401).json({ message: 'Session invalid' });
+    }
   }
 
   let accessToken = session.accessToken;

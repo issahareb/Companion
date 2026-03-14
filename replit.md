@@ -36,7 +36,7 @@ The project is structured as a monorepo containing `client/` (React frontend), `
 -   **Shared Layer**: `shared/` directory contains `schema.ts` (Drizzle ORM/Zod schemas) and `routes.ts` (type-safe API route definitions with Zod validation).
 
 ### Security & Robustness
--   **Security**: Implements Helmet for security headers, `express-rate-limit`, CORS with exact origin matching, bot protection, and Cloudflare integration for IP validation.
+-   **Security**: Implements Helmet for security headers (HSTS 2yr, CSP, X-Frame-Options deny), `express-rate-limit`, CORS with exact origin matching, bot protection, Cloudflare integration for IP validation, Zod validation on all mutation endpoints (Bungie + loadouts + AI), session binding (UA hash + 90-day absolute expiry), IDOR protection on loadout list/delete, and a global error handler that never leaks internal error messages (5xx → generic message).
 -   **Error Handling**: Utilizes React Error Boundary, `useOnlineStatus` for offline support, React Query retry logic (rate-limit-aware), mutation locking, and AbortController for fetch cleanup. Consistent error schema for API responses.
 -   **Internationalization**: Supports German, English, and French, with language preferences stored in localStorage.
 -   **Code Splitting**: Uses `React.lazy()` and `Suspense` for lazy-loading secondary Dashboard tabs to reduce initial bundle size.

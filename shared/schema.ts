@@ -28,6 +28,8 @@ export const sessions = pgTable("sessions", {
   refreshToken: text("refresh_token"),
   tokenExpiresAt: timestamp("token_expires_at").notNull(),
   createdAt: timestamp("created_at").defaultNow(),
+  userAgentHash: text("user_agent_hash"),
+  absoluteExpiry: timestamp("absolute_expiry"),
 });
 
 export type Session = typeof sessions.$inferSelect;
