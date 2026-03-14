@@ -16,6 +16,7 @@ import ggLogoImg from '@assets/IMG_0608_1772051654559.png';
 
 import { DesktopNavButton, MobileNavButton, UserProfile } from '@/components/Navigation';
 import { ItemCard, EquippedSlot, type Item, type SlotInfo } from '@/components/Inventory';
+import { VaultItemCard } from '@/components/dashboard/VaultItemCard';
 import { SaveLoadoutModal } from '@/components/SaveLoadoutModal';
 import { useToast } from '@/hooks/use-toast';
 import { useI18n } from '@/lib/i18n';
@@ -859,46 +860,17 @@ export default function DemoDashboard() {
                   </div>
                   <div className="flex-1 overflow-y-auto p-4 md:p-6 pt-2">
                     <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-7 gap-2 md:gap-3">
-                      {filteredVaultItems.map(item => {
-                        const isExotic = item.rarity === 'exotic';
-                        const rarityColor = isExotic ? 'var(--color-gold-accent)' : 'var(--color-legendary)';
-                        const isWeapon = ['kinetic', 'energy', 'power'].includes(item.slot);
-                        const perkNames = [...(item.perks || []).filter(p => p.isActive).map(p => p.name), ...(item.mods || []).map(m => m.name)];
-                        const rollResult = isWeapon && perkNames.length > 0 ? rateWeaponRoll(item.type, perkNames) : null;
-                        return (
-                          <div key={item.id}
-                            className={`group relative bg-gradient-to-b from-white/[0.03] to-transparent border transition-all duration-500 destiny-clip-sm ${
-                              isExotic ? 'border-[var(--color-gold-accent)]/20 hover:border-[var(--color-gold-accent)]/40 rarity-exotic-glow item-card-hover' : 'border-white/[0.08] hover:border-white/25 item-card-hover'
-                            }`}>
-                            <div className="h-[2px] w-full" style={{ backgroundColor: rarityColor }} />
-                            <div className="aspect-[4/3] relative overflow-hidden bg-black/80">
-                              <img src={item.screenshot || item.icon} alt={item.name} className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110 brightness-90 group-hover:brightness-110" loading="lazy" />
-                              <div className="absolute inset-0 bg-gradient-to-t from-[#0a0e18] via-transparent to-transparent opacity-90" />
-                            </div>
-                            <div className="px-2.5 py-2 relative z-10">
-                              <h4 className="text-[11px] font-bold truncate tracking-wider uppercase" style={{ color: isExotic ? 'var(--color-gold-accent)' : 'white' }}>{item.name}</h4>
-                              <div className="flex items-center justify-between mt-0.5">
-                                <div className="flex items-center gap-1.5 min-w-0">
-                                  <p className="text-[11px] text-gray-500 uppercase tracking-widest truncate">{item.type}</p>
-                                  {rollResult && <DemoRollBadge result={rollResult} />}
-                                </div>
-                                {item.power > 0 && (
-                                  <p className="text-[11px] text-gray-400 flex items-center gap-0.5 shrink-0">
-                                    <Sparkles className="w-2 h-2 text-[var(--color-gold-accent)]" /> {item.power}
-                                  </p>
-                                )}
-                              </div>
-                              {perkNames.length > 0 && (
-                                <div className="flex items-center gap-0.5 mt-1 flex-wrap">
-                                  {perkNames.slice(0, 3).map((p, i) => (
-                                    <span key={i} className="text-[6px] px-1 py-0.5 bg-white/5 border border-white/10 text-gray-500 rounded-sm uppercase">{p}</span>
-                                  ))}
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        );
-                      })}
+                      {filteredVaultItems.map(item => (
+                        <VaultItemCard
+                          key={item.id}
+                          item={item}
+                          characters={demoCharacters}
+                          onTransferToChar={() => toast({ title: 'Demo', description: 'Transfer nicht verfügbar im Demo-Modus' })}
+                          onEquipOnChar={() => toast({ title: 'Demo', description: 'Equip nicht verfügbar im Demo-Modus' })}
+                          onAddToLoadout={() => addToLoadout(toItem(item))}
+                          isInLoadout={loadout[item.slot]?.id === item.id}
+                        />
+                      ))}
                     </div>
                   </div>
                 </div>

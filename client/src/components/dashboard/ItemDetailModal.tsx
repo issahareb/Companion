@@ -1,5 +1,6 @@
 import { X, Sparkles, ArrowRightLeft, Shield, Package, Lock, Unlock } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { createPortal } from 'react-dom';
 import type { InventoryItem, CharacterData } from '@/hooks/use-profile-state';
 import { useI18n } from '@/lib/i18n';
 import { rateWeaponRoll } from '@/lib/roll-ratings';
@@ -71,7 +72,7 @@ export function ItemDetailModal({
   const hasMods = item.mods && item.mods.length > 0;
   const screenshotSrc = item.screenshot ? bungieIcon(item.screenshot) : '';
 
-  return (
+  return createPortal(
     <AnimatePresence>
       <motion.div
         initial={{ opacity: 0 }}
@@ -245,6 +246,7 @@ export function ItemDetailModal({
           </div>
         </motion.div>
       </motion.div>
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body
   );
 }
