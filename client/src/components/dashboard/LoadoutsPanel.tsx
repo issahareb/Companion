@@ -71,6 +71,15 @@ export function LoadoutsPanel({
 
   return (
     <motion.div key="loadouts" initial={{ opacity: 0, x: tabDirection * 40 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: tabDirection * -40 }} transition={{ duration: 0.4, ease: appleEase }} className="h-full p-4 md:p-8 overflow-y-auto scroll-container" data-scroll-container>
+      {!hasInGameLoadouts && characters.length > 0 && (
+        <div className="mb-8">
+          <div className="flex items-center gap-3 mb-3">
+            <Gamepad2 className="w-5 h-5 text-gray-600" />
+            <h2 className="font-display text-sm tracking-[0.2em] text-gray-500 uppercase">{t('ingame.loadouts')}</h2>
+          </div>
+          <p className="text-xs text-gray-600" data-testid="text-ingame-loadouts-empty">{t('ingame.empty')}</p>
+        </div>
+      )}
       {hasInGameLoadouts && (
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-4">

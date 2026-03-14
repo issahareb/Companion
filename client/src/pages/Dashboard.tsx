@@ -148,10 +148,17 @@ export default function Dashboard() {
   }, [characters, selectedCharacterId]);
 
   useEffect(() => {
-    const pending = localStorage.getItem('pending_loadout');
-    if (pending) {
+    const raw = localStorage.getItem('pending_loadout');
+    if (raw) {
       try {
-        setLoadout(JSON.parse(pending));
+        const parsed = JSON.parse(raw);
+        const MAX_AGE = 24 * 60 * 60 * 1000;
+        if (parsed?.timestamp && Date.now() - parsed.timestamp > MAX_AGE) {
+          localStorage.removeItem('pending_loadout');
+          return;
+        }
+        const data = parsed?.data || parsed;
+        setLoadout(data);
         toast({ title: t('toast.loadoutAdopted'), description: t('toast.loadoutAdoptedDesc') });
       } catch {}
       localStorage.removeItem('pending_loadout');

@@ -524,6 +524,7 @@ const CLASS_NAMES: Record<number, string> = {
   0: 'Titan',
   1: 'Hunter',
   2: 'Warlock',
+  3: 'All Classes',
 };
 
 const RACE_NAMES: Record<number, string> = {

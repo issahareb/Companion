@@ -62,6 +62,8 @@ router.get('/api/bungie/membership', requireAuth, async (req, res) => {
   }
 });
 
+const PROFILE_FIELDS = ['characters', 'vaultItems', 'postmasterItems', 'currencies', 'collectibles', 'records', 'artifact', 'inGameLoadouts'] as const;
+
 router.get('/api/bungie/profile-state/:membershipType/:membershipId', requireAuth, async (req, res) => {
   try {
     const membershipType = req.params.membershipType as string;
@@ -73,18 +75,31 @@ router.get('/api/bungie/profile-state/:membershipType/:membershipId', requireAut
       const cached = getCachedProfile(cacheKey);
       if (cached) {
         res.setHeader('X-Cache', 'HIT');
-        return res.json(cached);
+        const filtered = filterProfileFields(cached, req.query.include as string | undefined);
+        return res.json(filtered);
       }
     }
 
     const state = await fetchProfileState(membershipType, membershipId, req.sessionAccessToken!);
     setCachedProfile(cacheKey, state);
     res.setHeader('X-Cache', 'MISS');
-    res.json(state);
+    const filtered = filterProfileFields(state, req.query.include as string | undefined);
+    res.json(filtered);
   } catch (err: any) {
     handleBungieError(err, res, 'Failed to fetch profile state');
   }
 });
+
+function filterProfileFields(state: any, include?: string): any {
+  if (!include) return state;
+  const requested = new Set(include.split(',').map(s => s.trim()).filter(f => PROFILE_FIELDS.includes(f as any)));
+  if (requested.size === 0) return state;
+  const result: any = {};
+  for (const field of requested) {
+    if (field in state) result[field] = state[field];
+  }
+  return result;
+}
 
 router.post('/api/bungie/transfer', requireAuth, async (req, res) => {
   try {

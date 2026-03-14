@@ -15,12 +15,15 @@ router.post('/api/verify-turnstile', async (req, res) => {
   try {
     const { token } = req.body;
     if (!token) {
-      return res.status(400).json({ success: false, message: 'Token required' });
+      return res.status(400).json({ message: 'Token required' });
     }
     const valid = await verifyTurnstileToken(token);
-    res.json({ success: valid });
+    if (!valid) {
+      return res.status(403).json({ message: 'Turnstile verification failed' });
+    }
+    res.json({ success: true });
   } catch {
-    res.status(500).json({ success: false, message: 'Verification failed' });
+    res.status(500).json({ message: 'Verification failed' });
   }
 });
 

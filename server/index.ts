@@ -10,12 +10,6 @@ import cookieParser from "cookie-parser";
 const app = express();
 const httpServer = createServer(app);
 
-declare module "http" {
-  interface IncomingMessage {
-    rawBody: unknown;
-  }
-}
-
 app.set('trust proxy', 1);
 
 const isDev = process.env.NODE_ENV !== 'production';
@@ -62,8 +56,13 @@ const allowedOrigins = [
 app.use(cors({
   origin: (origin, callback) => {
     if (!origin) return callback(null, true);
-    if (allowedOrigins.some(allowed => origin.startsWith(allowed))) return callback(null, true);
-    if (isDev && (origin.includes('.replit.dev') || origin.includes('.repl.co'))) return callback(null, true);
+    if (allowedOrigins.includes(origin)) return callback(null, true);
+    if (isDev) {
+      try {
+        const hostname = new URL(origin).hostname;
+        if (hostname.endsWith('.replit.dev') || hostname.endsWith('.repl.co')) return callback(null, true);
+      } catch {}
+    }
     callback(null, false);
   },
   credentials: true,
@@ -78,8 +77,41 @@ if (!sessionSecret && process.env.NODE_ENV === 'production') {
 }
 app.use(cookieParser(sessionSecret || 'dev-secret-change-me'));
 
+const CLOUDFLARE_IP_RANGES = [
+  '173.245.48.0/20', '103.21.244.0/22', '103.22.200.0/22', '103.31.4.0/22',
+  '141.101.64.0/18', '108.162.192.0/18', '190.93.240.0/20', '188.114.96.0/20',
+  '197.234.240.0/22', '198.41.128.0/17', '162.158.0.0/15', '104.16.0.0/13',
+  '104.24.0.0/14', '172.64.0.0/13', '131.0.72.0/22',
+];
+
+function ipInCidr(ip: string, cidr: string): boolean {
+  const [range, bits] = cidr.split('/');
+  const mask = ~(2 ** (32 - parseInt(bits)) - 1) >>> 0;
+  const ipNum = ip.split('.').reduce((acc, oct) => (acc << 8) + parseInt(oct), 0) >>> 0;
+  const rangeNum = range.split('.').reduce((acc, oct) => (acc << 8) + parseInt(oct), 0) >>> 0;
+  return (ipNum & mask) === (rangeNum & mask);
+}
+
+function isCloudflareIp(ip: string): boolean {
+  return CLOUDFLARE_IP_RANGES.some(cidr => ipInCidr(ip, cidr));
+}
+
+function normalizeToIPv4(ip: string): string | null {
+  if (!ip) return null;
+  const mapped = ip.replace(/^::ffff:/, '');
+  if (/^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/.test(mapped)) return mapped;
+  return null;
+}
+
 function getClientIp(req: express.Request): string {
-  return (req.headers['cf-connecting-ip'] as string) || req.ip || 'unknown';
+  const cfIp = req.headers['cf-connecting-ip'] as string;
+  if (cfIp && req.ip) {
+    const proxyIp = normalizeToIPv4(req.ip);
+    if (proxyIp && isCloudflareIp(proxyIp)) {
+      return cfIp;
+    }
+  }
+  return req.ip || 'unknown';
 }
 
 const globalLimiter = rateLimit({
@@ -128,7 +160,7 @@ app.use('/api/bungie/transfer', writeLimiter);
 app.use('/api/bungie/equip', writeLimiter);
 app.use('/api/bungie/equip-items', writeLimiter);
 app.use('/api/bungie/pull-postmaster', writeLimiter);
-app.use('/api/bungie/set-lock', writeLimiter);
+app.use('/api/bungie/lock', writeLimiter);
 app.use('/api/bungie/insert-plug', writeLimiter);
 app.use('/api/loadouts', writeLimiter);
 app.use('/api/ai/', aiLimiter);
@@ -145,14 +177,7 @@ app.get('/healthz', (_req, res) => {
   res.status(200).json({ status: 'ok', timestamp: Date.now() });
 });
 
-app.use(
-  express.json({
-    limit: '1mb',
-    verify: (req, _res, buf) => {
-      req.rawBody = buf;
-    },
-  }),
-);
+app.use(express.json({ limit: '100kb' }));
 
 app.use(express.urlencoded({ extended: false, limit: '1mb' }));
 
