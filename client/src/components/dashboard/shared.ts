@@ -8,7 +8,7 @@ export const springSnappy = { type: 'spring' as const, damping: 25, stiffness: 3
 export const springGentle = { type: 'spring' as const, damping: 25, stiffness: 120 };
 export const springMedium = { type: 'spring' as const, damping: 30, stiffness: 200 };
 
-export type TabType = 'characters' | 'vault' | 'loadouts' | 'postmaster' | 'collections' | 'triumphs' | 'season' | 'ai' | 'news';
+export type TabType = 'characters' | 'vault' | 'loadouts' | 'postmaster' | 'collections' | 'triumphs' | 'season' | 'activity' | 'ai' | 'news';
 
 export type AiSubTab = 'playstyle' | 'build' | 'roll' | 'triumph' | 'synergy';
 

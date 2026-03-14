@@ -6,7 +6,7 @@ import {
   Sparkles,
   BookOpen, Trophy, TrendingUp, LogOut,
   ServerCrash, Clock, Menu, Archive, Brain, Newspaper,
-  PanelLeftClose, PanelLeft,
+  PanelLeftClose, PanelLeft, Swords,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import hunterBgImg from '@assets/IMG_0576_1772037013335.jpeg';
@@ -44,6 +44,9 @@ const WeaponRollPanel = lazy(() => import('@/components/dashboard/WeaponRollPane
 const TriumphAdvisorPanel = lazy(() => import('@/components/dashboard/TriumphAdvisorPanel').then(m => ({ default: m.TriumphAdvisorPanel })));
 const NewsPanel = lazy(() => import('@/components/dashboard/NewsPanel').then(m => ({ default: m.NewsPanel })));
 const SynergyPanel = lazy(() => import('@/components/dashboard/SynergyPanel'));
+const RaidReportPanel = lazy(() => import('@/components/dashboard/RaidReportPanel').then(m => ({ default: m.RaidReportPanel })));
+const AiUsageBanner = lazy(() => import('@/components/dashboard/AiUsageBanner').then(m => ({ default: m.AiUsageBanner })));
+const PremiumSidebarBadge = lazy(() => import('@/components/dashboard/AiUsageBanner').then(m => ({ default: m.PremiumSidebarBadge })));
 
 function LazyTabLoader() {
   return (
@@ -108,7 +111,7 @@ export default function Dashboard() {
     { id: 'rare', label: t('filter.rare') },
   ];
 
-  const TAB_ORDER: TabType[] = ['characters', 'vault', 'loadouts', 'postmaster', 'collections', 'triumphs', 'season', 'ai', 'news'];
+  const TAB_ORDER: TabType[] = ['characters', 'vault', 'loadouts', 'postmaster', 'collections', 'triumphs', 'season', 'activity', 'ai', 'news'];
   const [activeTab, setActiveTabRaw] = useState<TabType>('characters');
   const [aiSubTab, setAiSubTab] = useState<AiSubTab>('playstyle');
   const [tabDirection, setTabDirection] = useState(0);
@@ -314,6 +317,7 @@ export default function Dashboard() {
     collections: t('nav.collections'),
     triumphs: t('nav.triumphs'),
     season: t('nav.season'),
+    activity: t('nav.activity'),
     ai: t('nav.playstyle'),
     news: t('nav.news'),
   };
@@ -359,6 +363,7 @@ export default function Dashboard() {
           <DesktopNavButton icon={BookOpen} label={t('nav.collections').toUpperCase()} active={activeTab === 'collections'} onClick={() => setActiveTab('collections')} collapsed={sidebarCollapsed} />
           <DesktopNavButton icon={Trophy} label={t('nav.triumphs').toUpperCase()} active={activeTab === 'triumphs'} onClick={() => setActiveTab('triumphs')} collapsed={sidebarCollapsed} />
           <DesktopNavButton icon={TrendingUp} label={t('nav.season').toUpperCase()} active={activeTab === 'season'} onClick={() => setActiveTab('season')} collapsed={sidebarCollapsed} />
+          <DesktopNavButton icon={Swords} label={t('nav.activity').toUpperCase()} active={activeTab === 'activity'} onClick={() => setActiveTab('activity')} collapsed={sidebarCollapsed} />
           <div className="h-px bg-white/[0.06] my-2" />
           <DesktopNavButton icon={Brain} label={t('nav.playstyle').toUpperCase()} active={activeTab === 'ai'} onClick={() => setActiveTab('ai')} collapsed={sidebarCollapsed} />
           <DesktopNavButton icon={Newspaper} label={t('nav.news').toUpperCase()} active={activeTab === 'news'} onClick={() => setActiveTab('news')} collapsed={sidebarCollapsed} />
@@ -373,6 +378,11 @@ export default function Dashboard() {
           {sidebarCollapsed ? <PanelLeft className="w-4 h-4" /> : <PanelLeftClose className="w-4 h-4" />}
         </button>
 
+        <Suspense fallback={null}>
+          <div className={`${sidebarCollapsed ? 'px-1.5 flex justify-center' : 'px-3'} mb-2`}>
+            <PremiumSidebarBadge />
+          </div>
+        </Suspense>
         {!sidebarCollapsed && <UserProfile profile={destinyProfile} onLogout={logout} />}
       </aside>
 
@@ -445,6 +455,7 @@ export default function Dashboard() {
                     { key: 'collections', id: 'collections' as TabType, icon: BookOpen, label: t('nav.collections') },
                     { key: 'triumphs', id: 'triumphs' as TabType, icon: Trophy, label: t('nav.triumphs') },
                     { key: 'season', id: 'season' as TabType, icon: TrendingUp, label: t('nav.season') },
+                    { key: 'activity', id: 'activity' as TabType, icon: Swords, label: t('nav.activity') },
                     { key: 'ai', id: 'ai' as TabType, icon: Brain, label: t('nav.playstyle') },
                     { key: 'news', id: 'news' as TabType, icon: Newspaper, label: t('nav.news') },
                   ].map((item, i) => (
@@ -668,6 +679,17 @@ export default function Dashboard() {
                 </Suspense>
               )}
 
+              {activeTab === 'activity' && (
+                <Suspense fallback={<LazyTabLoader />}>
+                <RaidReportPanel
+                  tabDirection={tabDirection}
+                  membershipType={destinyProfile?.membershipType}
+                  membershipId={destinyProfile?.membershipId}
+                  characterIds={characters.map(c => c.characterId)}
+                />
+                </Suspense>
+              )}
+
               {activeTab === 'ai' && (
                 <motion.div
                   key="ai-hub"
@@ -677,7 +699,12 @@ export default function Dashboard() {
                   transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
                   className="h-full flex flex-col ai-section-badge"
                 >
-                  <div className="flex items-center gap-1 p-1 bg-white/[0.03] border border-white/[0.06] rounded-lg shrink-0 mx-4 md:mx-8 mt-4 mb-4 overflow-x-auto scrollbar-hide" data-testid="ai-subtab-bar">
+                  <Suspense fallback={null}>
+                    <div className="mt-4">
+                      <AiUsageBanner />
+                    </div>
+                  </Suspense>
+                  <div className="flex items-center gap-1 p-1 bg-white/[0.03] border border-white/[0.06] rounded-lg shrink-0 mx-4 md:mx-8 mb-4 overflow-x-auto scrollbar-hide" data-testid="ai-subtab-bar">
                     {([
                       { id: 'playstyle' as AiSubTab, label: t('advisor.playstyle') },
                       { id: 'build' as AiSubTab, label: t('advisor.buildRec') },

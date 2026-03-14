@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { fetchMemberships, fetchProfileState, transferItem, equipItem, pullFromPostmaster, setLockState, equipItems, insertSocketPlug, equipLoadout, snapshotLoadout, clearLoadout, fetchBungieNews, BungieApiError } from "../bungie";
+import { fetchMemberships, fetchProfileState, transferItem, equipItem, pullFromPostmaster, setLockState, equipItems, insertSocketPlug, equipLoadout, snapshotLoadout, clearLoadout, fetchBungieNews, fetchActivityHistory, BungieApiError } from "../bungie";
 import { handleBungieError, requireAuth } from "./shared";
 
 interface CacheEntry {
@@ -199,6 +199,33 @@ router.post('/api/bungie/clear-loadout', requireAuth, async (req, res) => {
     res.json(result);
   } catch (err: any) {
     handleBungieError(err, res, 'Clear loadout failed');
+  }
+});
+
+router.get('/api/bungie/activity-history/:membershipType/:membershipId/:characterId', requireAuth, async (req, res) => {
+  try {
+    const { membershipType, membershipId, characterId } = req.params;
+
+    if (!req.sessionMembershipId || req.sessionMembershipId !== membershipId) {
+      return res.status(403).json({ message: 'Access denied: membership mismatch' });
+    }
+
+    const mode = (req.query.mode as string) || 'raid';
+    const count = Math.min(parseInt(req.query.count as string) || 25, 50);
+    const page = parseInt(req.query.page as string) || 0;
+
+    const activities = await fetchActivityHistory(
+      req.sessionAccessToken!,
+      membershipType,
+      membershipId,
+      characterId,
+      mode,
+      count,
+      page
+    );
+    res.json(activities);
+  } catch (err: any) {
+    handleBungieError(err, res, 'Failed to fetch activity history');
   }
 });
 

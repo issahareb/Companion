@@ -5,6 +5,7 @@ import authRouter from "./routes/auth";
 import bungieRouter from "./routes/bungie";
 import loadoutRouter from "./routes/loadouts";
 import aiRouter from "./routes/ai";
+import premiumRouter from "./routes/premium";
 
 declare global {
   namespace Express {
@@ -24,6 +25,7 @@ export async function registerRoutes(
   app.use(bungieRouter);
   app.use(loadoutRouter);
   app.use(aiRouter);
+  app.use(premiumRouter);
 
   setInterval(() => {
     storage.deleteExpiredSessions().catch(err => {

@@ -1483,3 +1483,84 @@ function detectContentType(title: string, link: string): string {
   if (lower.includes('season') || lower.includes('expansion') || lower.includes('reveal')) return 'announcement';
   return 'news';
 }
+
+const ACTIVITY_MODE_MAP: Record<string, number> = {
+  all: 0,
+  raid: 4,
+  dungeon: 82,
+  nightfall: 46,
+  crucible: 5,
+  gambit: 63,
+  trials: 84,
+  ironbanner: 43,
+  strike: 18,
+};
+
+export interface ActivityHistoryEntry {
+  instanceId: string;
+  activityHash: number;
+  activityName: string;
+  activityIcon: string;
+  mode: string;
+  modeType: number;
+  date: string;
+  duration: number;
+  completed: boolean;
+  kills: number;
+  deaths: number;
+  assists: number;
+  kd: number;
+  teamScore: number;
+  playerCount: number;
+  isFlawless: boolean;
+}
+
+export async function fetchActivityHistory(
+  accessToken: string,
+  membershipType: string,
+  membershipId: string,
+  characterId: string,
+  mode: string = 'raid',
+  count: number = 25,
+  page: number = 0
+): Promise<ActivityHistoryEntry[]> {
+  const modeNum = ACTIVITY_MODE_MAP[mode] ?? 4;
+  const manifest = await fetchManifest();
+
+  const data = await bungieGet(
+    `/Platform/Destiny2/${membershipType}/Account/${membershipId}/Character/${characterId}/Stats/Activities/?mode=${modeNum}&count=${count}&page=${page}`,
+    accessToken
+  );
+
+  const activities = data?.Response?.activities;
+  if (!activities || !Array.isArray(activities)) {
+    return [];
+  }
+
+  return activities.map((a: any) => {
+    const vals = a.values || {};
+    const activityHash = a.activityDetails?.referenceId;
+    const actDef = activityHash ? manifest.activities[String(activityHash)] : null;
+    const deaths = vals.deaths?.basic?.value ?? 0;
+    const kills = vals.kills?.basic?.value ?? 0;
+
+    return {
+      instanceId: a.activityDetails?.instanceId || '',
+      activityHash: activityHash || 0,
+      activityName: actDef?.name || 'Unknown Activity',
+      activityIcon: actDef?.icon ? `https://www.bungie.net${actDef.icon}` : '',
+      mode,
+      modeType: a.activityDetails?.mode || modeNum,
+      date: a.period || '',
+      duration: vals.activityDurationSeconds?.basic?.value ?? 0,
+      completed: (vals.completed?.basic?.value ?? 0) === 1,
+      kills,
+      deaths,
+      assists: vals.assists?.basic?.value ?? 0,
+      kd: deaths > 0 ? parseFloat((kills / deaths).toFixed(2)) : kills,
+      teamScore: vals.teamScore?.basic?.value ?? 0,
+      playerCount: vals.playerCount?.basic?.value ?? 0,
+      isFlawless: deaths === 0 && (vals.completed?.basic?.value ?? 0) === 1,
+    };
+  });
+}
