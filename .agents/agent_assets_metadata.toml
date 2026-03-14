@@ -6,3 +6,9 @@ id = "y6WbYm0yzXGN4gr8i_AOm"
 uri = "file://code-summary.txt"
 type = "text"
 title = "GuardianGrid (Adept) — Vollständiger Code"
+
+[[outputs]]
+id = "aIiKod4vM2ru0razfDm7z"
+uri = "file://guardiangrid_full_code.txt"
+type = "text"
+title = "GuardianGrid (Adept) — Vollständiger Quellcode"
