@@ -1,0 +1,8 @@
+uploads = []
+generated = []
+
+[[outputs]]
+id = "y6WbYm0yzXGN4gr8i_AOm"
+uri = "file://code-summary.txt"
+type = "text"
+title = "GuardianGrid (Adept) — Vollständiger Code"
