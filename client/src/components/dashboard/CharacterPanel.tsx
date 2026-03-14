@@ -26,6 +26,14 @@ function ScrollRevealSection({ children, className, delay = 0 }: { children: Rea
   );
 }
 
+const SECTION_ACCENTS: Record<string, string> = {
+  weapons: 'border-l-red-500/50',
+  armor: 'border-l-blue-500/50',
+  subclass: 'border-l-purple-500/50',
+  artifact: 'border-l-amber-500/50',
+  quests: 'border-l-green-500/50',
+};
+
 interface CharacterPanelProps {
   characters: CharacterData[];
   selectedCharacterId: string | null;
@@ -53,19 +61,16 @@ export function CharacterPanel({
     <motion.div
       key="characters"
       custom={tabDirection}
-      initial={{ opacity: 0, x: tabDirection * 40 }}
-      animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: tabDirection * -40 }}
-      transition={{ duration: 0.4, ease: appleEase }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.3, ease: appleEase }}
       className="h-full flex flex-col relative"
     >
-      <div className="flex items-center gap-1 px-3 md:px-4 pt-3 pb-0 shrink-0 overflow-x-auto">
-        {characters.map((char, i) => (
-          <motion.button
+      <div className="flex items-center gap-1 px-4 pt-3 pb-0 shrink-0 overflow-x-auto">
+        {characters.map((char) => (
+          <button
             key={char.characterId}
-            initial={{ opacity: 0, y: -8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 + i * 0.08, duration: 0.5, ease: appleEase }}
             onClick={() => setSelectedCharacterId(char.characterId)}
             className={`flex items-center gap-2 px-3 py-2 transition-all duration-300 shrink-0 border-b-2 press-scale ${
               selectedCharacterId === char.characterId
@@ -76,15 +81,15 @@ export function CharacterPanel({
           >
             {char.emblemPath && <img src={char.emblemPath} alt="" className="w-8 h-8 rounded-sm" />}
             <div className="text-left">
-              <p className="text-[10px] font-bold tracking-wider uppercase">{char.className}</p>
-              <p className="text-[9px] text-gray-500 flex items-center gap-1">
-                <Sparkles className="w-2.5 h-2.5 text-[#E5C76B]" /> {char.light}
+              <p className="text-xs font-bold tracking-destiny uppercase">{char.className}</p>
+              <p className="text-[11px] text-gray-500 flex items-center gap-1">
+                <Sparkles className="w-2.5 h-2.5 text-[var(--color-gold-accent)]" /> {char.light}
               </p>
             </div>
-          </motion.button>
+          </button>
         ))}
       </div>
-      <div className="h-px bg-white/[0.06] mx-3 md:mx-4" />
+      <div className="h-px bg-white/[0.06] mx-4" />
 
       <AnimatePresence mode="wait">
         {selectedCharacter && (
@@ -97,104 +102,63 @@ export function CharacterPanel({
             className="flex-1 min-h-0 overflow-y-auto scroll-container"
             data-scroll-container
           >
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.8 }}
-              className="relative overflow-hidden"
-            >
+            <div className="relative overflow-hidden">
               {selectedCharacter.emblemBackgroundPath && (
-                <motion.img
+                <img
                   src={selectedCharacter.emblemBackgroundPath}
                   alt=""
-                  className="absolute inset-0 w-full h-full object-cover opacity-50 animate-ambient"
-                  initial={{ scale: 1.15, opacity: 0 }}
-                  animate={{ scale: 1.05, opacity: 0.5 }}
-                  transition={{ duration: 1.2, ease: appleEase }}
+                  className="absolute inset-0 w-full h-full object-cover opacity-50"
                 />
               )}
               <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/50 to-black/20" />
               <div className="absolute inset-0 bg-gradient-to-t from-[#080b14] via-[#080b14]/30 to-transparent" />
               <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[#080b14]/90" />
-              <div className="relative z-10 px-5 md:px-8 py-6 md:py-8 flex items-end justify-between">
-                <motion.div
-                  initial={{ x: -30, opacity: 0, filter: 'blur(8px)' }}
-                  animate={{ x: 0, opacity: 1, filter: 'blur(0px)' }}
-                  transition={{ delay: 0.15, duration: 0.7, ease: appleEase }}
-                >
-                  <h3 className="text-3xl md:text-4xl text-white font-display font-light tracking-wider text-shadow-glow leading-none">{selectedCharacter.className}</h3>
-                  <motion.p
-                    initial={{ opacity: 0, y: 5 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.4, duration: 0.5 }}
-                    className="text-[10px] text-gray-400/80 uppercase tracking-[0.35em] mt-2"
-                  >
-                    {selectedCharacter.raceName}
-                  </motion.p>
-                </motion.div>
-                <motion.div
-                  className="flex items-center gap-5"
-                  initial={{ x: 30, opacity: 0, filter: 'blur(8px)' }}
-                  animate={{ x: 0, opacity: 1, filter: 'blur(0px)' }}
-                  transition={{ delay: 0.25, duration: 0.7, ease: appleEase }}
-                >
+              <div className="relative z-10 px-6 py-8 flex items-end justify-between">
+                <div>
+                  <h3 className="text-3xl md:text-4xl text-white font-display font-light tracking-destiny-wide text-shadow-glow leading-none">{selectedCharacter.className}</h3>
+                  <p className="text-[11px] text-gray-400/80 tracking-destiny-widest mt-2">{selectedCharacter.raceName}</p>
+                </div>
+                <div className="flex items-center gap-5">
                   {(() => {
                     const subclassItem = selectedCharacter.equippedItems.find(i => i.slot === 'subclass');
                     return subclassItem?.icon ? (
-                      <motion.div
-                        className="relative"
-                        animate={{ y: [0, -4, 0] }}
-                        transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
-                      >
-                        <div className="absolute inset-0 blur-xl opacity-40 rounded-full animate-breathe" style={{ background: 'radial-gradient(circle, rgba(100,180,255,0.5), transparent 70%)' }} />
+                      <div className="relative">
+                        <div className="absolute inset-0 blur-xl opacity-30 rounded-full" style={{ background: 'radial-gradient(circle, rgba(100,180,255,0.5), transparent 70%)' }} />
                         <img src={subclassItem.icon} alt={subclassItem.name} title={subclassItem.name} className="w-14 h-14 relative z-10 drop-shadow-[0_0_12px_rgba(100,180,255,0.5)]" data-testid="img-subclass-super" />
-                      </motion.div>
+                      </div>
                     ) : null;
                   })()}
                   <div className="text-right">
                     <div className="flex items-center gap-3 justify-end">
-                      <motion.div
-                        animate={{ scale: [1, 1.1, 1], opacity: [0.8, 1, 0.8] }}
-                        transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
-                      >
-                        <Sparkles className="w-5 h-5 text-[#E5C76B]" />
-                      </motion.div>
-                      <motion.span
-                        className="text-5xl md:text-6xl font-display font-light text-[#E5C76B] text-shadow-gold leading-none"
+                      <Sparkles className="w-5 h-5 text-[var(--color-gold-accent)]" />
+                      <span
+                        className="text-5xl md:text-6xl font-display font-light text-[var(--color-gold-accent)] text-shadow-gold leading-none"
                         data-testid="text-power-level"
-                        initial={{ scale: 0.8, opacity: 0 }}
-                        animate={{ scale: 1, opacity: 1 }}
-                        transition={{ delay: 0.4, ...spring }}
                       >
                         {selectedCharacter.light}
-                      </motion.span>
+                      </span>
                     </div>
-                    <motion.p
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ delay: 0.6, duration: 0.5 }}
-                      className="text-[9px] text-gray-400/60 uppercase tracking-[0.3em] mt-2"
-                    >
-                      {t('power.label')}
-                    </motion.p>
+                    <p className="text-[11px] text-gray-400/60 tracking-destiny-widest mt-2">{t('power.label')}</p>
                   </div>
-                </motion.div>
+                </div>
               </div>
-            </motion.div>
+            </div>
+
+            <div className="h-px bg-gradient-to-r from-transparent via-white/10 to-transparent mx-6" />
 
             {selectedCharacter.stats.length > 0 && (
-              <div className="px-4 md:px-6 pb-5">
-                <div className="grid grid-cols-3 md:grid-cols-6 gap-2">
-                  {selectedCharacter.stats.map((stat, statIdx) => {
+              <div className="px-4 md:px-6 py-4">
+                <div className="hidden md:grid grid-cols-6 gap-2">
+                  {selectedCharacter.stats.map((stat) => {
                     const val = stat.value;
                     const pct = Math.min((val / 200) * 100, 100);
                     const isMax = val >= 200;
-                    const strokeColor = isMax ? '#E5C76B'
+                    const strokeColor = isMax ? 'var(--color-gold-accent)'
                       : val >= 160 ? '#a78bfa'
                       : val >= 100 ? '#34d399'
                       : val >= 60 ? '#fbbf24'
                       : '#f87171';
-                    const numColor = isMax ? 'text-[#E5C76B]'
+                    const numColor = isMax ? 'text-[var(--color-gold-accent)]'
                       : val >= 160 ? 'text-purple-300'
                       : val >= 100 ? 'text-emerald-300'
                       : val >= 60 ? 'text-amber-300'
@@ -202,12 +166,9 @@ export function CharacterPanel({
                     const circumference = 2 * Math.PI * 18;
                     const dashOffset = circumference - (pct / 100) * circumference;
                     return (
-                      <motion.div
+                      <div
                         key={stat.name}
-                        initial={{ opacity: 0, scale: 0.85, y: 10 }}
-                        animate={{ opacity: 1, scale: 1, y: 0 }}
-                        transition={{ delay: 0.3 + statIdx * 0.07, duration: 0.5, ease: appleEase }}
-                        className={`glass-subtle border p-2.5 hover:border-white/15 transition-all duration-400 group/stat hover-lift ${isMax ? 'border-[#E5C76B]/20' : 'border-white/[0.06]'}`}
+                        className={`glass-subtle border p-2.5 hover:border-white/15 transition-all duration-400 group/stat ${isMax ? 'border-[var(--color-gold-accent)]/20' : 'border-white/[0.06]'}`}
                         title={stat.description}
                       >
                         <div className="flex items-center gap-2">
@@ -227,21 +188,47 @@ export function CharacterPanel({
                             </div>
                           </div>
                           <div className="min-w-0 flex-1">
-                            <p className={`text-[8px] uppercase tracking-[0.15em] truncate ${isMax ? 'text-[#E5C76B]/70' : 'text-gray-500'}`}>{stat.name}</p>
+                            <p className={`text-[11px] tracking-destiny truncate ${isMax ? 'text-[var(--color-gold-accent)]/70' : 'text-gray-500'}`}>{stat.name}</p>
                             {stat.icon && <img src={stat.icon} alt="" className="w-3.5 h-3.5 opacity-50 mt-1 group-hover/stat:opacity-80 transition-opacity" />}
                           </div>
                         </div>
-                      </motion.div>
+                      </div>
+                    );
+                  })}
+                </div>
+                <div className="md:hidden space-y-1.5">
+                  {selectedCharacter.stats.map((stat) => {
+                    const val = stat.value;
+                    const pct = Math.min((val / 200) * 100, 100);
+                    const isMax = val >= 200;
+                    const barColor = isMax ? 'bg-[var(--color-gold-accent)]'
+                      : val >= 160 ? 'bg-purple-400'
+                      : val >= 100 ? 'bg-emerald-400'
+                      : val >= 60 ? 'bg-amber-400'
+                      : 'bg-red-400';
+                    const numColor = isMax ? 'text-[var(--color-gold-accent)]'
+                      : val >= 160 ? 'text-purple-300'
+                      : val >= 100 ? 'text-emerald-300'
+                      : val >= 60 ? 'text-amber-300'
+                      : 'text-red-400';
+                    return (
+                      <div key={stat.name} className="flex items-center gap-3" title={stat.description}>
+                        <span className={`w-16 text-[11px] tracking-destiny truncate ${isMax ? 'text-[var(--color-gold-accent)]/70' : 'text-gray-500'}`}>{stat.name}</span>
+                        <div className="flex-1 h-2 bg-white/[0.06] rounded-full overflow-hidden">
+                          <div className={`h-full rounded-full stat-bar-fill ${barColor}`} style={{ width: `${pct}%` }} />
+                        </div>
+                        <span className={`text-xs font-display w-8 text-right ${numColor}`}>{val}</span>
+                      </div>
                     );
                   })}
                 </div>
               </div>
             )}
 
-            <ScrollRevealSection className="px-4 md:px-6 pb-5">
-              <div className="flex items-center gap-2 mb-3">
+            <ScrollRevealSection className="px-4 md:px-6 pb-4">
+              <div className={`flex items-center gap-2 mb-3 border-l-2 pl-3 ${SECTION_ACCENTS.weapons}`}>
                 <Crosshair className="w-3.5 h-3.5 text-red-400/70" />
-                <h4 className="text-[10px] text-white/70 uppercase tracking-[0.2em] font-display">{t('section.weapons')}</h4>
+                <h4 className="text-xs text-white/70 uppercase tracking-destiny-wide font-display">{t('section.weapons')}</h4>
                 <div className="flex-1 h-px bg-white/[0.06]" />
               </div>
               <div className="space-y-1">
@@ -270,10 +257,10 @@ export function CharacterPanel({
               </div>
             </ScrollRevealSection>
 
-            <ScrollRevealSection className="px-4 md:px-6 pb-5" delay={0.1}>
-              <div className="flex items-center gap-2 mb-3">
+            <ScrollRevealSection className="px-4 md:px-6 pb-4" delay={0.1}>
+              <div className={`flex items-center gap-2 mb-3 border-l-2 pl-3 ${SECTION_ACCENTS.armor}`}>
                 <Shield className="w-3.5 h-3.5 text-blue-400/70" />
-                <h4 className="text-[10px] text-white/70 uppercase tracking-[0.2em] font-display">{t('section.armor')}</h4>
+                <h4 className="text-xs text-white/70 uppercase tracking-destiny-wide font-display">{t('section.armor')}</h4>
                 <div className="flex-1 h-px bg-white/[0.06]" />
               </div>
               <div className="space-y-1">
@@ -301,10 +288,10 @@ export function CharacterPanel({
               </div>
             </ScrollRevealSection>
 
-            <ScrollRevealSection className="px-4 md:px-6 pb-5" delay={0.15}>
-              <div className="flex items-center gap-2 mb-3">
+            <ScrollRevealSection className="px-4 md:px-6 pb-4" delay={0.15}>
+              <div className={`flex items-center gap-2 mb-3 border-l-2 pl-3 ${SECTION_ACCENTS.subclass}`}>
                 <Orbit className="w-3.5 h-3.5 text-purple-400/70" />
-                <h4 className="text-[10px] text-white/70 uppercase tracking-[0.2em] font-display">{t('section.subclass')}</h4>
+                <h4 className="text-xs text-white/70 uppercase tracking-destiny-wide font-display">{t('section.subclass')}</h4>
                 <div className="flex-1 h-px bg-white/[0.06]" />
               </div>
               <SubclassEditor
@@ -315,10 +302,10 @@ export function CharacterPanel({
             </ScrollRevealSection>
 
             {artifact && (
-              <ScrollRevealSection className="px-4 md:px-6 pb-5" delay={0.1}>
-                <div className="flex items-center gap-2 mb-3">
+              <ScrollRevealSection className="px-4 md:px-6 pb-4" delay={0.1}>
+                <div className={`flex items-center gap-2 mb-3 border-l-2 pl-3 ${SECTION_ACCENTS.artifact}`}>
                   <Hexagon className="w-3.5 h-3.5 text-amber-400/70" />
-                  <h4 className="text-[10px] text-white/70 uppercase tracking-[0.2em] font-display">{t('artifact.title')}</h4>
+                  <h4 className="text-xs text-white/70 uppercase tracking-destiny-wide font-display">{t('artifact.title')}</h4>
                   <div className="flex-1 h-px bg-white/[0.06]" />
                 </div>
                 <ArtifactDisplay artifact={artifact} />
@@ -327,22 +314,17 @@ export function CharacterPanel({
 
             {selectedCharacter.quests.length > 0 && (
               <ScrollRevealSection className="px-4 md:px-6 pb-6" delay={0.1}>
-                <div className="flex items-center gap-2 mb-3">
+                <div className={`flex items-center gap-2 mb-3 border-l-2 pl-3 ${SECTION_ACCENTS.quests}`}>
                   <Activity className="w-3.5 h-3.5 text-green-400/70" />
-                  <h4 className="text-[10px] text-white/70 uppercase tracking-[0.2em] font-display">Aktive Quests</h4>
-                  <span className="text-[9px] text-gray-600">{selectedCharacter.quests.length}</span>
+                  <h4 className="text-xs text-white/70 uppercase tracking-destiny-wide font-display">Aktive Quests</h4>
+                  <span className="text-[11px] text-gray-600">{selectedCharacter.quests.length}</span>
                   <div className="flex-1 h-px bg-white/[0.06]" />
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-                  {selectedCharacter.quests.map((quest, i) => (
-                    <motion.div
-                      key={quest.id}
-                      initial={{ opacity: 0, y: 12 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: i * 0.04, duration: 0.4, ease: appleEase }}
-                    >
+                  {selectedCharacter.quests.map((quest) => (
+                    <div key={quest.id}>
                       <QuestCard quest={quest} />
-                    </motion.div>
+                    </div>
                   ))}
                 </div>
               </ScrollRevealSection>

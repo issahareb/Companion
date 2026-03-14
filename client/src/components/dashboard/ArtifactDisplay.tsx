@@ -12,11 +12,11 @@ export function ArtifactDisplay({ artifact }: { artifact: ArtifactInfo }) {
           <p className="text-[11px] font-bold tracking-wider uppercase text-amber-300">{artifact.name}</p>
           <div className="flex items-center gap-3 mt-0.5">
             {artifact.powerBonus > 0 && (
-              <span className="text-[9px] text-yellow-500/80 flex items-center gap-0.5 font-medium">
+              <span className="text-[11px] text-yellow-500/80 flex items-center gap-0.5 font-medium">
                 <Sparkles className="w-2.5 h-2.5" /> +{artifact.powerBonus} {t('artifact.powerBonus')}
               </span>
             )}
-            <span className="text-[8px] text-gray-500">{t('artifact.points')}: {artifact.pointsUsed}/{artifact.pointsAvailable}</span>
+            <span className="text-[11px] text-gray-500">{t('artifact.points')}: {artifact.pointsUsed}/{artifact.pointsAvailable}</span>
           </div>
         </div>
       </div>
@@ -26,12 +26,12 @@ export function ArtifactDisplay({ artifact }: { artifact: ArtifactInfo }) {
         if (activeItems.length === 0) return null;
         return (
           <div key={tierIdx} className="space-y-1">
-            <p className="text-[8px] text-gray-500 uppercase tracking-[0.25em] font-medium px-1">{t('artifact.tier')} {tierIdx + 1}</p>
+            <p className="text-[11px] text-gray-500 uppercase tracking-destiny-wide font-medium px-1">{t('artifact.tier')} {tierIdx + 1}</p>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-1">
               {activeItems.map((item) => (
                 <div key={item.itemHash} className="flex items-center gap-2 p-2 bg-amber-500/[0.04] border border-amber-500/10">
                   {item.icon && <img src={item.icon} alt={item.name} className="w-7 h-7 rounded-sm ring-1 ring-amber-500/20 shrink-0" />}
-                  <p className="text-[9px] text-amber-200/80 font-medium truncate">{item.name}</p>
+                  <p className="text-[11px] text-amber-200/80 font-medium truncate">{item.name}</p>
                 </div>
               ))}
             </div>

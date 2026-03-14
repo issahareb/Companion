@@ -7,11 +7,11 @@ export function QuestCard({ quest }: { quest: QuestItem }) {
         {quest.icon && <img src={quest.icon} alt="" className="w-full h-full object-cover" />}
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-[10px] font-bold truncate tracking-wider uppercase text-white group-hover/quest:text-green-300/90 transition-colors">{quest.name}</p>
+        <p className="text-[11px] font-bold truncate tracking-wider uppercase text-white group-hover/quest:text-green-300/90 transition-colors">{quest.name}</p>
         {quest.description && (
-          <p className="text-[9px] text-gray-500 truncate mt-0.5">{quest.description}</p>
+          <p className="text-[11px] text-gray-500 truncate mt-0.5">{quest.description}</p>
         )}
-        <p className="text-[8px] text-green-500/50 uppercase tracking-widest mt-1">{quest.type || 'Quest'}</p>
+        <p className="text-[11px] text-green-500/50 uppercase tracking-widest mt-1">{quest.type || 'Quest'}</p>
       </div>
     </div>
   );

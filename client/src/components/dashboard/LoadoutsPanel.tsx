@@ -70,12 +70,12 @@ export function LoadoutsPanel({
   const hasInGameLoadouts = characters.some(c => (inGameLoadouts[c.characterId] || []).length > 0);
 
   return (
-    <motion.div key="loadouts" initial={{ opacity: 0, x: tabDirection * 40 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: tabDirection * -40 }} transition={{ duration: 0.4, ease: appleEase }} className="h-full p-4 md:p-8 overflow-y-auto scroll-container" data-scroll-container>
+    <motion.div key="loadouts" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.3, ease: appleEase }} className="h-full p-4 md:p-6 overflow-y-auto scroll-container" data-scroll-container>
       {!hasInGameLoadouts && characters.length > 0 && (
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-3">
             <Gamepad2 className="w-5 h-5 text-gray-600" />
-            <h2 className="font-display text-sm tracking-[0.2em] text-gray-500 uppercase">{t('ingame.loadouts')}</h2>
+            <h2 className="font-display text-sm tracking-destiny-wide text-gray-500 uppercase">{t('ingame.loadouts')}</h2>
           </div>
           <p className="text-xs text-gray-600" data-testid="text-ingame-loadouts-empty">{t('ingame.empty')}</p>
         </div>
@@ -84,7 +84,7 @@ export function LoadoutsPanel({
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-4">
             <Gamepad2 className="w-5 h-5 text-indigo-400" />
-            <h2 className="font-display text-sm tracking-[0.2em] text-white uppercase" data-testid="text-ingame-loadouts-title">{t('ingame.loadouts')}</h2>
+            <h2 className="font-display text-sm tracking-destiny-wide text-white uppercase" data-testid="text-ingame-loadouts-title">{t('ingame.loadouts')}</h2>
           </div>
 
           <div className="space-y-6">
@@ -98,22 +98,19 @@ export function LoadoutsPanel({
                     {character.emblemPath && (
                       <img src={character.emblemPath} alt="" className="w-6 h-6 rounded" />
                     )}
-                    <span className="text-xs text-gray-400 font-display tracking-[0.15em] uppercase">{character.className}</span>
-                    <span className="text-[10px] text-gray-600">· {character.light}</span>
+                    <span className="text-xs text-gray-400 font-display tracking-destiny uppercase">{character.className}</span>
+                    <span className="text-[11px] text-gray-600">· {character.light}</span>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
-                    {charLoadouts.map((loadout, li) => {
+                    {charLoadouts.map((loadout) => {
                       const sharingKey = `${character.characterId}-${loadout.index}`;
                       const isSharing = sharingIndex === sharingKey;
 
                       return (
-                        <motion.div
+                        <div
                           key={loadout.index}
-                          initial={{ opacity: 0, y: 15 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: li * 0.05, duration: 0.4, ease: appleEase }}
-                          className="bg-white/[0.02] border border-white/[0.06] rounded-lg p-3 group hover:border-indigo-500/30 transition-all duration-300 hover-lift"
+                          className="bg-white/[0.02] border border-white/[0.06] rounded-lg p-3 group hover:border-indigo-500/30 transition-all duration-300 item-card-hover"
                           data-testid={`card-ingame-loadout-${character.characterId}-${loadout.index}`}
                         >
                           <div className="flex items-center justify-between mb-2">
@@ -139,7 +136,7 @@ export function LoadoutsPanel({
                             </motion.button>
                           </div>
 
-                          <div className="grid grid-cols-8 gap-1">
+                          <div className="grid grid-cols-4 md:grid-cols-8 gap-1">
                             {loadout.items.slice(0, 8).map((item, idx) => (
                               <div
                                 key={idx}
@@ -155,7 +152,7 @@ export function LoadoutsPanel({
                               <div key={`empty-${idx}`} className="aspect-square border border-white/[0.04] bg-black/20 rounded-sm" />
                             ))}
                           </div>
-                        </motion.div>
+                        </div>
                       );
                     })}
                   </div>
@@ -168,7 +165,7 @@ export function LoadoutsPanel({
 
       <div className="flex items-center gap-3 mb-4">
         <Archive className="w-5 h-5 text-gray-500" />
-        <h2 className="font-display text-sm tracking-[0.2em] text-white uppercase">{t('nav.loadouts')}</h2>
+        <h2 className="font-display text-sm tracking-destiny-wide text-white uppercase">{t('nav.loadouts')}</h2>
       </div>
 
       {isLoadingLoadouts ? (
@@ -176,29 +173,21 @@ export function LoadoutsPanel({
           <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
         </div>
       ) : savedLoadouts.length === 0 ? (
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.6, ease: appleEase }}
-          className="flex flex-col items-center justify-center h-40 text-gray-500 space-y-4"
-        >
+        <div className="flex flex-col items-center justify-center h-40 text-gray-500 space-y-4">
           <p className="text-xs text-gray-600 max-w-md text-center">{t('loadouts.empty')}</p>
-        </motion.div>
+        </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-          {savedLoadouts.map((saved, i) => (
-            <motion.div
+          {savedLoadouts.map((saved) => (
+            <div
               key={saved.id}
-              initial={{ opacity: 0, y: 20, scale: 0.95 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              transition={{ delay: i * 0.06, duration: 0.5, ease: appleEase }}
-              className="bg-gradient-to-b from-white/[0.03] to-transparent border border-white/[0.08] p-4 group destiny-clip-sm hover:border-white/25 transition-all duration-500 hover-lift card-sheen"
+              className="bg-gradient-to-b from-white/[0.03] to-transparent border border-white/[0.08] p-4 group destiny-clip-sm hover:border-white/25 transition-all duration-500 item-card-hover card-sheen"
               data-testid={`card-loadout-${saved.id}`}
             >
               <div className="flex justify-between items-start mb-3">
                 <div>
-                  <h3 className="text-white font-display text-base font-light tracking-wider">{saved.name}</h3>
-                  <p className="text-[10px] text-gray-500 uppercase tracking-widest mt-1 font-mono">
+                  <h3 className="text-white font-display text-base font-light tracking-destiny-wide">{saved.name}</h3>
+                  <p className="text-[11px] text-gray-500 mt-1 font-mono">
                     {new Date(saved.createdAt!).toLocaleDateString('de-DE')}
                   </p>
                 </div>
@@ -234,16 +223,13 @@ export function LoadoutsPanel({
                   </motion.button>
                 </div>
               </div>
-              <div className="grid grid-cols-8 gap-1 opacity-60 group-hover:opacity-100 transition-opacity duration-500">
+              <div className="grid grid-cols-4 md:grid-cols-8 gap-1 opacity-60 group-hover:opacity-100 transition-opacity duration-500">
                 {Object.values(saved.items as Record<string, Item>).map((item: any, idx) => (
-                  <motion.div
+                  <div
                     key={idx}
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: i * 0.06 + idx * 0.03, duration: 0.3, ease: appleEase }}
                     className={`aspect-square border relative overflow-hidden rounded ${
-                      item.rarity === 'exotic' ? 'border-[#ceae33]/30 bg-gradient-to-br from-[#ceae33]/20 to-transparent'
-                      : item.rarity === 'legendary' ? 'border-[#522f65]/30 bg-gradient-to-br from-[#522f65]/30 to-transparent'
+                      item.rarity === 'exotic' ? 'border-[var(--color-exotic)]/30 bg-gradient-to-br from-[var(--color-exotic)]/20 to-transparent'
+                      : item.rarity === 'legendary' ? 'border-[var(--color-legendary)]/30 bg-gradient-to-br from-[var(--color-legendary)]/30 to-transparent'
                       : 'border-white/10 bg-black'
                     }`}
                   >
@@ -251,10 +237,10 @@ export function LoadoutsPanel({
                     <div className="absolute bottom-0 left-0 z-10">
                       <TierStars rarity={item.rarity} size="xs" />
                     </div>
-                  </motion.div>
+                  </div>
                 ))}
               </div>
-            </motion.div>
+            </div>
           ))}
         </div>
       )}

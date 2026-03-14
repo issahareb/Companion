@@ -347,14 +347,14 @@ export default function SharePage() {
       <div className="max-w-2xl w-full z-10 space-y-6">
         <div className="text-center space-y-4 pt-4">
           <Hexagon className="w-10 h-10 mx-auto text-white opacity-80" strokeWidth={1} />
-          <h1 className="text-2xl md:text-3xl font-display font-light text-white tracking-[0.3em] uppercase" data-testid="text-loadout-name">{loadout.name}</h1>
-          <p className="text-[10px] text-indigo-400 tracking-[0.3em] font-mono uppercase opacity-70">{t('share.config')}</p>
+          <h1 className="text-2xl md:text-3xl font-display font-light text-white tracking-destiny-widest uppercase" data-testid="text-loadout-name">{loadout.name}</h1>
+          <p className="text-[11px] text-indigo-400 tracking-destiny-widest font-mono uppercase opacity-70">{t('share.config')}</p>
         </div>
 
         <div className="bg-[#0A0A0C]/60 backdrop-blur-xl border border-white/10 p-5 md:p-8 destiny-clip-sm space-y-4 shadow-2xl">
           <div className="flex items-center gap-3 mb-4">
-            <Sparkles className="w-4 h-4 text-[#E5C76B]" />
-            <h3 className="text-xs font-display font-light tracking-[0.2em] text-white">{t('section.equipment')}</h3>
+            <Sparkles className="w-4 h-4 text-[var(--color-gold-accent)]" />
+            <h3 className="text-xs font-display font-light tracking-destiny-wide text-white">{t('section.equipment')}</h3>
           </div>
 
           <div className="grid gap-2">
@@ -370,14 +370,14 @@ export default function SharePage() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-[11px] text-white font-medium truncate">{item.name}</p>
-                      <p className="text-[9px] text-gray-500 capitalize">{slot.label} · {item.power > 0 ? `${item.power} PL` : item.rarity}</p>
+                      <p className="text-[11px] text-gray-500 capitalize">{slot.label} · {item.power > 0 ? `${item.power} PL` : item.rarity}</p>
                     </div>
                   </div>
 
                   {item.perks && item.perks.length > 0 && (
                     <div className="flex flex-wrap gap-1 ml-12">
                       {item.perks.filter((p: any) => p.isActive).map((p: any, pi: number) => (
-                        <div key={pi} className="flex items-center gap-1 px-1.5 py-0.5 rounded text-[8px] border border-white/[0.08] bg-white/[0.02] text-gray-400" title={p.name}>
+                        <div key={pi} className="flex items-center gap-1 px-1.5 py-0.5 rounded text-[11px] border border-white/[0.08] bg-white/[0.02] text-gray-400" title={p.name}>
                           {p.icon && <img src={bungieIcon(p.icon)} alt="" className="w-3 h-3" />}
                           <span className="truncate max-w-[80px]">{p.name}</span>
                         </div>
@@ -388,7 +388,7 @@ export default function SharePage() {
                   {isArmor && item.stats && item.stats.length > 0 && (
                     <div className="flex flex-wrap gap-x-3 gap-y-0.5 ml-12">
                       {item.stats.filter((s: any) => STAT_NAMES.includes(s.name)).map((s: any) => (
-                        <span key={s.name} className="text-[8px] text-gray-500 font-mono">
+                        <span key={s.name} className="text-[11px] text-gray-500 font-mono">
                           {s.name.slice(0, 3)}: {s.value}
                         </span>
                       ))}
@@ -404,13 +404,13 @@ export default function SharePage() {
           <div className="space-y-3">
             {characters.length > 1 && (
               <div className="flex items-center gap-3">
-                <span className="text-[10px] text-gray-500 uppercase tracking-widest shrink-0">{t('share.selectChar')}</span>
+                <span className="text-[11px] text-gray-500 uppercase tracking-widest shrink-0">{t('share.selectChar')}</span>
                 <div className="flex gap-2 flex-1">
                   {characters.map(c => (
                     <button
                       key={c.characterId}
                       onClick={() => setSelectedCharId(c.characterId)}
-                      className={`flex items-center gap-2 px-3 py-2 border text-[10px] tracking-wider uppercase transition-all ${
+                      className={`flex items-center gap-2 px-3 py-2 border text-[11px] tracking-wider uppercase transition-all ${
                         (selectedCharId || characters[0]?.characterId) === c.characterId
                           ? 'border-indigo-500/50 bg-indigo-500/10 text-indigo-300'
                           : 'border-white/10 bg-white/[0.02] text-gray-500 hover:border-white/20'
@@ -419,7 +419,7 @@ export default function SharePage() {
                     >
                       {c.emblemPath && <img src={bungieIcon(c.emblemPath)} alt="" className="w-4 h-4 rounded" />}
                       <span>{c.className}</span>
-                      <span className="text-[9px] opacity-60">{c.light}</span>
+                      <span className="text-[11px] opacity-60">{c.light}</span>
                     </button>
                   ))}
                 </div>
@@ -436,7 +436,7 @@ export default function SharePage() {
                 <div className="bg-[#0A0A0C]/40 border border-white/[0.06] p-4 space-y-2">
                   <div className="flex items-center gap-2 mb-3">
                     <Shield className="w-3.5 h-3.5 text-gray-500" />
-                    <span className="text-[10px] text-gray-400 uppercase tracking-widest">{t('share.statChanges')}</span>
+                    <span className="text-[11px] text-gray-400 uppercase tracking-widest">{t('share.statChanges')}</span>
                   </div>
                   {matchResults.filter(r => r.wanted).map(r => {
                     const statusColor = r.status === 'exact' ? 'text-green-400' : r.status === 'substitute' ? 'text-amber-400' : 'text-red-400';
@@ -450,13 +450,13 @@ export default function SharePage() {
                             )}
                           </div>
                           <div className="flex-1 min-w-0">
-                            <p className={`text-[10px] ${statusColor} truncate font-medium`}>
+                            <p className={`text-[11px] ${statusColor} truncate font-medium`}>
                               {r.status === 'exact' && <span className="inline-flex items-center gap-1"><Check className="w-3 h-3 inline" /> {r.wanted!.name}</span>}
                               {r.status === 'substitute' && r.matched!.name}
                               {r.status === 'missing' && <span className="inline-flex items-center gap-1"><AlertTriangle className="w-3 h-3 inline" /> {r.wanted!.name}</span>}
                             </p>
                             {r.status === 'substitute' && (
-                              <p className="text-[9px] text-amber-400/60">
+                              <p className="text-[11px] text-amber-400/60">
                                 {r.substituteReason || t('share.substitute')} · {r.wanted!.name}
                                 {r.powerDiff !== undefined && r.powerDiff !== 0 && (
                                   <span className={`ml-1 ${r.powerDiff > 0 ? 'text-green-400' : 'text-red-400'}`}>
@@ -473,10 +473,10 @@ export default function SharePage() {
                           </div>
                           <div className="flex items-center gap-1 shrink-0">
                             {r.source === 'vault' && (
-                              <span className="text-[8px] text-indigo-400/70 bg-indigo-500/10 px-1.5 py-0.5 rounded">{t('share.fromVault')}</span>
+                              <span className="text-[11px] text-indigo-400/70 bg-indigo-500/10 px-1.5 py-0.5 rounded">{t('share.fromVault')}</span>
                             )}
                             {r.source === 'other_character' && (
-                              <span className="text-[8px] text-purple-400/70 bg-purple-500/10 px-1.5 py-0.5 rounded">{t('share.fromChar')}</span>
+                              <span className="text-[11px] text-purple-400/70 bg-purple-500/10 px-1.5 py-0.5 rounded">{t('share.fromChar')}</span>
                             )}
                           </div>
                         </div>
@@ -487,7 +487,7 @@ export default function SharePage() {
                               const candidateActivePerks = r.matched?.perks?.filter(mp => mp.isActive) || [];
                               const matched = r.status === 'exact' || candidateActivePerks.some(mp => mp.perkHash === p.perkHash || mp.name.toLowerCase() === p.name.toLowerCase());
                               return (
-                                <div key={pi} className={`flex items-center gap-1 px-1.5 py-0.5 rounded text-[8px] border ${matched ? 'border-green-500/20 bg-green-500/5 text-green-400/80' : 'border-red-500/15 bg-red-500/5 text-red-400/60'}`} title={p.name}>
+                                <div key={pi} className={`flex items-center gap-1 px-1.5 py-0.5 rounded text-[11px] border ${matched ? 'border-green-500/20 bg-green-500/5 text-green-400/80' : 'border-red-500/15 bg-red-500/5 text-red-400/60'}`} title={p.name}>
                                   {p.icon && <img src={bungieIcon(p.icon)} alt="" className="w-3 h-3" />}
                                   <span className="truncate max-w-[80px]">{p.name}</span>
                                 </div>
@@ -499,7 +499,7 @@ export default function SharePage() {
                         {r.statDiffs && r.statDiffs.length > 0 && (
                           <div className="flex flex-wrap gap-x-3 gap-y-0.5 ml-11">
                             {r.statDiffs.map(sd => (
-                              <span key={sd.name} className={`text-[8px] font-mono ${sd.diff > 0 ? 'text-green-400/70' : sd.diff < 0 ? 'text-red-400/70' : 'text-gray-500'}`}>
+                              <span key={sd.name} className={`text-[11px] font-mono ${sd.diff > 0 ? 'text-green-400/70' : sd.diff < 0 ? 'text-red-400/70' : 'text-gray-500'}`}>
                                 {sd.name.slice(0, 3)}: {sd.matched} {sd.diff !== 0 && `(${sd.diff > 0 ? '+' : ''}${sd.diff})`}
                               </span>
                             ))}
@@ -513,8 +513,8 @@ export default function SharePage() {
                 {powerSummary && (
                   <div className="bg-[#0A0A0C]/40 border border-white/[0.06] p-3 rounded flex items-center justify-between" data-testid="panel-power-summary">
                     <div className="flex items-center gap-2">
-                      <Zap className="w-3.5 h-3.5 text-[#E5C76B]" />
-                      <span className="text-[10px] text-gray-400 uppercase tracking-widest">{t('share.totalImpact')}</span>
+                      <Zap className="w-3.5 h-3.5 text-[var(--color-gold-accent)]" />
+                      <span className="text-[11px] text-gray-400 uppercase tracking-widest">{t('share.totalImpact')}</span>
                     </div>
                     <div className="flex items-center gap-3">
                       {powerSummary.totalPowerDiff !== 0 && (
@@ -522,9 +522,9 @@ export default function SharePage() {
                           {powerSummary.totalPowerDiff > 0 ? '+' : ''}{powerSummary.totalPowerDiff} PL
                         </span>
                       )}
-                      <span className="text-[10px] text-amber-400/80">{powerSummary.substitutions} {t('share.substitute').toLowerCase()}</span>
+                      <span className="text-[11px] text-amber-400/80">{powerSummary.substitutions} {t('share.substitute').toLowerCase()}</span>
                       {powerSummary.missing > 0 && (
-                        <span className="text-[10px] text-red-400/80">{powerSummary.missing} {t('share.missingItem').toLowerCase()}</span>
+                        <span className="text-[11px] text-red-400/80">{powerSummary.missing} {t('share.missingItem').toLowerCase()}</span>
                       )}
                     </div>
                   </div>
@@ -532,7 +532,7 @@ export default function SharePage() {
 
                 <button
                   onClick={() => setShowEquipModal(true)}
-                  className="w-full py-4 bg-indigo-600 hover:bg-indigo-500 text-white transition-all destiny-clip-sm text-[10px] tracking-[0.3em] font-bold uppercase flex items-center justify-center gap-2"
+                  className="w-full py-4 bg-indigo-600 hover:bg-indigo-500 text-white transition-all destiny-clip-sm text-[11px] tracking-destiny-widest font-bold uppercase flex items-center justify-center gap-2"
                   data-testid="button-equip-loadout"
                 >
                   <Zap className="w-4 h-4" />
@@ -545,13 +545,13 @@ export default function SharePage() {
           <div className="space-y-3">
             <button
               onClick={login}
-              className="w-full py-4 bg-indigo-600 hover:bg-indigo-500 text-white transition-all destiny-clip-sm text-[10px] tracking-[0.3em] font-bold uppercase"
+              className="w-full py-4 bg-indigo-600 hover:bg-indigo-500 text-white transition-all destiny-clip-sm text-[11px] tracking-destiny-widest font-bold uppercase"
             >
               {t('action.loginToAdopt')}
             </button>
             <button
               onClick={() => setLocation('/')}
-              className="w-full py-4 bg-white/5 border border-white/10 hover:border-white/40 text-white transition-all destiny-clip-sm text-[10px] tracking-[0.3em] font-bold uppercase"
+              className="w-full py-4 bg-white/5 border border-white/10 hover:border-white/40 text-white transition-all destiny-clip-sm text-[11px] tracking-destiny-widest font-bold uppercase"
             >
               {t('action.createOwn')}
             </button>
@@ -572,7 +572,7 @@ export default function SharePage() {
               <div className="flex items-center justify-between mb-4">
                 <div>
                   <h2 className="text-base font-display font-light text-white tracking-wider">{t('share.equipTitle')}</h2>
-                  <p className="text-[10px] text-gray-500 mt-1">{t('share.equipDesc')}</p>
+                  <p className="text-[11px] text-gray-500 mt-1">{t('share.equipDesc')}</p>
                 </div>
                 {!isEquipping && (
                   <button onClick={() => setShowEquipModal(false)} className="text-gray-500 hover:text-white">
@@ -588,7 +588,7 @@ export default function SharePage() {
                   )}
                   <div>
                     <p className="text-xs text-white font-medium">{selectedChar.className}</p>
-                    <p className="text-[10px] text-gray-500">{selectedChar.light} · {selectedChar.raceName}</p>
+                    <p className="text-[11px] text-gray-500">{selectedChar.light} · {selectedChar.raceName}</p>
                   </div>
                 </div>
               )}
@@ -610,13 +610,13 @@ export default function SharePage() {
                         )}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-[10px] text-white truncate">
+                        <p className="text-[11px] text-white truncate">
                           {result.status === 'exact' ? result.wanted!.name : result.status === 'substitute' ? result.matched!.name : result.wanted!.name}
                         </p>
-                        <p className="text-[9px] text-gray-500 capitalize">{result.slot}</p>
+                        <p className="text-[11px] text-gray-500 capitalize">{result.slot}</p>
                       </div>
-                      {result.source === 'vault' && <span className="text-[8px] text-indigo-400/70 bg-indigo-500/10 px-1.5 py-0.5 rounded">{t('share.fromVault')}</span>}
-                      {result.source === 'other_character' && <span className="text-[8px] text-purple-400/70 bg-purple-500/10 px-1.5 py-0.5 rounded">{t('share.fromChar')}</span>}
+                      {result.source === 'vault' && <span className="text-[11px] text-indigo-400/70 bg-indigo-500/10 px-1.5 py-0.5 rounded">{t('share.fromVault')}</span>}
+                      {result.source === 'other_character' && <span className="text-[11px] text-purple-400/70 bg-purple-500/10 px-1.5 py-0.5 rounded">{t('share.fromChar')}</span>}
                     </div>
                   );
                 })}
@@ -624,7 +624,7 @@ export default function SharePage() {
 
               {needsTransfers.length > 0 && (
                 <div className="mb-4 p-2 bg-indigo-500/5 border border-indigo-500/15 rounded">
-                  <p className="text-[10px] text-indigo-400">
+                  <p className="text-[11px] text-indigo-400">
                     {t('share.transferRequired')} · {needsTransfers.length} {t('ingame.items').toLowerCase()}
                   </p>
                 </div>
@@ -633,7 +633,7 @@ export default function SharePage() {
               {isEquipping && equipProgress && (
                 <div className="mb-4 flex items-center gap-2 p-2 bg-white/[0.03] border border-white/[0.06] rounded">
                   <Loader2 className="w-3.5 h-3.5 animate-spin text-indigo-400 shrink-0" />
-                  <p className="text-[10px] text-gray-400 truncate">{equipProgress}</p>
+                  <p className="text-[11px] text-gray-400 truncate">{equipProgress}</p>
                 </div>
               )}
 
@@ -641,14 +641,14 @@ export default function SharePage() {
                 <button
                   onClick={() => setShowEquipModal(false)}
                   disabled={isEquipping}
-                  className="flex-1 py-3 bg-white/5 border border-white/10 text-white text-[10px] tracking-[0.2em] uppercase font-bold hover:bg-white/10 transition-all disabled:opacity-50"
+                  className="flex-1 py-3 bg-white/5 border border-white/10 text-white text-[11px] tracking-destiny-wide uppercase font-bold hover:bg-white/10 transition-all disabled:opacity-50"
                 >
                   {t('action.cancel')}
                 </button>
                 <button
                   onClick={handleEquip}
                   disabled={isEquipping}
-                  className="flex-1 py-3 bg-indigo-600 hover:bg-indigo-500 text-white text-[10px] tracking-[0.2em] uppercase font-bold transition-all disabled:opacity-70 flex items-center justify-center gap-2"
+                  className="flex-1 py-3 bg-indigo-600 hover:bg-indigo-500 text-white text-[11px] tracking-destiny-wide uppercase font-bold transition-all disabled:opacity-70 flex items-center justify-center gap-2"
                   data-testid="button-confirm-equip"
                 >
                   {isEquipping ? (

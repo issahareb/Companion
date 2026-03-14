@@ -14,39 +14,28 @@ export function SeasonPanel({ tabDirection, selectedCharacter }: SeasonPanelProp
   const { t } = useI18n();
 
   return (
-    <motion.div key="season" initial={{ opacity: 0, x: tabDirection * 40 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: tabDirection * -40 }} transition={{ duration: 0.4, ease: appleEase }} className="h-full overflow-y-auto p-4 md:p-8 scroll-container" data-scroll-container>
+    <motion.div key="season" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.3, ease: appleEase }} className="h-full overflow-y-auto p-4 md:p-6 scroll-container" data-scroll-container>
       {selectedCharacter ? (
         <div className="space-y-6">
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1, duration: 0.5, ease: appleEase }}
-          >
+          <div>
             <div className="flex items-center gap-2 mb-4">
               <TrendingUp className="w-3.5 h-3.5 text-indigo-400/70" />
-              <h4 className="text-[10px] text-white/70 uppercase tracking-[0.2em] font-display">{t('season.progressions')}</h4>
+              <h4 className="text-[11px] text-white/70 uppercase tracking-destiny-wide font-display">{t('season.progressions')}</h4>
               <div className="flex-1 h-px bg-white/[0.06]" />
             </div>
             {(selectedCharacter.progressions || []).length === 0 ? (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className="flex flex-col items-center justify-center h-32 text-gray-600"
-              >
+              <div className="flex flex-col items-center justify-center h-32 text-gray-600">
                 <TrendingUp className="w-8 h-8 opacity-20 mb-2" />
-                <p className="text-[10px] uppercase tracking-widest">{t('item.noneAvailable')}</p>
-              </motion.div>
+                <p className="text-[11px] uppercase tracking-destiny">{t('item.noneAvailable')}</p>
+              </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
-                {selectedCharacter.progressions.slice(0, 30).map((prog, i) => {
+                {selectedCharacter.progressions.slice(0, 30).map((prog) => {
                   const pct = prog.nextLevelAt > 0 ? Math.min(100, (prog.progressToNextLevel / prog.nextLevelAt) * 100) : 100;
                   return (
-                    <motion.div
+                    <div
                       key={prog.progressionHash}
-                      initial={{ opacity: 0, y: 16, scale: 0.96 }}
-                      animate={{ opacity: 1, y: 0, scale: 1 }}
-                      transition={{ delay: Math.min(i * 0.04, 0.5), duration: 0.45, ease: appleEase }}
-                      className="bg-gradient-to-r from-white/[0.03] to-transparent border border-white/[0.06] p-3 hover:border-indigo-500/20 transition-all duration-300 hover-lift will-change-transform"
+                      className="bg-gradient-to-r from-white/[0.03] to-transparent border border-white/[0.06] p-3 hover:border-indigo-500/20 transition-all duration-300 item-card-hover"
                       data-testid={`progression-${prog.progressionHash}`}
                     >
                       <div className="flex items-center gap-3 mb-2">
@@ -58,11 +47,11 @@ export function SeasonPanel({ tabDirection, selectedCharacter }: SeasonPanelProp
                           </div>
                         )}
                         <div className="flex-1 min-w-0">
-                          <p className="text-[10px] font-bold truncate tracking-wider uppercase text-white">{prog.name}</p>
+                          <p className="text-[11px] font-bold truncate tracking-destiny uppercase text-white">{prog.name}</p>
                           <div className="flex items-center gap-2 mt-0.5">
-                            <span className="text-[9px] text-indigo-400">{t('season.level')} {prog.level}</span>
+                            <span className="text-[11px] text-indigo-400">{t('season.level')} {prog.level}</span>
                             {prog.currentResetCount > 0 && (
-                              <span className="text-[8px] text-[#E5C76B]">{t('season.resets')}: {prog.currentResetCount}</span>
+                              <span className="text-[11px] text-[var(--color-gold-accent)]">{t('season.resets')}: {prog.currentResetCount}</span>
                             )}
                           </div>
                         </div>
@@ -73,26 +62,21 @@ export function SeasonPanel({ tabDirection, selectedCharacter }: SeasonPanelProp
                           style={{ width: `${pct}%` }}
                         />
                       </div>
-                      <p className="text-[8px] text-gray-600 mt-1 text-right">
+                      <p className="text-[11px] text-gray-600 mt-1 text-right">
                         {prog.progressToNextLevel.toLocaleString()}/{prog.nextLevelAt > 0 ? prog.nextLevelAt.toLocaleString() : '\u2014'}
                       </p>
-                    </motion.div>
+                    </div>
                   );
                 })}
               </div>
             )}
-          </motion.div>
+          </div>
         </div>
       ) : (
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.6, ease: appleEase }}
-          className="flex flex-col items-center justify-center h-64 text-gray-500 space-y-4"
-        >
+        <div className="flex flex-col items-center justify-center h-64 text-gray-500 space-y-4">
           <TrendingUp className="w-12 h-12 opacity-10" />
           <p className="text-sm">{t('item.noneAvailable')}</p>
-        </motion.div>
+        </div>
       )}
     </motion.div>
   );

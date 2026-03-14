@@ -14,13 +14,15 @@ interface NavButtonProps {
   label: string;
   active: boolean;
   onClick: () => void;
+  collapsed?: boolean;
 }
 
-export function DesktopNavButton({ icon: Icon, label, active, onClick }: NavButtonProps) {
+export function DesktopNavButton({ icon: Icon, label, active, onClick, collapsed }: NavButtonProps) {
   return (
     <button 
       onClick={onClick}
-      className={`w-full flex items-center space-x-3 px-4 py-3 transition-all duration-300 relative overflow-hidden group sidebar-shine-hover ${
+      title={collapsed ? label : undefined}
+      className={`w-full flex items-center ${collapsed ? 'justify-center px-2' : 'space-x-3 px-4'} py-3 transition-all duration-300 relative overflow-hidden group sidebar-shine-hover ${
         active 
           ? 'text-white' 
           : 'text-gray-500 hover:text-white border-l-2 border-transparent'
@@ -45,7 +47,7 @@ export function DesktopNavButton({ icon: Icon, label, active, onClick }: NavButt
       {!active && (
         <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/0 to-transparent group-hover:from-white/[0.04] group-hover:via-white/[0.02] transition-all duration-500 border-l-2 border-transparent group-hover:border-white/20" />
       )}
-      <div className="relative z-10 flex items-center space-x-3 w-full">
+      <div className={`relative z-10 flex items-center ${collapsed ? 'justify-center' : 'space-x-3'} w-full`}>
         <div className={`relative ${active ? 'text-indigo-400' : 'group-hover:text-indigo-300'} transition-colors duration-300`}>
           <Icon className="w-5 h-5" strokeWidth={1.5} />
           {active && (
@@ -57,8 +59,8 @@ export function DesktopNavButton({ icon: Icon, label, active, onClick }: NavButt
             />
           )}
         </div>
-        <span className="text-sm font-display tracking-[0.15em] font-medium">{label}</span>
-        {active && (
+        {!collapsed && <span className="text-sm font-display tracking-destiny font-medium">{label}</span>}
+        {active && !collapsed && (
           <motion.div
             initial={{ opacity: 0, x: -4 }}
             animate={{ opacity: 0.5, x: 0 }}
@@ -81,7 +83,7 @@ export function MobileNavButton({ icon: Icon, label, active, onClick }: NavButto
       }`}
     >
       <Icon className="w-5 h-5" strokeWidth={1.5} />
-      <span className="text-[10px] font-display tracking-wider font-medium">{label}</span>
+      <span className="text-[11px] font-display tracking-wider font-medium">{label}</span>
       {active && <div className="w-1 h-1 rounded-full bg-white absolute bottom-1" />}
     </button>
   );
@@ -110,7 +112,7 @@ export function UserProfile({ profile, onLogout }: UserProfileProps) {
           </div>
           <div className="truncate">
             <p className="text-xs text-white font-medium truncate">{profile.displayName}</p>
-            <p className="text-[10px] text-emerald-400/70 uppercase tracking-widest mt-0.5 flex items-center gap-1">
+            <p className="text-[11px] text-emerald-400/70 uppercase tracking-widest mt-0.5 flex items-center gap-1">
               <span className="w-1 h-1 rounded-full bg-emerald-400 animate-pulse inline-block" />
               {t('nav.online')}
             </p>

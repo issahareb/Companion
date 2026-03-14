@@ -10,9 +10,9 @@ import { TierStars } from './TierStars';
 
 function getRarityBg(rarity: string): string {
   switch (rarity) {
-    case 'exotic': return 'bg-gradient-to-br from-[#ceae33]/30 via-[#ceae33]/10 to-[#ceae33]/5';
-    case 'legendary': return 'bg-gradient-to-br from-[#522f65]/40 via-[#522f65]/15 to-[#522f65]/5';
-    case 'rare': return 'bg-gradient-to-br from-[#5076a3]/30 via-[#5076a3]/10 to-transparent';
+    case 'exotic': return 'bg-gradient-to-br from-[var(--color-exotic)]/30 via-[var(--color-exotic)]/10 to-[var(--color-exotic)]/5';
+    case 'legendary': return 'bg-gradient-to-br from-[var(--color-legendary)]/40 via-[var(--color-legendary)]/15 to-[var(--color-legendary)]/5';
+    case 'rare': return 'bg-gradient-to-br from-[var(--color-rare)]/30 via-[var(--color-rare)]/10 to-transparent';
     default: return 'bg-gradient-to-br from-white/[0.06] via-white/[0.02] to-transparent';
   }
 }
@@ -22,7 +22,7 @@ function RollRatingBadge({ result }: { result: RollResult }) {
   const { rating, sPerks, aPerks } = result;
 
   const badgeStyle = rating === 'META'
-    ? 'bg-gradient-to-r from-[#E5C76B]/20 to-[#D4A843]/20 border-[#E5C76B]/40 text-[#E5C76B] shadow-[0_0_8px_rgba(229,199,107,0.25)]'
+    ? 'bg-gradient-to-r from-[var(--color-gold-accent)]/20 to-[var(--color-gold-accent)]/20 border-[var(--color-gold-accent)]/40 text-[var(--color-gold-accent)] shadow-[0_0_8px_rgba(229,199,107,0.25)]'
     : rating === 'GOOD'
     ? 'bg-purple-500/15 border-purple-500/30 text-purple-300'
     : 'bg-white/5 border-white/10 text-gray-500';
@@ -32,7 +32,7 @@ function RollRatingBadge({ result }: { result: RollResult }) {
   return (
     <div className="group/roll relative">
       <span
-        className={`inline-flex items-center gap-0.5 px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-wider border rounded-sm ${badgeStyle}`}
+        className={`inline-flex items-center gap-0.5 px-1.5 py-0.5 text-[11px] font-bold uppercase tracking-destiny border rounded-sm ${badgeStyle}`}
         data-testid={`badge-roll-${rating.toLowerCase()}`}
       >
         {rating === 'META' && <Sparkles className="w-2.5 h-2.5" />}
@@ -43,14 +43,14 @@ function RollRatingBadge({ result }: { result: RollResult }) {
           <div className="bg-black/95 border border-white/10 rounded px-2.5 py-2 min-w-[140px] max-w-[220px]">
             {sPerks.length > 0 && (
               <div className="mb-1">
-                <p className="text-[8px] text-[#E5C76B]/70 uppercase tracking-widest mb-0.5">{t('roll.sPerks')}</p>
-                {sPerks.map(p => <p key={p} className="text-[8px] text-[#E5C76B]">{p}</p>)}
+                <p className="text-[11px] text-[var(--color-gold-accent)]/70 uppercase tracking-destiny mb-0.5">{t('roll.sPerks')}</p>
+                {sPerks.map(p => <p key={p} className="text-[11px] text-[var(--color-gold-accent)]">{p}</p>)}
               </div>
             )}
             {aPerks.length > 0 && (
               <div>
-                <p className="text-[8px] text-purple-400/70 uppercase tracking-widest mb-0.5">{t('roll.aPerks')}</p>
-                {aPerks.map(p => <p key={p} className="text-[8px] text-purple-300">{p}</p>)}
+                <p className="text-[11px] text-purple-400/70 uppercase tracking-destiny mb-0.5">{t('roll.aPerks')}</p>
+                {aPerks.map(p => <p key={p} className="text-[11px] text-purple-300">{p}</p>)}
               </div>
             )}
           </div>
@@ -80,7 +80,7 @@ export function EquippedSlotRow({ slotId, slotLabel, SlotIcon, item, isExpanded,
   const [showVault, setShowVault] = useState(false);
   const { t } = useI18n();
   const isExotic = item?.rarity === 'exotic';
-  const rarityColor = isExotic ? '#E5C76B' : '#7D5C96';
+  const rarityColor = isExotic ? 'var(--color-gold-accent)' : 'var(--color-legendary)';
   const isWeaponSlot = ['kinetic', 'energy', 'power'].includes(slotId);
 
   const rollResult = useMemo(() => {
@@ -147,17 +147,17 @@ export function EquippedSlotRow({ slotId, slotLabel, SlotIcon, item, isExpanded,
         </div>
 
         <div className="flex-1 min-w-0 relative z-10">
-          <p className="text-[8px] text-gray-500 uppercase tracking-[0.25em] mb-0.5 font-medium">{slotLabel}</p>
+          <p className="text-[11px] text-gray-500 tracking-destiny-wide mb-0.5 font-medium">{slotLabel}</p>
           {item ? (
             <>
-              <p className="text-[11px] font-bold truncate tracking-wider uppercase" style={{ color: isExotic ? '#E5C76B' : 'white' }}>{item.name}</p>
+              <p className="text-xs font-bold truncate tracking-destiny" style={{ color: isExotic ? 'var(--color-gold-accent)' : 'white' }}>{item.name}</p>
               <div className="flex items-center gap-2 mt-0.5">
                 {item.power > 0 && (
-                  <span className="text-[9px] text-yellow-500/80 flex items-center gap-0.5 font-medium">
+                  <span className="text-[11px] text-yellow-500/80 flex items-center gap-0.5 font-medium">
                     <Sparkles className="w-2.5 h-2.5" /> {item.power}
                   </span>
                 )}
-                <span className="text-[8px] text-gray-600">{item.type}</span>
+                <span className="text-[11px] text-gray-600">{item.type}</span>
                 {rollResult && <RollRatingBadge result={rollResult} />}
               </div>
               {item.mods && item.mods.length > 0 && (
@@ -168,8 +168,8 @@ export function EquippedSlotRow({ slotId, slotLabel, SlotIcon, item, isExpanded,
                         <img src={mod.icon} alt={mod.name} className="w-5 h-5 rounded-sm ring-1 ring-white/10 hover:ring-indigo-500/40 hover:scale-110 transition-all cursor-help duration-200" />
                         <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 hidden group-hover/perk:block z-50 pointer-events-none">
                           <div className="bg-black/95 border border-white/10 rounded px-2 py-1 min-w-[120px] max-w-[200px]">
-                            <p className="text-[9px] text-white font-bold whitespace-nowrap">{mod.name}</p>
-                            {mod.description && <p className="text-[8px] text-gray-400 mt-0.5 line-clamp-3">{mod.description}</p>}
+                            <p className="text-[11px] text-white font-bold whitespace-nowrap">{mod.name}</p>
+                            {mod.description && <p className="text-[11px] text-gray-400 mt-0.5 line-clamp-3">{mod.description}</p>}
                           </div>
                         </div>
                       </div>
@@ -179,13 +179,13 @@ export function EquippedSlotRow({ slotId, slotLabel, SlotIcon, item, isExpanded,
               )}
             </>
           ) : (
-            <p className="text-[10px] text-gray-700 uppercase tracking-widest italic">{t('item.none')}</p>
+            <p className="text-xs text-gray-700 italic">{t('item.none')}</p>
           )}
         </div>
 
         <div className="flex items-center gap-1.5 relative z-10">
           {onAddToLoadout && item && (
-            <button onClick={(e) => { e.stopPropagation(); onAddToLoadout(); }} className="p-1.5 text-gray-600 hover:text-[#E5C76B] hover:bg-yellow-500/10 rounded-sm opacity-0 group-hover:opacity-100 transition-all duration-200" title={t('action.toLoadout')} data-testid={`button-loadout-${slotId}`}>
+            <button onClick={(e) => { e.stopPropagation(); onAddToLoadout(); }} className="p-1.5 text-gray-600 hover:text-[var(--color-gold-accent)] hover:bg-yellow-500/10 rounded-sm opacity-0 group-hover:opacity-100 transition-all duration-200" title={t('action.toLoadout')} data-testid={`button-loadout-${slotId}`}>
               <Sparkles className="w-3.5 h-3.5" />
             </button>
           )}
@@ -215,7 +215,7 @@ export function EquippedSlotRow({ slotId, slotLabel, SlotIcon, item, isExpanded,
                     placeholder="Suchen..."
                     value={searchText}
                     onChange={(e) => setSearchText(e.target.value)}
-                    className="w-full bg-black/40 border border-white/[0.06] text-white pl-7 pr-3 py-1.5 text-[11px] focus:outline-none focus:border-indigo-500/40 transition-all tracking-wider rounded-sm"
+                    className="w-full bg-black/40 border border-white/[0.06] text-white pl-7 pr-3 py-1.5 text-xs focus:outline-none focus:border-indigo-500/40 transition-all tracking-destiny rounded-sm"
                     data-testid="input-picker-search"
                     autoFocus
                     onClick={(e) => e.stopPropagation()}
@@ -223,24 +223,21 @@ export function EquippedSlotRow({ slotId, slotLabel, SlotIcon, item, isExpanded,
                 </div>
                 <label className="flex items-center gap-1.5 cursor-pointer shrink-0" onClick={(e) => e.stopPropagation()}>
                   <input type="checkbox" checked={showVault} onChange={(e) => setShowVault(e.target.checked)} className="accent-indigo-500 w-3 h-3" data-testid="checkbox-show-vault" />
-                  <span className="text-[9px] text-gray-500 uppercase tracking-widest">{t('nav.vault')}</span>
+                  <span className="text-[11px] text-gray-500 tracking-destiny">{t('nav.vault')}</span>
                 </label>
-                <span className="text-[9px] text-gray-600 shrink-0">{filtered.length}</span>
+                <span className="text-[11px] text-gray-600 shrink-0">{filtered.length}</span>
               </div>
 
               <div className="max-h-[280px] overflow-y-auto px-3 pb-3 space-y-1">
                 {filtered.length === 0 ? (
-                  <p className="text-[10px] text-gray-600 text-center py-6 italic">{t('item.noneAvailable')}</p>
+                  <p className="text-xs text-gray-600 text-center py-6 italic">{t('item.noneAvailable')}</p>
                 ) : (
-                  filtered.map((invItem, idx) => {
+                  filtered.map((invItem) => {
                     const isItemExotic = invItem.rarity === 'exotic';
                     const fromVault = invItem.location === 'vault';
                     return (
-                      <motion.div
+                      <div
                         key={invItem.id}
-                        initial={{ opacity: 0, x: -10 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: idx * 0.03, duration: 0.2 }}
                         className={`group/item flex items-center gap-2.5 p-2 border cursor-pointer transition-all duration-200 item-card-hover relative overflow-hidden ${
                           isItemExotic
                             ? 'border-yellow-500/10 hover:border-yellow-500/30 bg-yellow-500/[0.02] hover:bg-yellow-500/[0.06]'
@@ -249,7 +246,7 @@ export function EquippedSlotRow({ slotId, slotLabel, SlotIcon, item, isExpanded,
                         onClick={(e) => { e.stopPropagation(); onEquip(invItem); }}
                         data-testid={`picker-item-${invItem.id}`}
                       >
-                        <div className="absolute left-0 top-0 bottom-0 w-[2px]" style={{ backgroundColor: isItemExotic ? '#E5C76B' : '#7D5C96' }} />
+                        <div className="absolute left-0 top-0 bottom-0 w-[2px]" style={{ backgroundColor: isItemExotic ? 'var(--color-gold-accent)' : 'var(--color-legendary)' }} />
                         <div className={`w-9 h-9 shrink-0 overflow-hidden relative rounded ${getRarityBg(invItem.rarity)} ${isItemExotic ? 'ring-1 ring-yellow-500/20' : 'ring-1 ring-white/10'}`}>
                           {(invItem.icon || invItem.screenshot) ? (
                             <img src={invItem.icon || invItem.screenshot} alt={invItem.name} className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
@@ -261,26 +258,26 @@ export function EquippedSlotRow({ slotId, slotLabel, SlotIcon, item, isExpanded,
                           </div>
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-[10px] font-bold truncate tracking-wider uppercase" style={{ color: isItemExotic ? '#E5C76B' : '#e0e0e0' }}>{invItem.name}</p>
+                          <p className="text-xs font-bold truncate tracking-destiny" style={{ color: isItemExotic ? 'var(--color-gold-accent)' : '#e0e0e0' }}>{invItem.name}</p>
                           <div className="flex items-center gap-2 mt-0.5">
                             {invItem.power > 0 && (
-                              <span className="text-[8px] text-yellow-500/70 flex items-center gap-0.5">
-                                <Sparkles className="w-2 h-2" /> {invItem.power}
+                              <span className="text-[11px] text-yellow-500/70 flex items-center gap-0.5">
+                                <Sparkles className="w-2.5 h-2.5" /> {invItem.power}
                               </span>
                             )}
-                            <span className="text-[8px] text-gray-600 uppercase">{invItem.type}</span>
-                            {fromVault && <span className="text-[8px] text-indigo-400/70 uppercase">{t('vault.label')}</span>}
+                            <span className="text-[11px] text-gray-600">{invItem.type}</span>
+                            {fromVault && <span className="text-[11px] text-indigo-400/70">{t('vault.label')}</span>}
                           </div>
                         </div>
                         <div className="flex items-center gap-0.5">
-                          <button onClick={(e) => { e.stopPropagation(); onAddToLoadoutItem(invItem); }} className="p-1 text-gray-700 hover:text-[#E5C76B] transition-all opacity-0 group-hover/item:opacity-100" title={t('action.toLoadout')}>
+                          <button onClick={(e) => { e.stopPropagation(); onAddToLoadoutItem(invItem); }} className="p-1 text-gray-700 hover:text-[var(--color-gold-accent)] transition-all opacity-0 group-hover/item:opacity-100" title={t('action.toLoadout')}>
                             <Sparkles className="w-3 h-3" />
                           </button>
                           <div className="p-1 text-indigo-400/50 group-hover/item:text-indigo-400 transition-all">
                             <ArrowRightLeft className="w-3 h-3" />
                           </div>
                         </div>
-                      </motion.div>
+                      </div>
                     );
                   })
                 )}

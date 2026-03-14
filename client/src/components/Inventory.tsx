@@ -21,6 +21,7 @@ export interface ItemMod {
   plugHash: number;
   name: string;
   icon: string;
+  description?: string;
 }
 
 export interface ItemSocketInfo {
@@ -62,9 +63,9 @@ interface ItemCardProps {
 
 function getRarityBg(rarity: string): string {
   switch (rarity) {
-    case 'exotic': return 'bg-gradient-to-br from-[#ceae33]/30 via-[#ceae33]/10 to-[#ceae33]/5';
-    case 'legendary': return 'bg-gradient-to-br from-[#522f65]/40 via-[#522f65]/15 to-[#522f65]/5';
-    case 'rare': return 'bg-gradient-to-br from-[#5076a3]/30 via-[#5076a3]/10 to-transparent';
+    case 'exotic': return 'bg-gradient-to-br from-[var(--color-exotic)]/30 via-[var(--color-exotic)]/10 to-[var(--color-exotic)]/5';
+    case 'legendary': return 'bg-gradient-to-br from-[var(--color-legendary)]/40 via-[var(--color-legendary)]/15 to-[var(--color-legendary)]/5';
+    case 'rare': return 'bg-gradient-to-br from-[var(--color-rare)]/30 via-[var(--color-rare)]/10 to-transparent';
     default: return 'bg-gradient-to-br from-white/[0.06] via-white/[0.02] to-transparent';
   }
 }
@@ -72,16 +73,16 @@ function getRarityBg(rarity: string): string {
 function getRarityBorder(rarity: string, isEquipped: boolean): string {
   if (isEquipped) return 'border-white/5';
   switch (rarity) {
-    case 'exotic': return 'border-[#ceae33]/30 hover:border-[#ceae33]/60';
-    case 'legendary': return 'border-[#522f65]/40 hover:border-[#522f65]/70';
-    case 'rare': return 'border-[#5076a3]/30 hover:border-[#5076a3]/60';
+    case 'exotic': return 'border-[var(--color-exotic)]/30 hover:border-[var(--color-exotic)]/60';
+    case 'legendary': return 'border-[var(--color-legendary)]/40 hover:border-[var(--color-legendary)]/70';
+    case 'rare': return 'border-[var(--color-rare)]/30 hover:border-[var(--color-rare)]/60';
     default: return 'border-white/[0.08] hover:border-white/20';
   }
 }
 
 export function ItemCard({ item, isEquipped, onClick }: ItemCardProps) {
   const isExotic = item.rarity === 'exotic';
-  const rarityColor = isExotic ? '#ceae33' : item.rarity === 'legendary' ? '#522f65' : item.rarity === 'rare' ? '#5076a3' : '#333';
+  const rarityColor = isExotic ? 'var(--color-exotic)' : item.rarity === 'legendary' ? 'var(--color-legendary)' : item.rarity === 'rare' ? 'var(--color-rare)' : '#333';
   const imgSrc = item.icon || item.screenshot || '';
 
   return (
@@ -115,10 +116,10 @@ export function ItemCard({ item, isEquipped, onClick }: ItemCardProps) {
         </div>
       </div>
       <div className="px-1.5 py-1.5 bg-[#0a0e18]/90 rounded-b-lg">
-        <h4 className="text-[8px] font-bold truncate tracking-wider uppercase" style={{ color: isExotic ? '#E5C76B' : 'white' }}>
+        <h4 className="text-[11px] font-bold truncate tracking-destiny" style={{ color: isExotic ? 'var(--color-gold-accent)' : 'white' }}>
           {item.name}
         </h4>
-        <p className="text-[7px] text-gray-500 mt-0.5 uppercase tracking-widest truncate">{item.type}</p>
+        <p className="text-[11px] text-gray-500 mt-0.5 truncate">{item.type}</p>
       </div>
     </motion.div>
   );
@@ -133,12 +134,12 @@ interface EquippedSlotProps {
 export function EquippedSlot({ slotInfo, item, onUnequip }: EquippedSlotProps) {
   const [expanded, setExpanded] = useState(false);
   const isExotic = item?.rarity === 'exotic';
-  const rarityColor = isExotic ? '#CEAE33' : '#522F65';
+  const rarityColor = isExotic ? 'var(--color-exotic)' : 'var(--color-legendary)';
   const isSubclass = item?.slot === 'subclass';
   const hasDetails = item && ((item.perks && item.perks.length > 0) || (item.mods && item.mods.length > 0) || (item.sockets && item.sockets.length > 0));
 
   return (
-    <div className="group relative bg-gradient-to-r from-white/[0.03] to-transparent backdrop-blur-sm border border-white/[0.08] transition-all duration-500 hover:border-white/25 destiny-clip-sm">
+    <div className="group relative bg-gradient-to-r from-white/[0.03] to-transparent glass-subtle border border-white/[0.08] transition-all duration-500 hover:border-white/25 destiny-clip-sm">
       <div className="p-4 flex items-center space-x-5">
         <div className={`w-16 h-16 border border-white/10 flex-shrink-0 relative flex items-center justify-center rounded-lg overflow-hidden shadow-inner ${
           item ? getRarityBg(item.rarity) : 'bg-black'
@@ -161,29 +162,29 @@ export function EquippedSlot({ slotInfo, item, onUnequip }: EquippedSlotProps) {
         </div>
 
         <div className="flex-grow min-w-0">
-          <div className="text-[8px] text-gray-500 uppercase tracking-[0.3em] mb-1.5 font-bold">
+          <div className="text-[11px] text-gray-500 uppercase tracking-destiny-widest mb-1.5 font-bold">
             {slotInfo.label}
           </div>
           {item ? (
             <>
-              <div className="text-[11px] font-bold truncate tracking-wider drop-shadow-md" style={{ color: isSubclass ? '#a855f7' : isExotic ? '#E5C76B' : 'white' }}>
+              <div className="text-[11px] font-bold truncate tracking-destiny drop-shadow-md" style={{ color: isSubclass ? '#a855f7' : isExotic ? 'var(--color-gold-accent)' : 'white' }}>
                 {item.name}
               </div>
               {!isSubclass && item.power > 0 && (
-                <div className="text-[10px] text-gray-400 font-mono mt-1.5 flex items-center">
-                  <Sparkles className="w-3.5 h-3.5 mr-1.5 text-[#E5C76B] opacity-70" /> {item.power}
+                <div className="text-[11px] text-gray-400 font-mono mt-1.5 flex items-center">
+                  <Sparkles className="w-3.5 h-3.5 mr-1.5 text-[var(--color-gold-accent)] opacity-70" /> {item.power}
                 </div>
               )}
               {isSubclass && item.sockets && (
                 <div className="flex flex-wrap gap-1 mt-1">
                   {item.sockets.filter(s => s.category === 'aspect').map(s => (
-                    <span key={s.socketIndex} className="text-[7px] px-1.5 py-0.5 bg-purple-500/10 border border-purple-500/20 rounded text-purple-300 truncate max-w-[80px]">{s.name}</span>
+                    <span key={s.socketIndex} className="text-[11px] px-1.5 py-0.5 bg-purple-500/10 border border-purple-500/20 rounded text-purple-300 truncate max-w-[80px]">{s.name}</span>
                   ))}
                 </div>
               )}
             </>
           ) : (
-            <div className="text-[11px] text-gray-700 font-light tracking-widest uppercase">Leer</div>
+            <div className="text-[11px] text-gray-700 font-light tracking-destiny uppercase">Leer</div>
           )}
         </div>
 
@@ -232,12 +233,12 @@ export function EquippedSlot({ slotInfo, item, onUnequip }: EquippedSlotProps) {
                     const isWrap = cats.includes('fragment') || cats.length > 1;
                     return (
                       <div key={label}>
-                        <p className="text-[7px] text-gray-500 uppercase tracking-[0.2em] mb-1">{label}</p>
+                        <p className="text-[11px] text-gray-500 uppercase tracking-destiny mb-1">{label}</p>
                         <div className={isWrap ? 'flex flex-wrap gap-1' : 'space-y-1'}>
                           {catSockets.map(s => (
                             <div key={s.socketIndex} className="flex items-center gap-1.5">
                               {s.icon && <img src={s.icon} alt={s.name} className="w-5 h-5 rounded-sm ring-1 ring-white/10" />}
-                              <span className="text-[9px] text-white/80 truncate">{s.name}</span>
+                              <span className="text-[11px] text-white/80 truncate">{s.name}</span>
                             </div>
                           ))}
                         </div>
@@ -249,12 +250,12 @@ export function EquippedSlot({ slotInfo, item, onUnequip }: EquippedSlotProps) {
 
               {!isSubclass && item.perks && item.perks.length > 0 && (
                 <div>
-                  <p className="text-[7px] text-gray-500 uppercase tracking-[0.2em] mb-1">Perks</p>
+                  <p className="text-[11px] text-gray-500 uppercase tracking-destiny mb-1">Perks</p>
                   <div className="flex flex-wrap gap-1">
                     {item.perks.map(p => (
                       <div key={p.perkHash} className={`flex items-center gap-1 px-1.5 py-0.5 rounded ${p.isActive ? 'bg-indigo-500/10 border border-indigo-500/15' : 'bg-white/[0.03] border border-white/[0.06] opacity-50'}`} data-testid={`perk-${p.perkHash}`}>
                         {p.icon && <img src={p.icon} alt={p.name} className="w-3.5 h-3.5 rounded-sm" />}
-                        <span className={`text-[8px] ${p.isActive ? 'text-indigo-300' : 'text-gray-500'}`}>{p.name}</span>
+                        <span className={`text-[11px] ${p.isActive ? 'text-indigo-300' : 'text-gray-500'}`}>{p.name}</span>
                       </div>
                     ))}
                   </div>
@@ -263,12 +264,12 @@ export function EquippedSlot({ slotInfo, item, onUnequip }: EquippedSlotProps) {
 
               {!isSubclass && item.mods && item.mods.length > 0 && (
                 <div>
-                  <p className="text-[7px] text-gray-500 uppercase tracking-[0.2em] mb-1">Mods</p>
+                  <p className="text-[11px] text-gray-500 uppercase tracking-destiny mb-1">Mods</p>
                   <div className="flex flex-wrap gap-1">
                     {item.mods.map(m => (
                       <div key={m.plugHash} className="flex items-center gap-1 px-1.5 py-0.5 bg-amber-500/10 border border-amber-500/15 rounded" data-testid={`mod-${m.plugHash}`}>
                         {m.icon && <img src={m.icon} alt={m.name} className="w-3.5 h-3.5 rounded-sm" />}
-                        <span className="text-[8px] text-amber-300">{m.name}</span>
+                        <span className="text-[11px] text-amber-300">{m.name}</span>
                       </div>
                     ))}
                   </div>

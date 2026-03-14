@@ -32,7 +32,7 @@ const tabVariants = {
 };
 
 const activities: { id: ActivityType; icon: typeof Swords; color: string }[] = [
-  { id: 'raid', icon: Castle, color: '#E5C76B' },
+  { id: 'raid', icon: Castle, color: 'var(--color-gold-accent)' },
   { id: 'nightfall', icon: Skull, color: '#818cf8' },
   { id: 'pvp', icon: Crosshair, color: '#ef4444' },
   { id: 'gambit', icon: Gem, color: '#22c55e' },
@@ -141,7 +141,7 @@ export function BuildAdvisorPanel({ tabDirection, selectedCharacter, vaultItems,
           className="flex items-center gap-3 mb-2"
         >
           <Swords className="w-5 h-5 text-indigo-400" />
-          <h2 className="font-display text-sm tracking-[0.2em] text-white uppercase" data-testid="text-build-advisor-title">
+          <h2 className="font-display text-sm tracking-destiny-wide text-white uppercase" data-testid="text-build-advisor-title">
             {t('build.title')}
           </h2>
         </motion.div>
@@ -160,7 +160,7 @@ export function BuildAdvisorPanel({ tabDirection, selectedCharacter, vaultItems,
               <button
                 key={act.id}
                 onClick={() => { setSelectedActivity(act.id); setResult(null); setError(null); }}
-                className={`press-scale flex items-center gap-2 px-4 py-2.5 rounded-lg text-xs font-display tracking-[0.15em] uppercase transition-all duration-300 border ${
+                className={`press-scale flex items-center gap-2 px-4 py-2.5 rounded-lg text-xs font-display tracking-destiny uppercase transition-all duration-300 border ${
                   isSelected
                     ? 'border-white/20 bg-white/[0.08] text-white'
                     : 'border-white/[0.06] bg-white/[0.02] text-gray-500 hover:text-gray-300 hover:bg-white/[0.04]'
@@ -196,7 +196,7 @@ export function BuildAdvisorPanel({ tabDirection, selectedCharacter, vaultItems,
             <button
               onClick={generateRecommendation}
               disabled={!selectedCharacter}
-              className="press-scale px-8 py-3 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-30 disabled:cursor-not-allowed text-white text-xs font-display tracking-[0.2em] uppercase transition-all duration-300 destiny-clip-sm border border-indigo-500/30"
+              className="press-scale px-8 py-3 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-30 disabled:cursor-not-allowed text-white text-xs font-display tracking-destiny-wide uppercase transition-all duration-300 destiny-clip-sm border border-indigo-500/30"
               data-testid="button-generate-build"
             >
               {t('build.generate')}
@@ -226,7 +226,7 @@ export function BuildAdvisorPanel({ tabDirection, selectedCharacter, vaultItems,
               </div>
               <div className="absolute -inset-2 rounded-full border border-indigo-500/20 animate-ping" style={{ animationDuration: '2s' }} />
             </div>
-            <p className="text-gray-400 text-xs font-display tracking-[0.2em] uppercase" data-testid="text-build-loading">
+            <p className="text-gray-400 text-xs font-display tracking-destiny-wide uppercase" data-testid="text-build-loading">
               {t('build.loading')}
             </p>
           </motion.div>
@@ -242,7 +242,7 @@ export function BuildAdvisorPanel({ tabDirection, selectedCharacter, vaultItems,
             >
               <div className="flex items-center gap-2 mb-4">
                 <Swords className="w-4 h-4 text-indigo-400" />
-                <h3 className="font-display text-xs tracking-[0.15em] text-indigo-400 uppercase" data-testid="text-weapons-heading">
+                <h3 className="font-display text-xs tracking-destiny text-indigo-400 uppercase" data-testid="text-weapons-heading">
                   {t('build.weapons')}
                 </h3>
               </div>
@@ -278,7 +278,7 @@ export function BuildAdvisorPanel({ tabDirection, selectedCharacter, vaultItems,
             >
               <div className="flex items-center gap-2 mb-4">
                 <Shield className="w-4 h-4 text-emerald-400" />
-                <h3 className="font-display text-xs tracking-[0.15em] text-emerald-400 uppercase" data-testid="text-armor-heading">
+                <h3 className="font-display text-xs tracking-destiny text-emerald-400 uppercase" data-testid="text-armor-heading">
                   {t('build.armor')}
                 </h3>
               </div>
@@ -311,7 +311,7 @@ export function BuildAdvisorPanel({ tabDirection, selectedCharacter, vaultItems,
             >
               <div className="flex items-center gap-2 mb-3">
                 <Flame className="w-4 h-4 text-purple-400" />
-                <h3 className="font-display text-xs tracking-[0.15em] text-purple-400 uppercase" data-testid="text-subclass-heading">
+                <h3 className="font-display text-xs tracking-destiny text-purple-400 uppercase" data-testid="text-subclass-heading">
                   {t('build.subclass')}
                 </h3>
               </div>
@@ -356,8 +356,8 @@ export function BuildAdvisorPanel({ tabDirection, selectedCharacter, vaultItems,
                 className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-5 hover-lift"
               >
                 <div className="flex items-center gap-2 mb-3">
-                  <TrendingUp className="w-4 h-4 text-[#E5C76B]" />
-                  <h3 className="font-display text-xs tracking-[0.15em] text-[#E5C76B] uppercase" data-testid="text-stats-heading">
+                  <TrendingUp className="w-4 h-4 text-[var(--color-gold-accent)]" />
+                  <h3 className="font-display text-xs tracking-destiny text-[var(--color-gold-accent)] uppercase" data-testid="text-stats-heading">
                     {t('build.stats')}
                   </h3>
                 </div>
@@ -371,7 +371,7 @@ export function BuildAdvisorPanel({ tabDirection, selectedCharacter, vaultItems,
                       className="flex items-center gap-2 text-sm text-gray-300"
                       data-testid={`item-stat-${i}`}
                     >
-                      <span className="w-5 h-5 rounded-full bg-[#E5C76B]/10 flex items-center justify-center text-[#E5C76B] text-xs font-bold shrink-0">
+                      <span className="w-5 h-5 rounded-full bg-[var(--color-gold-accent)]/10 flex items-center justify-center text-[var(--color-gold-accent)] text-xs font-bold shrink-0">
                         {i + 1}
                       </span>
                       {stat}
@@ -388,7 +388,7 @@ export function BuildAdvisorPanel({ tabDirection, selectedCharacter, vaultItems,
               >
                 <div className="flex items-center gap-2 mb-3">
                   <Lightbulb className="w-4 h-4 text-amber-400" />
-                  <h3 className="font-display text-xs tracking-[0.15em] text-amber-400 uppercase" data-testid="text-strategy-heading">
+                  <h3 className="font-display text-xs tracking-destiny text-amber-400 uppercase" data-testid="text-strategy-heading">
                     {t('build.strategy')}
                   </h3>
                 </div>
@@ -411,7 +411,7 @@ export function BuildAdvisorPanel({ tabDirection, selectedCharacter, vaultItems,
                   setResult(null);
                   setError(null);
                 }}
-                className="press-scale flex items-center gap-2 px-5 py-2.5 bg-white/[0.04] hover:bg-white/[0.08] text-gray-400 hover:text-white text-xs font-display tracking-[0.15em] uppercase transition-all duration-300 border border-white/[0.06] rounded-lg"
+                className="press-scale flex items-center gap-2 px-5 py-2.5 bg-white/[0.04] hover:bg-white/[0.08] text-gray-400 hover:text-white text-xs font-display tracking-destiny uppercase transition-all duration-300 border border-white/[0.06] rounded-lg"
                 data-testid="button-regenerate-build"
               >
                 <RefreshCw className="w-3.5 h-3.5" />

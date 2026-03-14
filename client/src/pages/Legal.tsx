@@ -12,7 +12,7 @@ function Section({ title, children, delay = 0 }: { title: string; children: Reac
       transition={{ delay, duration: 0.5, ease: appleEase }}
       className="mb-8"
     >
-      <h2 className="font-display text-sm tracking-[0.2em] uppercase text-white mb-3">{title}</h2>
+      <h2 className="font-display text-sm tracking-destiny-wide uppercase text-white mb-3">{title}</h2>
       <div className="text-[11px] text-gray-400 leading-relaxed tracking-wide whitespace-pre-line">{children}</div>
     </motion.div>
   );
@@ -30,7 +30,7 @@ export function ImprintPage() {
           transition={{ duration: 0.4, ease: appleEase }}
         >
           <Link href="/" data-testid="link-back-home">
-            <span className="inline-flex items-center gap-2 text-[10px] tracking-[0.2em] uppercase text-gray-500 hover:text-white transition-colors cursor-pointer mb-8">
+            <span className="inline-flex items-center gap-2 text-[11px] tracking-destiny-wide uppercase text-gray-500 hover:text-white transition-colors cursor-pointer mb-8">
               <ArrowLeft className="w-3.5 h-3.5" /> {t('legal.backToHome')}
             </span>
           </Link>
@@ -40,7 +40,7 @@ export function ImprintPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1, duration: 0.6, ease: appleEase }}
-          className="font-display text-2xl tracking-[0.15em] uppercase text-white mt-6 mb-8"
+          className="font-display text-2xl tracking-destiny uppercase text-white mt-6 mb-8"
           data-testid="text-imprint-title"
         >
           {t('imprint.title')}
@@ -85,7 +85,7 @@ export function PrivacyPage() {
           transition={{ duration: 0.4, ease: appleEase }}
         >
           <Link href="/" data-testid="link-back-home-privacy">
-            <span className="inline-flex items-center gap-2 text-[10px] tracking-[0.2em] uppercase text-gray-500 hover:text-white transition-colors cursor-pointer mb-8">
+            <span className="inline-flex items-center gap-2 text-[11px] tracking-destiny-wide uppercase text-gray-500 hover:text-white transition-colors cursor-pointer mb-8">
               <ArrowLeft className="w-3.5 h-3.5" /> {t('legal.backToHome')}
             </span>
           </Link>
@@ -95,7 +95,7 @@ export function PrivacyPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1, duration: 0.6, ease: appleEase }}
-          className="font-display text-2xl tracking-[0.15em] uppercase text-white mt-6 mb-4"
+          className="font-display text-2xl tracking-destiny uppercase text-white mt-6 mb-4"
           data-testid="text-privacy-title"
         >
           {t('privacy.title')}
@@ -171,13 +171,13 @@ export function LegalFooter() {
   return (
     <div className="mt-12 pt-6 border-t border-white/[0.06] flex flex-wrap items-center justify-center gap-4">
       <Link href="/imprint" data-testid="link-imprint">
-        <span className="text-[9px] tracking-[0.2em] uppercase text-gray-600 hover:text-gray-400 transition-colors cursor-pointer">
+        <span className="text-[11px] tracking-destiny-wide uppercase text-gray-600 hover:text-gray-400 transition-colors cursor-pointer">
           {t('footer.imprint')}
         </span>
       </Link>
-      <span className="text-gray-700 text-[8px]">|</span>
+      <span className="text-gray-700 text-[11px]">|</span>
       <Link href="/privacy" data-testid="link-privacy">
-        <span className="text-[9px] tracking-[0.2em] uppercase text-gray-600 hover:text-gray-400 transition-colors cursor-pointer">
+        <span className="text-[11px] tracking-destiny-wide uppercase text-gray-600 hover:text-gray-400 transition-colors cursor-pointer">
           {t('footer.privacy')}
         </span>
       </Link>

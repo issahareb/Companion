@@ -8,8 +8,6 @@ const TIER_MAP: Record<string, number> = {
   common: 1,
 };
 
-const GOLD = '#E5C76B';
-
 export function TierStars({ rarity, size = 'sm' }: { rarity: string; size?: 'xs' | 'sm' }) {
   const count = TIER_MAP[rarity] || 1;
   const starSize = size === 'xs' ? 'w-[6px] h-[6px]' : 'w-[8px] h-[8px]';
@@ -21,11 +19,11 @@ export function TierStars({ rarity, size = 'sm' }: { rarity: string; size?: 'xs'
         <Star
           key={i}
           className={starSize}
-          fill={GOLD}
+          fill="var(--color-gold-accent)"
           stroke="#000"
           strokeWidth={1}
           style={{
-            filter: `drop-shadow(0 0 2px ${GOLD})`,
+            filter: 'drop-shadow(0 0 2px var(--color-gold-accent))',
             marginTop: i > 0 ? '-2px' : '0',
           }}
         />

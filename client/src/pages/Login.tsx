@@ -298,7 +298,7 @@ export default function Login({ onLogin, isAuthenticating, error }: LoginProps) 
           transition={{ delay: 0.7, duration: 0.9, ease: appleEase }}
           className="w-full"
         >
-          <p className="text-[11px] text-[#E5C76B] font-mono tracking-[0.25em] uppercase leading-relaxed drop-shadow-[0_2px_6px_rgba(0,0,0,0.9)] [text-shadow:0_0_8px_rgba(0,0,0,0.8),0_1px_3px_rgba(0,0,0,0.9)]">{t('login.subtitle')}</p>
+          <p className="text-[11px] text-[var(--color-gold-accent)] font-mono tracking-destiny-wide uppercase leading-relaxed drop-shadow-[0_2px_6px_rgba(0,0,0,0.9)] [text-shadow:0_0_8px_rgba(0,0,0,0.8),0_1px_3px_rgba(0,0,0,0.9)]">{t('login.subtitle')}</p>
         </motion.div>
 
         {turnstileConfig.enabled && (
@@ -317,7 +317,7 @@ export default function Login({ onLogin, isAuthenticating, error }: LoginProps) 
                 className="flex items-center gap-2 mt-2 text-emerald-400/80"
               >
                 <ShieldCheck className="w-3.5 h-3.5" />
-                <span className="text-[9px] uppercase tracking-[0.2em]">{t('login.verified')}</span>
+                <span className="text-[11px] uppercase tracking-destiny-wide">{t('login.verified')}</span>
               </motion.div>
             )}
           </motion.div>
@@ -350,12 +350,12 @@ export default function Login({ onLogin, isAuthenticating, error }: LoginProps) 
             data-testid="button-login"
           >
             {isAuthenticating ? (
-              <span className="flex items-center space-x-4 text-[11px] tracking-[0.3em] text-[#E5C76B]">
+              <span className="flex items-center space-x-4 text-[11px] tracking-destiny-widest text-[var(--color-gold-accent)]">
                 <Loader2 className="w-5 h-5 animate-spin" />
                 <span>{t('login.connecting')}</span>
               </span>
             ) : (
-              <span className="flex items-center space-x-4 text-[11px] tracking-[0.3em] text-white font-bold">
+              <span className="flex items-center space-x-4 text-[11px] tracking-destiny-widest text-white font-bold">
                 <span>{t('login.button')}</span>
                 <motion.span
                   className="inline-block"
@@ -373,7 +373,7 @@ export default function Login({ onLogin, isAuthenticating, error }: LoginProps) 
           initial={{ opacity: 0 }}
           animate={{ opacity: 0.4 }}
           transition={{ delay: 1.3, duration: 1.2 }}
-          className="text-[10px] tracking-[0.2em] text-white/40 mt-6"
+          className="text-[11px] tracking-destiny-wide text-white/40 mt-6"
         >
           {t('login.disclaimer')}
         </motion.p>

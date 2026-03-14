@@ -517,7 +517,7 @@ export default function DemoDashboard() {
       </div>
 
       {/* Demo banner */}
-      <div className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-amber-600/90 via-amber-500/90 to-amber-600/90 text-black text-center py-1.5 text-[10px] font-bold uppercase tracking-[0.3em] backdrop-blur-sm">
+      <div className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-amber-600/90 via-amber-500/90 to-amber-600/90 text-black text-center py-1.5 text-[11px] font-bold uppercase tracking-destiny-widest backdrop-blur-sm">
         DEMO MODE — Dummy Data
       </div>
 
@@ -527,7 +527,7 @@ export default function DemoDashboard() {
             <div className="relative">
               <Hexagon className="w-8 h-8 text-white" strokeWidth={1.5} />
             </div>
-            <span className="font-display font-light text-lg tracking-[0.2em] text-white">GUARDIANGRID <span className="text-[#E5C76B] text-sm">(Adept)</span></span>
+            <span className="font-display font-light text-lg tracking-destiny-wide text-white">GUARDIANGRID <span className="text-[var(--color-gold-accent)] text-sm">(Adept)</span></span>
           </div>
         </div>
 
@@ -536,7 +536,7 @@ export default function DemoDashboard() {
             {currencies.map(c => (
               <div key={c.itemHash} className="flex items-center gap-1.5 bg-white/5 rounded px-2 py-1" title={c.name}>
                 {c.icon && <img src={c.icon} alt="" className="w-4 h-4" />}
-                <span className="text-[10px] text-gray-400 font-mono">{c.quantity.toLocaleString('de-DE')}</span>
+                <span className="text-[11px] text-gray-400 font-mono">{c.quantity.toLocaleString('de-DE')}</span>
               </div>
             ))}
           </div>
@@ -557,7 +557,7 @@ export default function DemoDashboard() {
             <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-600 to-purple-700 flex items-center justify-center text-white font-bold text-sm">DM</div>
             <div>
               <p className="text-[11px] text-white font-medium tracking-wider">DemoGuardian</p>
-              <p className="text-[9px] text-gray-500 uppercase tracking-widest">Demo Mode</p>
+              <p className="text-[11px] text-gray-500 uppercase tracking-widest">Demo Mode</p>
             </div>
           </div>
         </div>
@@ -567,8 +567,8 @@ export default function DemoDashboard() {
         <div className="h-10 border-b border-white/[0.06] bg-[#060a14] flex items-center px-4 md:px-8 shrink-0 z-10">
           <div className="flex items-center gap-2.5">
             <img src={ggLogoImg} alt="GG" className="h-6 mix-blend-screen" />
-            <span className="font-display text-[13px] tracking-[0.15em] text-white/80 uppercase">
-              <span className="text-[#E5C76B] text-[15px]">G</span>uardian<span className="text-[#7CB9E8] text-[15px]">G</span>rid <span className="text-[#E5C76B]/70 text-[11px] tracking-[0.2em]">(adept)</span>
+            <span className="font-display text-[13px] tracking-destiny text-white/80 uppercase">
+              <span className="text-[var(--color-gold-accent)] text-[15px]">G</span>uardian<span className="text-[#7CB9E8] text-[15px]">G</span>rid <span className="text-[var(--color-gold-accent)]/70 text-[11px] tracking-destiny-wide">(adept)</span>
             </span>
           </div>
         </div>
@@ -584,7 +584,7 @@ export default function DemoDashboard() {
                 )}
               </AnimatePresence>
             </button>
-            <h2 className="font-display font-light text-sm tracking-[0.2em] text-white/90 uppercase">{tabTitles[activeTab]}</h2>
+            <h2 className="font-display font-light text-sm tracking-destiny-wide text-white/90 uppercase">{tabTitles[activeTab]}</h2>
           </div>
         </header>
 
@@ -594,7 +594,7 @@ export default function DemoDashboard() {
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }} className="fixed inset-0 bg-black/60 backdrop-blur-sm z-30" onClick={() => setIsMenuOpen(false)} />
               <motion.div initial={{ x: '-100%' }} animate={{ x: 0 }} exit={{ x: '-100%' }} transition={{ type: 'spring', damping: 30, stiffness: 300 }} className="fixed top-7 left-0 bottom-0 w-72 bg-[#0a0e1a]/98 backdrop-blur-2xl border-r border-white/[0.08] z-40 flex flex-col">
                 <div className="p-6 pb-4 border-b border-white/[0.06]">
-                  <span className="font-display text-lg tracking-[0.15em] text-white">GUARDIANGRID <span className="text-[#E5C76B] text-sm">(Adept)</span></span>
+                  <span className="font-display text-lg tracking-destiny text-white">GUARDIANGRID <span className="text-[var(--color-gold-accent)] text-sm">(Adept)</span></span>
                 </div>
                 <nav className="flex-1 py-4 px-3">
                   {[
@@ -610,7 +610,7 @@ export default function DemoDashboard() {
                       onClick={() => { setActiveTab(item.id); setIsMenuOpen(false); }}
                       className={`w-full flex items-center gap-4 px-4 py-3.5 mb-1 rounded-lg transition-all duration-300 ${activeTab === item.id ? 'bg-white/[0.08] text-white' : 'text-gray-500 hover:text-white hover:bg-white/[0.04]'}`}>
                       <item.icon className={`w-5 h-5 ${activeTab === item.id ? 'text-indigo-400' : ''}`} />
-                      <span className="text-sm font-display tracking-[0.15em] uppercase">{item.label}</span>
+                      <span className="text-sm font-display tracking-destiny uppercase">{item.label}</span>
                     </motion.button>
                   ))}
                 </nav>
@@ -657,8 +657,8 @@ export default function DemoDashboard() {
                       {selectedCharacterId === char.characterId && <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-indigo-500 to-purple-500" />}
                       {char.emblemPath && <img src={char.emblemPath} alt="" className="w-9 h-9 ring-1 ring-white/10" />}
                       <div className="text-left">
-                        <p className="text-[10px] font-bold tracking-wider uppercase">{char.className}</p>
-                        <p className="text-[9px] text-gray-500 flex items-center gap-1"><Sparkles className="w-2.5 h-2.5 text-[#E5C76B]" /> {char.light}</p>
+                        <p className="text-[11px] font-bold tracking-wider uppercase">{char.className}</p>
+                        <p className="text-[11px] text-gray-500 flex items-center gap-1"><Sparkles className="w-2.5 h-2.5 text-[var(--color-gold-accent)]" /> {char.light}</p>
                       </div>
                     </button>
                   ))}
@@ -673,7 +673,7 @@ export default function DemoDashboard() {
                       <div className="relative z-10 p-5 md:p-7 flex items-center justify-between">
                         <motion.div initial={{ x: -20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ delay: 0.1, duration: 0.5, ease: 'easeOut' }}>
                           <h3 className="text-2xl md:text-3xl text-white font-display font-light tracking-wider text-shadow-glow">{selectedCharacter.className}</h3>
-                          <p className="text-[10px] text-gray-400 uppercase tracking-[0.3em] mt-1">{selectedCharacter.raceName}</p>
+                          <p className="text-[11px] text-gray-400 uppercase tracking-destiny-widest mt-1">{selectedCharacter.raceName}</p>
                         </motion.div>
                         <motion.div className="flex items-center gap-4" initial={{ x: 20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ delay: 0.15, duration: 0.5, ease: 'easeOut' }}>
                           {(() => {
@@ -682,10 +682,10 @@ export default function DemoDashboard() {
                           })()}
                           <div className="text-right">
                             <div className="flex items-center gap-2.5 justify-end">
-                              <Sparkles className="w-5 h-5 text-[#E5C76B] animate-[pulse_3s_ease-in-out_infinite]" />
-                              <span className="text-4xl font-display font-light text-[#E5C76B] text-shadow-glow">{selectedCharacter.light}</span>
+                              <Sparkles className="w-5 h-5 text-[var(--color-gold-accent)] animate-[pulse_3s_ease-in-out_infinite]" />
+                              <span className="text-4xl font-display font-light text-[var(--color-gold-accent)] text-shadow-glow">{selectedCharacter.light}</span>
                             </div>
-                            <p className="text-[9px] text-gray-400 uppercase tracking-[0.25em] mt-1.5">{t('power.label')}</p>
+                            <p className="text-[11px] text-gray-400 uppercase tracking-destiny-wide mt-1.5">{t('power.label')}</p>
                           </div>
                         </motion.div>
                       </div>
@@ -698,22 +698,22 @@ export default function DemoDashboard() {
                             const val = stat.value;
                             const pct = Math.min((val / 200) * 100, 100);
                             const isMax = val >= 200;
-                            const barColor = isMax ? 'from-[#E5C76B] via-[#F5E08B] to-[#D4A843]'
+                            const barColor = isMax ? 'from-[var(--color-gold-accent)] via-[var(--color-gold-accent)] to-[var(--color-gold-accent)]'
                               : val >= 100 ? 'from-purple-500 to-violet-400'
                               : val >= 60 ? 'from-emerald-600 to-green-400'
                               : val >= 20 ? 'from-yellow-600 to-amber-400'
                               : 'from-red-700 to-red-400';
-                            const numColor = isMax ? 'text-[#E5C76B]'
+                            const numColor = isMax ? 'text-[var(--color-gold-accent)]'
                               : val >= 100 ? 'text-purple-300'
                               : val >= 60 ? 'text-emerald-300'
                               : val >= 20 ? 'text-amber-300'
                               : 'text-red-400';
                             return (
                               <motion.div key={stat.name} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 + statIdx * 0.06, duration: 0.4, ease: 'easeOut' }}
-                                className={`bg-black/30 border p-2 hover:border-white/15 transition-all duration-300 ${isMax ? 'border-[#E5C76B]/25' : 'border-white/[0.06]'}`} title={stat.description}>
+                                className={`bg-black/30 border p-2 hover:border-white/15 transition-all duration-300 ${isMax ? 'border-[var(--color-gold-accent)]/25' : 'border-white/[0.06]'}`} title={stat.description}>
                                 <div className="flex items-center gap-1.5 mb-1.5">
                                   {stat.icon && <img src={stat.icon} alt={stat.name} className="w-4 h-4 opacity-70" />}
-                                  <p className={`text-[9px] uppercase tracking-[0.12em] truncate flex-1 ${isMax ? 'text-[#E5C76B]/60' : 'text-gray-500'}`}>{stat.name}</p>
+                                  <p className={`text-[11px] uppercase tracking-destiny truncate flex-1 ${isMax ? 'text-[var(--color-gold-accent)]/60' : 'text-gray-500'}`}>{stat.name}</p>
                                   <p className={`text-sm font-display font-light leading-none ${numColor}`}>{val}</p>
                                 </div>
                                 <div className="w-full h-1 bg-white/[0.06] rounded-full overflow-hidden">
@@ -729,7 +729,7 @@ export default function DemoDashboard() {
                     <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3, duration: 0.5, ease: 'easeOut' }} className="px-4 md:px-6 pb-5">
                       <div className="flex items-center gap-2 mb-3">
                         <Crosshair className="w-3.5 h-3.5 text-red-400/70" />
-                        <h4 className="text-[10px] text-white/70 uppercase tracking-[0.2em] font-display">{t('section.weapons')}</h4>
+                        <h4 className="text-[11px] text-white/70 uppercase tracking-destiny-wide font-display">{t('section.weapons')}</h4>
                         <div className="flex-1 h-px bg-white/[0.06]" />
                       </div>
                       <div className="space-y-1">
@@ -737,7 +737,7 @@ export default function DemoDashboard() {
                           const equipped = selectedCharacter.equippedItems.find(i => i.slot === slotId);
                           if (!equipped) return null;
                           const isExotic = equipped.rarity === 'exotic';
-                          const rarityColor = isExotic ? '#E5C76B' : '#7D5C96';
+                          const rarityColor = isExotic ? 'var(--color-gold-accent)' : 'var(--color-legendary)';
                           const perkNames = [
                             ...(equipped.perks || []).filter(p => p.isActive).map(p => p.name),
                             ...(equipped.mods || []).map(m => m.name),
@@ -756,26 +756,26 @@ export default function DemoDashboard() {
                                 <img src={equipped.icon} alt={equipped.name} className="w-full h-full object-cover" />
                               </div>
                               <div className="flex-1 min-w-0 relative z-10">
-                                <p className="text-[8px] text-gray-500 uppercase tracking-[0.25em] mb-0.5 font-medium">
+                                <p className="text-[11px] text-gray-500 uppercase tracking-destiny-wide mb-0.5 font-medium">
                                   {slotId === 'kinetic' ? 'Primär' : slotId === 'energy' ? 'Energie' : 'Schwer'}
                                 </p>
-                                <p className="text-[11px] font-bold truncate tracking-wider uppercase" style={{ color: isExotic ? '#E5C76B' : 'white' }}>{equipped.name}</p>
+                                <p className="text-[11px] font-bold truncate tracking-wider uppercase" style={{ color: isExotic ? 'var(--color-gold-accent)' : 'white' }}>{equipped.name}</p>
                                 <div className="flex items-center gap-2 mt-0.5">
-                                  <span className="text-[9px] text-yellow-500/80 flex items-center gap-0.5 font-medium">
+                                  <span className="text-[11px] text-yellow-500/80 flex items-center gap-0.5 font-medium">
                                     <Sparkles className="w-2.5 h-2.5" /> {equipped.power}
                                   </span>
-                                  <span className="text-[8px] text-gray-600">{equipped.type}</span>
+                                  <span className="text-[11px] text-gray-600">{equipped.type}</span>
                                   {rollResult && <DemoRollBadge result={rollResult} />}
                                 </div>
                                 {equipped.perks && equipped.perks.filter(p => p.isActive).length > 0 && (
                                   <div className="flex items-center gap-1 mt-1 flex-wrap">
                                     {equipped.perks.filter(p => p.isActive).map((perk, i) => (
-                                      <span key={i} className="text-[8px] px-1.5 py-0.5 bg-white/5 border border-white/10 text-gray-400 rounded-sm uppercase tracking-wider">{perk.name}</span>
+                                      <span key={i} className="text-[11px] px-1.5 py-0.5 bg-white/5 border border-white/10 text-gray-400 rounded-sm uppercase tracking-wider">{perk.name}</span>
                                     ))}
                                   </div>
                                 )}
                               </div>
-                              <button onClick={() => addToLoadout(toItem(equipped))} className="p-1.5 text-gray-600 hover:text-[#E5C76B] hover:bg-yellow-500/10 rounded-sm opacity-0 group-hover:opacity-100 transition-all duration-200" title={t('action.toLoadout')}>
+                              <button onClick={() => addToLoadout(toItem(equipped))} className="p-1.5 text-gray-600 hover:text-[var(--color-gold-accent)] hover:bg-yellow-500/10 rounded-sm opacity-0 group-hover:opacity-100 transition-all duration-200" title={t('action.toLoadout')}>
                                 <Sparkles className="w-3.5 h-3.5" />
                               </button>
                             </div>
@@ -787,7 +787,7 @@ export default function DemoDashboard() {
                     <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.45, duration: 0.5, ease: 'easeOut' }} className="px-4 md:px-6 pb-5">
                       <div className="flex items-center gap-2 mb-3">
                         <Shield className="w-3.5 h-3.5 text-blue-400/70" />
-                        <h4 className="text-[10px] text-white/70 uppercase tracking-[0.2em] font-display">{t('section.armor')}</h4>
+                        <h4 className="text-[11px] text-white/70 uppercase tracking-destiny-wide font-display">{t('section.armor')}</h4>
                         <div className="flex-1 h-px bg-white/[0.06]" />
                       </div>
                       <div className="space-y-1">
@@ -795,7 +795,7 @@ export default function DemoDashboard() {
                           const equipped = selectedCharacter.equippedItems.find(i => i.slot === slotId);
                           if (!equipped) return null;
                           const isExotic = equipped.rarity === 'exotic';
-                          const rarityColor = isExotic ? '#E5C76B' : '#7D5C96';
+                          const rarityColor = isExotic ? 'var(--color-gold-accent)' : 'var(--color-legendary)';
                           return (
                             <div key={slotId} className="group flex items-center gap-3 p-3 border transition-all duration-300 relative overflow-hidden bg-black/40 border-white/[0.06] hover:border-white/20 hover:bg-white/[0.03]">
                               <div className="absolute left-0 top-0 bottom-0 w-[2px]" style={{ backgroundColor: rarityColor }} />
@@ -804,13 +804,13 @@ export default function DemoDashboard() {
                                 <img src={equipped.icon} alt={equipped.name} className="w-full h-full object-cover" />
                               </div>
                               <div className="flex-1 min-w-0 relative z-10">
-                                <p className="text-[8px] text-gray-500 uppercase tracking-[0.25em] mb-0.5 font-medium">{equipped.type}</p>
-                                <p className="text-[11px] font-bold truncate tracking-wider uppercase" style={{ color: isExotic ? '#E5C76B' : 'white' }}>{equipped.name}</p>
-                                <span className="text-[9px] text-yellow-500/80 flex items-center gap-0.5 font-medium mt-0.5">
+                                <p className="text-[11px] text-gray-500 uppercase tracking-destiny-wide mb-0.5 font-medium">{equipped.type}</p>
+                                <p className="text-[11px] font-bold truncate tracking-wider uppercase" style={{ color: isExotic ? 'var(--color-gold-accent)' : 'white' }}>{equipped.name}</p>
+                                <span className="text-[11px] text-yellow-500/80 flex items-center gap-0.5 font-medium mt-0.5">
                                   <Sparkles className="w-2.5 h-2.5" /> {equipped.power}
                                 </span>
                               </div>
-                              <button onClick={() => addToLoadout(toItem(equipped))} className="p-1.5 text-gray-600 hover:text-[#E5C76B] hover:bg-yellow-500/10 rounded-sm opacity-0 group-hover:opacity-100 transition-all duration-200" title={t('action.toLoadout')}>
+                              <button onClick={() => addToLoadout(toItem(equipped))} className="p-1.5 text-gray-600 hover:text-[var(--color-gold-accent)] hover:bg-yellow-500/10 rounded-sm opacity-0 group-hover:opacity-100 transition-all duration-200" title={t('action.toLoadout')}>
                                 <Sparkles className="w-3.5 h-3.5" />
                               </button>
                             </div>
@@ -823,7 +823,7 @@ export default function DemoDashboard() {
                       <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.55, duration: 0.5, ease: 'easeOut' }} className="px-4 md:px-6 pb-6">
                         <div className="flex items-center gap-2 mb-3">
                           <Activity className="w-3.5 h-3.5 text-green-400/70" />
-                          <h4 className="text-[10px] text-white/70 uppercase tracking-[0.2em] font-display">Aktive Quests</h4>
+                          <h4 className="text-[11px] text-white/70 uppercase tracking-destiny-wide font-display">Aktive Quests</h4>
                           <div className="flex-1 h-px bg-white/[0.06]" />
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
@@ -833,8 +833,8 @@ export default function DemoDashboard() {
                                 {quest.icon && <img src={quest.icon} alt="" className="w-full h-full object-cover" />}
                               </div>
                               <div className="flex-1 min-w-0">
-                                <p className="text-[10px] font-bold truncate tracking-wider uppercase text-white group-hover/quest:text-green-300/90 transition-colors">{quest.name}</p>
-                                {quest.description && <p className="text-[9px] text-gray-500 truncate mt-0.5">{quest.description}</p>}
+                                <p className="text-[11px] font-bold truncate tracking-wider uppercase text-white group-hover/quest:text-green-300/90 transition-colors">{quest.name}</p>
+                                {quest.description && <p className="text-[11px] text-gray-500 truncate mt-0.5">{quest.description}</p>}
                               </div>
                             </div>
                           ))}
@@ -855,20 +855,20 @@ export default function DemoDashboard() {
                       <input type="text" placeholder={t('vault.search')} value={vaultFilters.search} onChange={(e) => setVaultFilters(f => ({ ...f, search: e.target.value }))}
                         className="w-full bg-[#0a0e18]/80 border border-white/[0.08] text-white pl-10 pr-4 py-3 text-sm focus:outline-none focus:border-indigo-500/40 transition-all font-light tracking-wider destiny-clip-sm" data-testid="demo-input-vault-search" />
                     </div>
-                    <p className="text-[10px] text-gray-600 tracking-widest uppercase">{filteredVaultItems.length} Gegenstände</p>
+                    <p className="text-[11px] text-gray-600 tracking-widest uppercase">{filteredVaultItems.length} Gegenstände</p>
                   </div>
                   <div className="flex-1 overflow-y-auto p-4 md:p-6 pt-2">
                     <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-7 gap-2 md:gap-3">
                       {filteredVaultItems.map(item => {
                         const isExotic = item.rarity === 'exotic';
-                        const rarityColor = isExotic ? '#E5C76B' : '#7D5C96';
+                        const rarityColor = isExotic ? 'var(--color-gold-accent)' : 'var(--color-legendary)';
                         const isWeapon = ['kinetic', 'energy', 'power'].includes(item.slot);
                         const perkNames = [...(item.perks || []).filter(p => p.isActive).map(p => p.name), ...(item.mods || []).map(m => m.name)];
                         const rollResult = isWeapon && perkNames.length > 0 ? rateWeaponRoll(item.type, perkNames) : null;
                         return (
                           <div key={item.id}
                             className={`group relative bg-gradient-to-b from-white/[0.03] to-transparent border transition-all duration-500 destiny-clip-sm ${
-                              isExotic ? 'border-[#E5C76B]/20 hover:border-[#E5C76B]/40 rarity-exotic-glow item-card-hover' : 'border-white/[0.08] hover:border-white/25 item-card-hover'
+                              isExotic ? 'border-[var(--color-gold-accent)]/20 hover:border-[var(--color-gold-accent)]/40 rarity-exotic-glow item-card-hover' : 'border-white/[0.08] hover:border-white/25 item-card-hover'
                             }`}>
                             <div className="h-[2px] w-full" style={{ backgroundColor: rarityColor }} />
                             <div className="aspect-[4/3] relative overflow-hidden bg-black/80">
@@ -876,15 +876,15 @@ export default function DemoDashboard() {
                               <div className="absolute inset-0 bg-gradient-to-t from-[#0a0e18] via-transparent to-transparent opacity-90" />
                             </div>
                             <div className="px-2.5 py-2 relative z-10">
-                              <h4 className="text-[9px] font-bold truncate tracking-wider uppercase" style={{ color: isExotic ? '#E5C76B' : 'white' }}>{item.name}</h4>
+                              <h4 className="text-[11px] font-bold truncate tracking-wider uppercase" style={{ color: isExotic ? 'var(--color-gold-accent)' : 'white' }}>{item.name}</h4>
                               <div className="flex items-center justify-between mt-0.5">
                                 <div className="flex items-center gap-1.5 min-w-0">
-                                  <p className="text-[8px] text-gray-500 uppercase tracking-widest truncate">{item.type}</p>
+                                  <p className="text-[11px] text-gray-500 uppercase tracking-widest truncate">{item.type}</p>
                                   {rollResult && <DemoRollBadge result={rollResult} />}
                                 </div>
                                 {item.power > 0 && (
-                                  <p className="text-[8px] text-gray-400 flex items-center gap-0.5 shrink-0">
-                                    <Sparkles className="w-2 h-2 text-[#E5C76B]" /> {item.power}
+                                  <p className="text-[11px] text-gray-400 flex items-center gap-0.5 shrink-0">
+                                    <Sparkles className="w-2 h-2 text-[var(--color-gold-accent)]" /> {item.power}
                                   </p>
                                 )}
                               </div>
@@ -905,8 +905,8 @@ export default function DemoDashboard() {
 
                 <div className="hidden lg:flex w-[380px] bg-[#0a0e18]/60 backdrop-blur-sm flex-col shrink-0 relative overflow-hidden">
                   <div className="p-6 border-b border-white/5 flex items-center justify-between">
-                    <h3 className="text-white font-display font-light tracking-[0.2em] flex items-center gap-3 text-xs">
-                      <Sparkles className="w-4 h-4 text-[#E5C76B]" /> AKTIVES LOADOUT
+                    <h3 className="text-white font-display font-light tracking-destiny-wide flex items-center gap-3 text-xs">
+                      <Sparkles className="w-4 h-4 text-[var(--color-gold-accent)]" /> AKTIVES LOADOUT
                     </h3>
                   </div>
                   <div className="flex-1 overflow-y-auto p-6 space-y-3">
@@ -929,7 +929,7 @@ export default function DemoDashboard() {
                   <div className="flex items-center gap-2">
                     {(['all', 'acquired', 'notAcquired'] as const).map(f => (
                       <button key={f} onClick={() => setCollectionsFilter(f)}
-                        className={`px-3 py-1.5 text-[9px] uppercase tracking-widest border transition-all ${collectionsFilter === f ? 'bg-indigo-600/30 border-indigo-500/50 text-white' : 'bg-white/5 border-white/5 text-gray-500 hover:text-white'}`}>
+                        className={`px-3 py-1.5 text-[11px] uppercase tracking-widest border transition-all ${collectionsFilter === f ? 'bg-indigo-600/30 border-indigo-500/50 text-white' : 'bg-white/5 border-white/5 text-gray-500 hover:text-white'}`}>
                         {f === 'all' ? t('collections.all') : f === 'acquired' ? t('collections.acquired') : t('collections.notAcquired')}
                       </button>
                     ))}
@@ -945,8 +945,8 @@ export default function DemoDashboard() {
                           {c.acquired && <div className="absolute top-1 right-1 w-4 h-4 bg-green-500/80 rounded-full flex items-center justify-center"><Check className="w-2.5 h-2.5 text-white" /></div>}
                         </div>
                         <div className="px-2 py-1.5">
-                          <p className="text-[8px] font-bold truncate tracking-wider uppercase text-white">{c.name}</p>
-                          {c.sourceString && <p className="text-[8px] text-gray-600 truncate mt-0.5">{c.sourceString}</p>}
+                          <p className="text-[11px] font-bold truncate tracking-wider uppercase text-white">{c.name}</p>
+                          {c.sourceString && <p className="text-[11px] text-gray-600 truncate mt-0.5">{c.sourceString}</p>}
                         </div>
                       </div>
                     ))}
@@ -967,18 +967,18 @@ export default function DemoDashboard() {
                 <div className="flex-1 overflow-y-auto p-4 md:p-6 pt-2">
                   <div className="space-y-2">
                     {filteredRecords.map(record => (
-                      <div key={record.recordHash} className={`border transition-all duration-300 p-3 ${record.completed ? 'bg-gradient-to-r from-[#E5C76B]/[0.06] to-transparent border-[#E5C76B]/20' : 'bg-gradient-to-r from-white/[0.02] to-transparent border-white/[0.06]'}`}>
+                      <div key={record.recordHash} className={`border transition-all duration-300 p-3 ${record.completed ? 'bg-gradient-to-r from-[var(--color-gold-accent)]/[0.06] to-transparent border-[var(--color-gold-accent)]/20' : 'bg-gradient-to-r from-white/[0.02] to-transparent border-white/[0.06]'}`}>
                         <div className="flex items-start gap-3">
-                          <div className={`w-10 h-10 shrink-0 flex items-center justify-center overflow-hidden ring-1 ${record.completed ? 'ring-[#E5C76B]/30' : 'ring-white/10'}`}>
-                            {record.icon ? <img src={record.icon} alt="" className="w-full h-full object-cover" /> : <Trophy className={`w-5 h-5 ${record.completed ? 'text-[#E5C76B]' : 'text-gray-600'}`} />}
+                          <div className={`w-10 h-10 shrink-0 flex items-center justify-center overflow-hidden ring-1 ${record.completed ? 'ring-[var(--color-gold-accent)]/30' : 'ring-white/10'}`}>
+                            {record.icon ? <img src={record.icon} alt="" className="w-full h-full object-cover" /> : <Trophy className={`w-5 h-5 ${record.completed ? 'text-[var(--color-gold-accent)]' : 'text-gray-600'}`} />}
                           </div>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2">
-                              <h4 className={`text-[10px] font-bold tracking-wider uppercase truncate ${record.completed ? 'text-[#E5C76B]' : 'text-white'}`}>{record.name}</h4>
+                              <h4 className={`text-[11px] font-bold tracking-wider uppercase truncate ${record.completed ? 'text-[var(--color-gold-accent)]' : 'text-white'}`}>{record.name}</h4>
                               {record.completed && <div className="shrink-0 w-4 h-4 bg-green-500/80 rounded-full flex items-center justify-center"><Check className="w-2.5 h-2.5 text-white" /></div>}
-                              {record.scoreValue > 0 && <span className="text-[8px] text-[#E5C76B]/60 shrink-0">{record.scoreValue} pts</span>}
+                              {record.scoreValue > 0 && <span className="text-[11px] text-[var(--color-gold-accent)]/60 shrink-0">{record.scoreValue} pts</span>}
                             </div>
-                            {record.description && <p className="text-[9px] text-gray-500 mt-0.5">{record.description}</p>}
+                            {record.description && <p className="text-[11px] text-gray-500 mt-0.5">{record.description}</p>}
                             {record.objectives.length > 0 && !record.completed && (
                               <div className="mt-2 space-y-1.5">
                                 {record.objectives.map((obj, i) => {
@@ -986,8 +986,8 @@ export default function DemoDashboard() {
                                   return (
                                     <div key={i}>
                                       <div className="flex items-center justify-between mb-0.5">
-                                        <span className="text-[8px] text-gray-500">{obj.description || t('triumphs.progress')}</span>
-                                        <span className="text-[8px] text-gray-400">{obj.progress}/{obj.completionValue}</span>
+                                        <span className="text-[11px] text-gray-500">{obj.description || t('triumphs.progress')}</span>
+                                        <span className="text-[11px] text-gray-400">{obj.progress}/{obj.completionValue}</span>
                                       </div>
                                       <div className="h-1 bg-white/[0.06] rounded-full overflow-hidden">
                                         <div className={`h-full rounded-full transition-all duration-500 ${obj.complete ? 'bg-green-500' : 'bg-indigo-500'}`} style={{ width: `${pct}%` }} />
@@ -1012,7 +1012,7 @@ export default function DemoDashboard() {
                   <div>
                     <div className="flex items-center gap-2 mb-4">
                       <TrendingUp className="w-3.5 h-3.5 text-indigo-400/70" />
-                      <h4 className="text-[10px] text-white/70 uppercase tracking-[0.2em] font-display">{t('season.progressions')}</h4>
+                      <h4 className="text-[11px] text-white/70 uppercase tracking-destiny-wide font-display">{t('season.progressions')}</h4>
                       <div className="flex-1 h-px bg-white/[0.06]" />
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
@@ -1023,17 +1023,17 @@ export default function DemoDashboard() {
                             <div className="flex items-center gap-3 mb-2">
                               {prog.icon ? <img src={prog.icon} alt="" className="w-8 h-8 ring-1 ring-white/10" /> : <div className="w-8 h-8 bg-indigo-500/10 flex items-center justify-center ring-1 ring-white/10"><TrendingUp className="w-4 h-4 text-indigo-400/50" /></div>}
                               <div className="flex-1 min-w-0">
-                                <p className="text-[10px] font-bold truncate tracking-wider uppercase text-white">{prog.name}</p>
+                                <p className="text-[11px] font-bold truncate tracking-wider uppercase text-white">{prog.name}</p>
                                 <div className="flex items-center gap-2 mt-0.5">
-                                  <span className="text-[9px] text-indigo-400">{t('season.level')} {prog.level}</span>
-                                  {prog.currentResetCount > 0 && <span className="text-[8px] text-[#E5C76B]">{t('season.resets')}: {prog.currentResetCount}</span>}
+                                  <span className="text-[11px] text-indigo-400">{t('season.level')} {prog.level}</span>
+                                  {prog.currentResetCount > 0 && <span className="text-[11px] text-[var(--color-gold-accent)]">{t('season.resets')}: {prog.currentResetCount}</span>}
                                 </div>
                               </div>
                             </div>
                             <div className="h-1.5 bg-white/[0.06] rounded-full overflow-hidden">
                               <div className="h-full bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full transition-all duration-500" style={{ width: `${pct}%` }} />
                             </div>
-                            <p className="text-[8px] text-gray-600 mt-1 text-right">{prog.progressToNextLevel.toLocaleString()}/{prog.nextLevelAt > 0 ? prog.nextLevelAt.toLocaleString() : '—'}</p>
+                            <p className="text-[11px] text-gray-600 mt-1 text-right">{prog.progressToNextLevel.toLocaleString()}/{prog.nextLevelAt > 0 ? prog.nextLevelAt.toLocaleString() : '—'}</p>
                           </div>
                         );
                       })}
@@ -1046,7 +1046,7 @@ export default function DemoDashboard() {
             {(activeTab === 'loadouts' || activeTab === 'postmaster') && (
               <motion.div key={activeTab} initial={{ opacity: 0, x: tabDirection * 30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: tabDirection * -30 }} transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }} className="h-full flex flex-col items-center justify-center text-gray-500 space-y-6 p-8">
                 {activeTab === 'loadouts' ? <Archive className="w-16 h-16 opacity-10" /> : <Mail className="w-16 h-16 opacity-10" />}
-                <p className="font-display tracking-[0.3em] uppercase text-xs">Demo — {tabTitles[activeTab]}</p>
+                <p className="font-display tracking-destiny-widest uppercase text-xs">Demo — {tabTitles[activeTab]}</p>
                 <p className="text-xs text-gray-600 max-w-md text-center">
                   {activeTab === 'loadouts' ? 'Loadouts werden im echten Modus gespeichert und geladen.' : 'Postmeister-Items werden im echten Modus angezeigt.'}
                 </p>
@@ -1061,7 +1061,7 @@ export default function DemoDashboard() {
           className="lg:hidden fixed bottom-6 right-4 z-30 w-14 h-14 bg-indigo-600 hover:bg-indigo-500 text-white rounded-full flex items-center justify-center shadow-lg shadow-indigo-900/50 transition-all">
           <Sparkles className="w-5 h-5" />
           {Object.keys(loadout).length > 0 && (
-            <span className="absolute -top-1 -right-1 w-5 h-5 bg-[#E5C76B] text-black text-[10px] font-bold rounded-full flex items-center justify-center">{Object.keys(loadout).length}</span>
+            <span className="absolute -top-1 -right-1 w-5 h-5 bg-[var(--color-gold-accent)] text-black text-[11px] font-bold rounded-full flex items-center justify-center">{Object.keys(loadout).length}</span>
           )}
         </button>
       )}
@@ -1074,8 +1074,8 @@ export default function DemoDashboard() {
               onClick={(e) => e.stopPropagation()}>
               <div className="flex items-center justify-center pt-3 pb-1"><div className="w-10 h-1 bg-white/20 rounded-full" /></div>
               <div className="p-4 border-b border-white/5 flex items-center justify-between">
-                <h3 className="text-white font-display font-light tracking-[0.2em] flex items-center gap-3 text-sm">
-                  <Sparkles className="w-4 h-4 text-[#E5C76B]" /> AKTIVES LOADOUT
+                <h3 className="text-white font-display font-light tracking-destiny-wide flex items-center gap-3 text-sm">
+                  <Sparkles className="w-4 h-4 text-[var(--color-gold-accent)]" /> AKTIVES LOADOUT
                 </h3>
                 <button onClick={() => setShowMobileLoadout(false)} className="p-2 text-gray-400 hover:text-white"><X className="w-5 h-5" /></button>
               </div>
@@ -1097,7 +1097,7 @@ function DemoRollBadge({ result }: { result: RollResult }) {
   const { rating, sPerks, aPerks } = result;
 
   const badgeStyle = rating === 'META'
-    ? 'bg-gradient-to-r from-[#E5C76B]/20 to-[#D4A843]/20 border-[#E5C76B]/40 text-[#E5C76B] shadow-[0_0_8px_rgba(229,199,107,0.25)]'
+    ? 'bg-gradient-to-r from-[var(--color-gold-accent)]/20 to-[var(--color-gold-accent)]/20 border-[var(--color-gold-accent)]/40 text-[var(--color-gold-accent)] shadow-[0_0_8px_rgba(229,199,107,0.25)]'
     : rating === 'GOOD'
     ? 'bg-purple-500/15 border-purple-500/30 text-purple-300'
     : 'bg-white/5 border-white/10 text-gray-500';
@@ -1106,7 +1106,7 @@ function DemoRollBadge({ result }: { result: RollResult }) {
 
   return (
     <div className="group/roll relative">
-      <span className={`inline-flex items-center gap-0.5 px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-wider border rounded-sm ${badgeStyle}`}>
+      <span className={`inline-flex items-center gap-0.5 px-1.5 py-0.5 text-[11px] font-bold uppercase tracking-wider border rounded-sm ${badgeStyle}`}>
         {rating === 'META' && <Sparkles className="w-2.5 h-2.5" />}
         {label}
       </span>
@@ -1115,14 +1115,14 @@ function DemoRollBadge({ result }: { result: RollResult }) {
           <div className="bg-black/95 border border-white/10 rounded px-2.5 py-2 min-w-[140px] max-w-[220px]">
             {sPerks.length > 0 && (
               <div className="mb-1">
-                <p className="text-[8px] text-[#E5C76B]/70 uppercase tracking-widest mb-0.5">{t('roll.sPerks')}</p>
-                {sPerks.map(p => <p key={p} className="text-[8px] text-[#E5C76B]">{p}</p>)}
+                <p className="text-[11px] text-[var(--color-gold-accent)]/70 uppercase tracking-widest mb-0.5">{t('roll.sPerks')}</p>
+                {sPerks.map(p => <p key={p} className="text-[11px] text-[var(--color-gold-accent)]">{p}</p>)}
               </div>
             )}
             {aPerks.length > 0 && (
               <div>
-                <p className="text-[8px] text-purple-400/70 uppercase tracking-widest mb-0.5">{t('roll.aPerks')}</p>
-                {aPerks.map(p => <p key={p} className="text-[8px] text-purple-300">{p}</p>)}
+                <p className="text-[11px] text-purple-400/70 uppercase tracking-widest mb-0.5">{t('roll.aPerks')}</p>
+                {aPerks.map(p => <p key={p} className="text-[11px] text-purple-300">{p}</p>)}
               </div>
             )}
           </div>

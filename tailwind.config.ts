@@ -84,9 +84,13 @@ export default {
       },
       fontFamily: {
         sans: ["var(--font-sans)"],
-        serif: ["var(--font-serif)"],
         mono: ["var(--font-mono)"],
         display: ["var(--font-display)"],
+      },
+      letterSpacing: {
+        'destiny': '0.12em',
+        'destiny-wide': '0.2em',
+        'destiny-widest': '0.3em',
       },
       keyframes: {
         "accordion-down": {

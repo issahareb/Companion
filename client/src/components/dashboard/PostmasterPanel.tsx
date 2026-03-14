@@ -7,72 +7,65 @@ import { useI18n } from '@/lib/i18n';
 
 function getRarityBg(rarity: string): string {
   switch (rarity) {
-    case 'exotic': return 'bg-gradient-to-br from-[#ceae33]/30 via-[#ceae33]/10 to-[#ceae33]/5';
-    case 'legendary': return 'bg-gradient-to-br from-[#522f65]/40 via-[#522f65]/15 to-[#522f65]/5';
-    case 'rare': return 'bg-gradient-to-br from-[#5076a3]/30 via-[#5076a3]/10 to-transparent';
+    case 'exotic': return 'bg-gradient-to-br from-[var(--color-exotic)]/30 via-[var(--color-exotic)]/10 to-[var(--color-exotic)]/5';
+    case 'legendary': return 'bg-gradient-to-br from-[var(--color-legendary)]/40 via-[var(--color-legendary)]/15 to-[var(--color-legendary)]/5';
+    case 'rare': return 'bg-gradient-to-br from-[var(--color-rare)]/30 via-[var(--color-rare)]/10 to-transparent';
     default: return 'bg-gradient-to-br from-white/[0.06] via-white/[0.02] to-transparent';
   }
 }
 
 function getRarityColor(rarity: string): string {
   switch (rarity) {
-    case 'exotic': return '#ceae33';
-    case 'legendary': return '#522f65';
-    case 'rare': return '#5076a3';
+    case 'exotic': return 'var(--color-exotic)';
+    case 'legendary': return 'var(--color-legendary)';
+    case 'rare': return 'var(--color-rare)';
     default: return '#333';
   }
 }
 
 function getRarityBorder(rarity: string): string {
   switch (rarity) {
-    case 'exotic': return 'border-[#ceae33]/30 hover:border-[#ceae33]/60';
-    case 'legendary': return 'border-[#522f65]/40 hover:border-[#522f65]/70';
-    case 'rare': return 'border-[#5076a3]/30 hover:border-[#5076a3]/60';
+    case 'exotic': return 'border-[var(--color-exotic)]/30 hover:border-[var(--color-exotic)]/60';
+    case 'legendary': return 'border-[var(--color-legendary)]/40 hover:border-[var(--color-legendary)]/70';
+    case 'rare': return 'border-[var(--color-rare)]/30 hover:border-[var(--color-rare)]/60';
     default: return 'border-white/[0.08] hover:border-white/20';
   }
 }
 
 
-function PostmasterCharSection({ char, charPostItems, handlePullPostmaster, isPullPending, index }: {
+function PostmasterCharSection({ char, charPostItems, handlePullPostmaster, isPullPending, index, pendingItemIds }: {
   char: CharacterData;
   charPostItems: InventoryItem[];
   handlePullPostmaster: (item: InventoryItem) => void;
   isPullPending: boolean;
   index: number;
+  pendingItemIds?: Set<string>;
 }) {
   const { t } = useI18n();
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.1, duration: 0.5, ease: appleEase }}
-      data-testid={`section-postmaster-${char.characterId}`}
-    >
+    <div data-testid={`section-postmaster-${char.characterId}`}>
       <div className="flex items-center gap-3 mb-4">
         <img src={char.emblemPath} alt="" className="w-10 h-10 rounded-sm border border-white/10" />
         <div>
-          <h3 className="font-display text-sm tracking-[0.2em] uppercase text-white">{char.className}</h3>
-          <p className="text-[9px] text-gray-500 tracking-widest uppercase">{charPostItems.length} {t('postmaster.items')}</p>
+          <h3 className="font-display text-sm tracking-destiny-wide uppercase text-white">{char.className}</h3>
+          <p className="text-[11px] text-gray-500 tracking-destiny">{charPostItems.length} {t('postmaster.items')}</p>
         </div>
       </div>
       {charPostItems.length === 0 ? (
         <div className="flex items-center gap-3 py-6 px-4 border border-white/[0.04] bg-white/[0.01] rounded">
           <Mail className="w-5 h-5 text-gray-600" />
-          <p className="text-[10px] text-gray-600 uppercase tracking-widest">{t('postmaster.empty')}</p>
+          <p className="text-xs text-gray-600">{t('postmaster.empty')}</p>
         </div>
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
-          {charPostItems.map((item, i) => {
+          {charPostItems.map((item) => {
             const imgSrc = item.icon || item.screenshot || '';
             const isExotic = item.rarity === 'exotic';
             return (
-              <motion.div
+              <div
                 key={item.id}
-                initial={{ opacity: 0, y: 16, scale: 0.95 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                transition={{ delay: i * 0.04, duration: 0.4, ease: appleEase }}
-                className={`border overflow-hidden rounded-lg transition-all duration-300 group ${getRarityBorder(item.rarity)}`}
+                className={`border overflow-hidden rounded-lg transition-all duration-300 group item-card-hover ${getRarityBorder(item.rarity)}`}
                 data-testid={`card-postmaster-${item.id}`}
               >
                 <div className={`aspect-square relative overflow-hidden rounded-t-lg ${getRarityBg(item.rarity)}`}>
@@ -93,18 +86,18 @@ function PostmasterCharSection({ char, charPostItems, handlePullPostmaster, isPu
                   </div>
                 </div>
                 <div className="px-1.5 py-1.5 bg-[#0a0e18]/90 rounded-b-lg">
-                  <h4 className="text-[8px] font-bold truncate tracking-wider uppercase" style={{ color: isExotic ? '#E5C76B' : '#e0e0e0' }}>{item.name}</h4>
-                  <p className="text-[7px] text-gray-500 mt-0.5 uppercase tracking-widest truncate">{item.type}</p>
+                  <h4 className="text-[11px] font-bold truncate tracking-destiny" style={{ color: isExotic ? 'var(--color-gold-accent)' : '#e0e0e0' }}>{item.name}</h4>
+                  <p className="text-[11px] text-gray-500 mt-0.5 truncate">{item.type}</p>
                   <div className="flex items-center justify-between mt-1">
                     {item.power > 0 && (
-                      <p className="text-[8px] text-gray-400 flex items-center gap-0.5">
-                        <Sparkles className="w-2 h-2 text-[#E5C76B]" /> {item.power}
+                      <p className="text-[11px] text-gray-400 flex items-center gap-0.5">
+                        <Sparkles className="w-2.5 h-2.5 text-[var(--color-gold-accent)]" /> {item.power}
                       </p>
                     )}
                     <motion.button
                       onClick={() => handlePullPostmaster(item)}
                       disabled={isPullPending}
-                      className="flex items-center gap-1 px-2 py-1 text-[7px] uppercase tracking-widest text-amber-400 hover:text-white bg-amber-500/10 hover:bg-amber-500/30 border border-amber-500/20 rounded transition-all sm:opacity-0 sm:group-hover:opacity-100"
+                      className="flex items-center gap-1 px-2 py-1 text-[11px] tracking-destiny text-amber-400 hover:text-white bg-amber-500/10 hover:bg-amber-500/30 border border-amber-500/20 rounded transition-all sm:opacity-0 sm:group-hover:opacity-100"
                       whileTap={{ scale: 0.92 }}
                       data-testid={`button-pull-${item.id}`}
                     >
@@ -112,12 +105,12 @@ function PostmasterCharSection({ char, charPostItems, handlePullPostmaster, isPu
                     </motion.button>
                   </div>
                 </div>
-              </motion.div>
+              </div>
             );
           })}
         </div>
       )}
-    </motion.div>
+    </div>
   );
 }
 
@@ -136,18 +129,13 @@ export function PostmasterPanel({
   const { t } = useI18n();
 
   return (
-    <motion.div key="postmaster" initial={{ opacity: 0, x: tabDirection * 40 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: tabDirection * -40 }} transition={{ duration: 0.4, ease: appleEase }} className="h-full overflow-y-auto p-4 md:p-8 scroll-container" data-scroll-container>
+    <motion.div key="postmaster" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.3, ease: appleEase }} className="h-full overflow-y-auto p-4 md:p-6 scroll-container" data-scroll-container>
       {postmasterItems.length === 0 && characters.length === 0 ? (
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.6, ease: appleEase }}
-          className="flex flex-col items-center justify-center h-64 text-gray-500 space-y-6"
-        >
+        <div className="flex flex-col items-center justify-center h-64 text-gray-500 space-y-6">
           <Mail className="w-16 h-16 opacity-10" />
-          <p className="font-display tracking-[0.3em] uppercase text-xs">{t('postmaster.empty')}</p>
+          <p className="font-display tracking-destiny-widest uppercase text-xs">{t('postmaster.empty')}</p>
           <p className="text-xs text-gray-600 max-w-md text-center">{t('postmaster.emptyDesc')}</p>
-        </motion.div>
+        </div>
       ) : (
         <div className="space-y-8">
           {[...characters]
@@ -162,6 +150,7 @@ export function PostmasterPanel({
                   handlePullPostmaster={handlePullPostmaster}
                   isPullPending={isPullPending}
                   index={i}
+                  pendingItemIds={pendingItemIds}
                 />
               );
             })}

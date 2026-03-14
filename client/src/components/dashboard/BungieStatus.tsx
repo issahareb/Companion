@@ -27,7 +27,7 @@ export function BungieAutoRetry({ onRetry, intervalSeconds = 30 }: { onRetry: ()
       >
         <RefreshCw className="w-3.5 h-3.5" /> Retry Now
       </button>
-      <span className="text-[10px] text-gray-500" data-testid="text-retry-countdown">
+      <span className="text-[11px] text-gray-500" data-testid="text-retry-countdown">
         Auto-retry in {countdown}s
       </span>
     </div>

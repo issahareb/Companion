@@ -52,7 +52,7 @@ function RatingRing({ rating, size = 96 }: { rating: number; size?: number }) {
   const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
   const progress = (rating / 10) * circumference;
-  const color = rating >= 8 ? '#E5C76B' : rating >= 6 ? '#818cf8' : rating >= 4 ? '#f59e0b' : '#ef4444';
+  const color = rating >= 8 ? 'var(--color-gold-accent)' : rating >= 6 ? '#818cf8' : rating >= 4 ? '#f59e0b' : '#ef4444';
 
   return (
     <div className="relative" style={{ width: size, height: size }} data-testid="synergy-rating-ring">
@@ -74,7 +74,7 @@ function RatingRing({ rating, size = 96 }: { rating: number; size?: number }) {
         >
           {rating}
         </motion.span>
-        <span className="text-[9px] text-gray-500 uppercase tracking-[0.2em]">/10</span>
+        <span className="text-[11px] text-gray-500 uppercase tracking-destiny-wide">/10</span>
       </div>
     </div>
   );
@@ -88,7 +88,7 @@ function StrengthBadge({ strength, t }: { strength: 'strong' | 'moderate' | 'wea
   };
   const c = config[strength];
   return (
-    <span className={`px-2 py-0.5 text-[9px] font-display uppercase tracking-[0.15em] border rounded-full ${c.bg} ${c.text}`} data-testid={`badge-strength-${strength}`}>
+    <span className={`px-2 py-0.5 text-[11px] font-display uppercase tracking-destiny border rounded-full ${c.bg} ${c.text}`} data-testid={`badge-strength-${strength}`}>
       {t(`synergy.strength.${strength}`)}
     </span>
   );
@@ -246,7 +246,7 @@ export default function SynergyPanel({ tabDirection, selectedCharacter }: Synerg
           <div className="flex items-start gap-6 p-5 bg-white/[0.02] border border-white/[0.06] rounded-2xl">
             <RatingRing rating={result.overallRating} />
             <div className="flex-1 min-w-0">
-              <h3 className="font-display text-sm text-white/60 uppercase tracking-[0.15em] mb-2" data-testid="text-synergy-label">
+              <h3 className="font-display text-sm text-white/60 uppercase tracking-destiny mb-2" data-testid="text-synergy-label">
                 {t('synergy.overallLabel')}
               </h3>
               <p className="text-sm text-gray-300 leading-relaxed" data-testid="text-synergy-summary">
@@ -266,7 +266,7 @@ export default function SynergyPanel({ tabDirection, selectedCharacter }: Synerg
             <div>
               <div className="flex items-center gap-2 mb-3">
                 <Zap className="w-4 h-4 text-emerald-400" />
-                <h4 className="font-display text-xs uppercase tracking-[0.15em] text-white/60" data-testid="text-synergies-heading">
+                <h4 className="font-display text-xs uppercase tracking-destiny text-white/60" data-testid="text-synergies-heading">
                   {t('synergy.combosTitle')}
                 </h4>
               </div>
@@ -291,12 +291,12 @@ export default function SynergyPanel({ tabDirection, selectedCharacter }: Synerg
 
                       <div className="flex flex-wrap gap-1.5 mb-2">
                         {syn.items.map((item, j) => (
-                          <span key={j} className="px-2 py-0.5 text-[10px] bg-white/[0.04] border border-white/[0.08] rounded-md text-gray-300">
+                          <span key={j} className="px-2 py-0.5 text-[11px] bg-white/[0.04] border border-white/[0.08] rounded-md text-gray-300">
                             {item}
                           </span>
                         ))}
                         {syn.perks.map((perk, j) => (
-                          <span key={`p-${j}`} className="px-2 py-0.5 text-[10px] bg-indigo-500/10 border border-indigo-500/20 rounded-md text-indigo-300">
+                          <span key={`p-${j}`} className="px-2 py-0.5 text-[11px] bg-indigo-500/10 border border-indigo-500/20 rounded-md text-indigo-300">
                             {perk}
                           </span>
                         ))}
@@ -314,7 +314,7 @@ export default function SynergyPanel({ tabDirection, selectedCharacter }: Synerg
             <div>
               <div className="flex items-center gap-2 mb-3">
                 <AlertTriangle className="w-4 h-4 text-amber-400" />
-                <h4 className="font-display text-xs uppercase tracking-[0.15em] text-white/60" data-testid="text-anti-synergies-heading">
+                <h4 className="font-display text-xs uppercase tracking-destiny text-white/60" data-testid="text-anti-synergies-heading">
                   {t('synergy.conflictsTitle')}
                 </h4>
               </div>
@@ -334,7 +334,7 @@ export default function SynergyPanel({ tabDirection, selectedCharacter }: Synerg
                     </div>
                     <div className="flex flex-wrap gap-1.5 mb-2">
                       {anti.items.map((item, j) => (
-                        <span key={j} className="px-2 py-0.5 text-[10px] bg-amber-500/10 border border-amber-500/20 rounded-md text-amber-300/80">
+                        <span key={j} className="px-2 py-0.5 text-[11px] bg-amber-500/10 border border-amber-500/20 rounded-md text-amber-300/80">
                           {item}
                         </span>
                       ))}
@@ -354,7 +354,7 @@ export default function SynergyPanel({ tabDirection, selectedCharacter }: Synerg
             <div>
               <div className="flex items-center gap-2 mb-3">
                 <ArrowRightLeft className="w-4 h-4 text-indigo-400" />
-                <h4 className="font-display text-xs uppercase tracking-[0.15em] text-white/60" data-testid="text-suggestions-heading">
+                <h4 className="font-display text-xs uppercase tracking-destiny text-white/60" data-testid="text-suggestions-heading">
                   {t('synergy.suggestionsTitle')}
                 </h4>
               </div>
@@ -373,7 +373,7 @@ export default function SynergyPanel({ tabDirection, selectedCharacter }: Synerg
                       <ChevronRight className="w-3 h-3 text-gray-600 shrink-0" />
                       <span className="text-xs text-emerald-400 font-medium truncate max-w-[40%]">{sug.recommended}</span>
                     </div>
-                    <p className="text-[10px] text-gray-500 leading-relaxed break-words">{sug.reason}</p>
+                    <p className="text-[11px] text-gray-500 leading-relaxed break-words">{sug.reason}</p>
                   </motion.div>
                 ))}
               </div>

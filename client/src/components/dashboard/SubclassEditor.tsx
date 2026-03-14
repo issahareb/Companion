@@ -16,7 +16,7 @@ export function SubclassEditor({ character, membershipType, addToLoadout }: { ch
 
   const subclass = character.equippedItems.find(i => i.slot === 'subclass');
   if (!subclass) {
-    return <p className="text-[10px] text-gray-700 uppercase tracking-widest italic">{t('item.none')}</p>;
+    return <p className="text-[11px] text-gray-700 uppercase tracking-widest italic">{t('item.none')}</p>;
   }
 
   const sockets = subclass.sockets || [];
@@ -55,12 +55,12 @@ export function SubclassEditor({ character, membershipType, addToLoadout }: { ch
         </div>
         <div className="flex-1 min-w-0">
           <p className="text-[11px] font-bold tracking-wider uppercase text-purple-300">{subclass.name}</p>
-          <p className="text-[8px] text-gray-500 uppercase tracking-wider">{subclass.type}</p>
+          <p className="text-[11px] text-gray-500 uppercase tracking-wider">{subclass.type}</p>
         </div>
         {addToLoadout && (
           <button
             onClick={() => addToLoadout(toItem(subclass))}
-            className="shrink-0 flex items-center gap-1 px-2 py-1.5 text-[8px] uppercase tracking-widest text-purple-400 hover:text-white bg-purple-500/10 hover:bg-purple-500/25 border border-purple-500/20 rounded transition-all"
+            className="shrink-0 flex items-center gap-1 px-2 py-1.5 text-[11px] uppercase tracking-widest text-purple-400 hover:text-white bg-purple-500/10 hover:bg-purple-500/25 border border-purple-500/20 rounded transition-all"
             data-testid="button-add-subclass-loadout"
           >
             <Plus className="w-3 h-3" /> {t('action.toLoadout')}
@@ -76,7 +76,7 @@ export function SubclassEditor({ character, membershipType, addToLoadout }: { ch
 
         return (
           <div key={cat.label} className="space-y-1">
-            <p className="text-[8px] text-gray-500 uppercase tracking-[0.25em] font-medium px-1">{cat.label}</p>
+            <p className="text-[11px] text-gray-500 uppercase tracking-destiny-wide font-medium px-1">{cat.label}</p>
             <div className={cat.group === 'fragment' ? 'grid grid-cols-2 sm:grid-cols-3 gap-1' : 'space-y-1'}>
               {catSockets.map((sock) => {
                 const isOpen = expandedSocket === sock.socketIndex;
@@ -92,9 +92,9 @@ export function SubclassEditor({ character, membershipType, addToLoadout }: { ch
                     >
                       {sock.icon && <img src={sock.icon} alt={sock.name} className="w-8 h-8 rounded-sm ring-1 ring-white/10 shrink-0" />}
                       <div className="flex-1 min-w-0">
-                        <p className="text-[10px] font-bold truncate tracking-wider text-white/90">{sock.name}</p>
+                        <p className="text-[11px] font-bold truncate tracking-wider text-white/90">{sock.name}</p>
                         {sock.description && cat.group !== 'fragment' && (
-                          <p className="text-[8px] text-gray-500 truncate mt-0.5">{sock.description}</p>
+                          <p className="text-[11px] text-gray-500 truncate mt-0.5">{sock.description}</p>
                         )}
                       </div>
                       {hasOptions && (
@@ -125,12 +125,12 @@ export function SubclassEditor({ character, membershipType, addToLoadout }: { ch
                                 >
                                   {rp.icon && <img src={rp.icon} alt={rp.name} className="w-7 h-7 rounded-sm ring-1 ring-white/10 shrink-0" />}
                                   <div className="flex-1 min-w-0">
-                                    <p className="text-[9px] font-bold truncate text-white/80">{rp.name}</p>
+                                    <p className="text-[11px] font-bold truncate text-white/80">{rp.name}</p>
                                     {rp.description && (
-                                      <p className="text-[8px] text-gray-500 truncate">{rp.description}</p>
+                                      <p className="text-[11px] text-gray-500 truncate">{rp.description}</p>
                                     )}
                                   </div>
-                                  <span className="text-[8px] text-purple-400 uppercase tracking-wider shrink-0">
+                                  <span className="text-[11px] text-purple-400 uppercase tracking-wider shrink-0">
                                     {insertPlug.isPending ? t('subclass.swapping') : t('subclass.swap')}
                                   </span>
                                 </div>

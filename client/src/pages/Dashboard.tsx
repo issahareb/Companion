@@ -6,6 +6,7 @@ import {
   Sparkles,
   BookOpen, Trophy, TrendingUp, LogOut,
   ServerCrash, Clock, Menu, Archive, Brain, Newspaper,
+  PanelLeftClose, PanelLeft,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import hunterBgImg from '@assets/IMG_0576_1772037013335.jpeg';
@@ -124,6 +125,7 @@ export default function Dashboard() {
   const [vaultFilters, setVaultFilters] = useState<FilterState>({ search: '', slot: 'all', rarity: 'all', minPower: '', maxPower: '' });
   const [slotPickerSlot, setSlotPickerSlot] = useState<string | null>(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [pendingItemIds, setPendingItemIds] = useState<Set<string>>(new Set());
   const [collectionsSearch, setCollectionsSearch] = useState('');
   const [collectionsFilter, setCollectionsFilter] = useState<'all' | 'acquired' | 'notAcquired'>('all');
@@ -340,56 +342,47 @@ export default function Dashboard() {
       </div>
 
       {/* DESKTOP SIDEBAR */}
-      <aside className="hidden md:flex flex-col w-64 bg-sidebar backdrop-blur-xl border-r border-white/[0.06] shrink-0 z-20 shadow-2xl relative overflow-hidden">
-        <div className="p-6 pb-4 relative">
-          <div className="flex items-center space-x-3">
-            <Hexagon className="w-7 h-7 text-indigo-400" strokeWidth={1.5} />
-            <span className="font-display font-light text-base tracking-[0.2em] text-white">GUARDIANGRID <span className="text-[#E5C76B] text-sm">(Adept)</span></span>
+      <aside className={`hidden md:flex flex-col ${sidebarCollapsed ? 'sidebar-collapsed' : 'sidebar-expanded'} bg-sidebar glass border-r border-white/[0.06] shrink-0 z-20 shadow-2xl relative overflow-hidden`}>
+        <div className={`${sidebarCollapsed ? 'p-3 pb-2' : 'p-6 pb-4'} relative`}>
+          <div className={`flex items-center ${sidebarCollapsed ? 'justify-center' : 'space-x-3'}`}>
+            <Hexagon className="w-7 h-7 text-indigo-400 shrink-0" strokeWidth={1.5} />
+            {!sidebarCollapsed && <span className="font-display font-light text-base tracking-destiny-wide text-white">GUARDIANGRID <span className="text-[var(--color-gold-accent)] text-sm">(Adept)</span></span>}
           </div>
         </div>
 
-        <nav className="flex-1 py-2 flex flex-col space-y-1.5 px-3">
-          <DesktopNavButton icon={Users} label="HÜTER" active={activeTab === 'characters'} onClick={() => setActiveTab('characters')} />
-          <DesktopNavButton icon={Package} label="TRESOR" active={activeTab === 'vault'} onClick={() => setActiveTab('vault')} />
-          <DesktopNavButton icon={Archive} label="LOADOUTS" active={activeTab === 'loadouts'} onClick={() => setActiveTab('loadouts')} />
-          <DesktopNavButton icon={Mail} label="POSTMEISTER" active={activeTab === 'postmaster'} onClick={() => setActiveTab('postmaster')} />
+        <nav className={`flex-1 py-2 flex flex-col space-y-1.5 ${sidebarCollapsed ? 'px-1.5' : 'px-3'}`}>
+          <DesktopNavButton icon={Users} label="HÜTER" active={activeTab === 'characters'} onClick={() => setActiveTab('characters')} collapsed={sidebarCollapsed} />
+          <DesktopNavButton icon={Package} label="TRESOR" active={activeTab === 'vault'} onClick={() => setActiveTab('vault')} collapsed={sidebarCollapsed} />
+          <DesktopNavButton icon={Archive} label="LOADOUTS" active={activeTab === 'loadouts'} onClick={() => setActiveTab('loadouts')} collapsed={sidebarCollapsed} />
+          <DesktopNavButton icon={Mail} label="POSTMEISTER" active={activeTab === 'postmaster'} onClick={() => setActiveTab('postmaster')} collapsed={sidebarCollapsed} />
           <div className="h-px bg-white/[0.06] my-2" />
-          <DesktopNavButton icon={BookOpen} label={t('nav.collections').toUpperCase()} active={activeTab === 'collections'} onClick={() => setActiveTab('collections')} />
-          <DesktopNavButton icon={Trophy} label={t('nav.triumphs').toUpperCase()} active={activeTab === 'triumphs'} onClick={() => setActiveTab('triumphs')} />
-          <DesktopNavButton icon={TrendingUp} label={t('nav.season').toUpperCase()} active={activeTab === 'season'} onClick={() => setActiveTab('season')} />
+          <DesktopNavButton icon={BookOpen} label={t('nav.collections').toUpperCase()} active={activeTab === 'collections'} onClick={() => setActiveTab('collections')} collapsed={sidebarCollapsed} />
+          <DesktopNavButton icon={Trophy} label={t('nav.triumphs').toUpperCase()} active={activeTab === 'triumphs'} onClick={() => setActiveTab('triumphs')} collapsed={sidebarCollapsed} />
+          <DesktopNavButton icon={TrendingUp} label={t('nav.season').toUpperCase()} active={activeTab === 'season'} onClick={() => setActiveTab('season')} collapsed={sidebarCollapsed} />
           <div className="h-px bg-white/[0.06] my-2" />
-          <DesktopNavButton icon={Brain} label={t('nav.playstyle').toUpperCase()} active={activeTab === 'ai'} onClick={() => setActiveTab('ai')} />
-          <DesktopNavButton icon={Newspaper} label={t('nav.news').toUpperCase()} active={activeTab === 'news'} onClick={() => setActiveTab('news')} />
+          <DesktopNavButton icon={Brain} label={t('nav.playstyle').toUpperCase()} active={activeTab === 'ai'} onClick={() => setActiveTab('ai')} collapsed={sidebarCollapsed} />
+          <DesktopNavButton icon={Newspaper} label={t('nav.news').toUpperCase()} active={activeTab === 'news'} onClick={() => setActiveTab('news')} collapsed={sidebarCollapsed} />
         </nav>
-        <UserProfile profile={destinyProfile} onLogout={logout} />
+
+        <button
+          onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+          className="mx-3 mb-2 p-2 text-gray-500 hover:text-white transition-colors rounded hover:bg-white/[0.04] flex items-center justify-center"
+          title={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+          data-testid="button-sidebar-collapse"
+        >
+          {sidebarCollapsed ? <PanelLeft className="w-4 h-4" /> : <PanelLeftClose className="w-4 h-4" />}
+        </button>
+
+        {!sidebarCollapsed && <UserProfile profile={destinyProfile} onLogout={logout} />}
       </aside>
 
       <main className="flex-1 flex flex-col h-full relative overflow-hidden z-10">
         <header className="h-14 border-b border-white/[0.06] bg-header backdrop-blur-xl flex items-center justify-between px-4 md:px-6 shrink-0 z-10 header-border-glow">
           <div className="flex items-center gap-3">
-            <button
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="hidden md:block p-2 -ml-1 text-white hover:text-indigo-400 transition-colors"
-              data-testid="button-menu-toggle"
-              aria-label={isMenuOpen ? 'Close menu' : 'Open menu'}
-              aria-expanded={isMenuOpen}
-            >
-              <AnimatePresence mode="wait">
-                {isMenuOpen ? (
-                  <motion.div key="close" initial={{ rotate: -90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: 90, opacity: 0 }} transition={{ duration: 0.2 }}>
-                    <X className="w-5 h-5" />
-                  </motion.div>
-                ) : (
-                  <motion.div key="menu" initial={{ rotate: 90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: -90, opacity: 0 }} transition={{ duration: 0.2 }}>
-                    <Menu className="w-5 h-5" />
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </button>
             <div className="md:hidden flex items-center gap-2">
               <img src={ggLogoImg} alt="GG" className="h-5 mix-blend-screen" data-testid="img-gg-logo" />
             </div>
-            <h2 className="font-display font-light text-sm tracking-[0.2em] text-white/90 uppercase" data-testid="text-header-title">
+            <h2 className="font-display font-light text-sm tracking-destiny-wide text-white/90 uppercase" data-testid="text-header-title">
               {tabTitles[activeTab]}
             </h2>
           </div>
@@ -399,7 +392,7 @@ export default function Dashboard() {
                 {currencies.slice(0, 3).map(c => (
                   <div key={c.itemHash} className="flex items-center gap-1.5" title={c.name}>
                     {c.icon && <img src={c.icon} alt="" className="w-4 h-4 opacity-70" />}
-                    <span className="text-[10px] text-gray-400 font-mono">{c.quantity.toLocaleString('de-DE')}</span>
+                    <span className="text-[11px] text-gray-400 font-mono">{c.quantity.toLocaleString('de-DE')}</span>
                   </div>
                 ))}
               </div>
@@ -437,7 +430,7 @@ export default function Dashboard() {
               >
                 <div className="p-6 pb-4 border-b border-white/[0.06]">
                   <div className="flex items-center justify-between">
-                    <span className="font-display text-lg tracking-[0.15em] text-white">GUARDIANGRID <span className="text-[#E5C76B] text-sm">(Adept)</span></span>
+                    <span className="font-display text-lg tracking-destiny text-white">GUARDIANGRID <span className="text-[var(--color-gold-accent)] text-sm">(Adept)</span></span>
                     <button onClick={() => setIsMenuOpen(false)} className="p-1.5 text-gray-500 hover:text-white transition-colors">
                       <X className="w-5 h-5" />
                     </button>
@@ -469,7 +462,7 @@ export default function Dashboard() {
                       data-testid={`menu-item-${item.key}`}
                     >
                       <item.icon className={`w-5 h-5 ${activeTab === item.id ? 'text-indigo-400' : ''}`} />
-                      <span className="text-sm font-display tracking-[0.15em] uppercase">{item.label}</span>
+                      <span className="text-sm font-display tracking-destiny uppercase">{item.label}</span>
                       {activeTab === item.id && (
                         <motion.div
                           layoutId="menu-indicator"
@@ -486,7 +479,7 @@ export default function Dashboard() {
                     data-testid="menu-item-logout"
                   >
                     <LogOut className="w-5 h-5" />
-                    <span className="text-sm font-display tracking-[0.15em] uppercase">{t('nav.logout')}</span>
+                    <span className="text-sm font-display tracking-destiny uppercase">{t('nav.logout')}</span>
                   </button>
                 </div>
               </motion.div>
@@ -537,7 +530,7 @@ export default function Dashboard() {
               </div>
               <div className="flex items-center gap-3">
                 <Loader2 className="w-5 h-5 animate-spin text-indigo-500" />
-                <p className="text-[10px] text-gray-500 uppercase tracking-[0.3em] font-display">{t('loading.profile')}</p>
+                <p className="text-[11px] text-gray-500 uppercase tracking-destiny-widest font-display">{t('loading.profile')}</p>
               </div>
             </div>
           ) : profileError ? (
@@ -682,7 +675,7 @@ export default function Dashboard() {
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: tabDirection * -60 }}
                   transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-                  className="h-full flex flex-col"
+                  className="h-full flex flex-col ai-section-badge"
                 >
                   <div className="flex items-center gap-1 p-1 bg-white/[0.03] border border-white/[0.06] rounded-lg shrink-0 mx-4 md:mx-8 mt-4 mb-4 overflow-x-auto scrollbar-hide" data-testid="ai-subtab-bar">
                     {([
@@ -695,7 +688,7 @@ export default function Dashboard() {
                       <button
                         key={sub.id}
                         onClick={() => setAiSubTab(sub.id)}
-                        className={`px-3 py-1.5 text-[10px] font-display tracking-[0.15em] uppercase transition-all rounded-md whitespace-nowrap shrink-0 ${
+                        className={`px-3 py-1.5 text-[11px] font-display tracking-destiny uppercase transition-all rounded-md whitespace-nowrap shrink-0 ${
                           aiSubTab === sub.id
                             ? 'bg-white/[0.08] text-white border border-white/[0.1]'
                             : 'text-gray-500 hover:text-gray-300'
@@ -787,7 +780,7 @@ export default function Dashboard() {
           data-testid="button-mobile-loadout">
           <Sparkles className="w-5 h-5" />
           {Object.keys(loadout).length > 0 && (
-            <span className="absolute -top-1 -right-1 w-5 h-5 bg-[#E5C76B] text-black text-[10px] font-bold rounded-full flex items-center justify-center">
+            <span className="absolute -top-1 -right-1 w-5 h-5 bg-[var(--color-gold-accent)] text-black text-[11px] font-bold rounded-full flex items-center justify-center">
               {Object.keys(loadout).length}
             </span>
           )}
@@ -797,21 +790,22 @@ export default function Dashboard() {
       <AnimatePresence>
         {showMobileLoadout && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="lg:hidden fixed inset-0 z-40 bg-black/80 backdrop-blur-sm" onClick={() => setShowMobileLoadout(false)}>
+            className="lg:hidden fixed inset-0 z-[60] bg-black/80 backdrop-blur-sm" onClick={() => setShowMobileLoadout(false)}>
             <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
               transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-              className="absolute bottom-0 left-0 right-0 max-h-[85vh] bg-[#0a0e18] border-t border-white/[0.08] rounded-t-2xl flex flex-col"
+              className="absolute inset-0 sm:top-auto sm:max-h-[85vh] bg-[#0a0e18] border-t border-white/[0.08] sm:rounded-t-2xl flex flex-col"
+              style={{ paddingTop: 'env(safe-area-inset-top, 0px)', paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
               onClick={(e) => e.stopPropagation()}>
               <div className="flex items-center justify-center pt-3 pb-1">
                 <div className="w-10 h-1 bg-white/20 rounded-full" />
               </div>
               <div className="p-4 border-b border-white/5 flex items-center justify-between">
-                <h3 className="text-white font-display font-light tracking-[0.2em] flex items-center gap-3 text-sm">
-                  <Sparkles className="w-4 h-4 text-[#E5C76B]" /> AKTIVES LOADOUT
+                <h3 className="text-white font-display font-light tracking-destiny-wide flex items-center gap-3 text-sm">
+                  <Sparkles className="w-4 h-4 text-[var(--color-gold-accent)]" /> AKTIVES LOADOUT
                 </h3>
                 <div className="flex items-center gap-2">
                   <button onClick={() => setIsSaveModalOpen(true)} disabled={Object.keys(loadout).length === 0}
-                    className="px-4 py-2 bg-white/5 hover:bg-white text-white hover:text-black transition-all disabled:opacity-20 border border-white/10 text-[10px] font-bold tracking-[0.2em] destiny-clip-sm">
+                    className="px-4 py-2 bg-white/5 hover:bg-white text-white hover:text-black transition-all disabled:opacity-20 border border-white/10 text-[11px] font-bold tracking-destiny-wide destiny-clip-sm uppercase">
                     SPEICHERN
                   </button>
                   <button onClick={() => setShowMobileLoadout(false)} className="p-2 text-gray-400 hover:text-white">
@@ -831,7 +825,7 @@ export default function Dashboard() {
 
       <SaveLoadoutModal isOpen={isSaveModalOpen} onClose={() => setIsSaveModalOpen(false)} onSave={handleSaveLoadout} />
 
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-[#080b14]/95 backdrop-blur-xl border-t border-white/[0.08]" data-testid="mobile-bottom-tabs">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-[#080b14]/95 backdrop-blur-xl border-t border-white/[0.08] mobile-bottom-tabs" data-testid="mobile-bottom-tabs">
         <div className="flex items-stretch justify-around">
           {([
             { id: 'characters' as TabType, icon: Users, label: t('nav.characters').split('-')[0].split(' ')[0] },
@@ -848,7 +842,7 @@ export default function Dashboard() {
               data-testid={`bottom-tab-${item.id}`}
             >
               <item.icon className="w-5 h-5" />
-              <span className="text-[8px] tracking-[0.1em] uppercase font-display">{item.label}</span>
+              <span className="text-[11px] tracking-destiny uppercase font-display">{item.label}</span>
             </button>
           ))}
           <button
@@ -859,21 +853,21 @@ export default function Dashboard() {
             data-testid="bottom-tab-more"
           >
             <Menu className="w-5 h-5" />
-            <span className="text-[8px] tracking-[0.1em] uppercase font-display">Mehr</span>
+            <span className="text-[11px] tracking-destiny uppercase font-display">Mehr</span>
           </button>
         </div>
         <div className="flex items-center justify-center gap-3 pb-1">
-          <Link href="/imprint"><span className="text-[8px] tracking-[0.2em] uppercase text-gray-500 hover:text-gray-300 transition-colors cursor-pointer" data-testid="link-dashboard-imprint">{t('footer.imprint')}</span></Link>
-          <span className="text-gray-600 text-[7px]">|</span>
-          <Link href="/privacy"><span className="text-[8px] tracking-[0.2em] uppercase text-gray-500 hover:text-gray-300 transition-colors cursor-pointer" data-testid="link-dashboard-privacy">{t('footer.privacy')}</span></Link>
+          <Link href="/imprint"><span className="text-[11px] tracking-destiny uppercase text-gray-500 hover:text-gray-300 transition-colors cursor-pointer" data-testid="link-dashboard-imprint">{t('footer.imprint')}</span></Link>
+          <span className="text-gray-600 text-[11px]">|</span>
+          <Link href="/privacy"><span className="text-[11px] tracking-destiny uppercase text-gray-500 hover:text-gray-300 transition-colors cursor-pointer" data-testid="link-dashboard-privacy">{t('footer.privacy')}</span></Link>
         </div>
       </nav>
 
-      <div className="hidden md:block fixed bottom-0 left-0 right-0 z-50 bg-[#080b14]/90 backdrop-blur-sm border-t border-white/[0.04] py-2 px-4">
+      <div className="hidden md:block fixed bottom-0 left-0 right-0 z-50 bg-[#080b14]/90 glass-subtle border-t border-white/[0.04] py-2 px-4">
         <div className="flex items-center justify-center gap-3">
-          <Link href="/imprint"><span className="text-[8px] tracking-[0.2em] uppercase text-gray-500 hover:text-gray-300 transition-colors cursor-pointer" data-testid="link-desktop-imprint">{t('footer.imprint')}</span></Link>
-          <span className="text-gray-600 text-[7px]">|</span>
-          <Link href="/privacy"><span className="text-[8px] tracking-[0.2em] uppercase text-gray-500 hover:text-gray-300 transition-colors cursor-pointer" data-testid="link-desktop-privacy">{t('footer.privacy')}</span></Link>
+          <Link href="/imprint"><span className="text-[11px] tracking-destiny uppercase text-gray-500 hover:text-gray-300 transition-colors cursor-pointer" data-testid="link-desktop-imprint">{t('footer.imprint')}</span></Link>
+          <span className="text-gray-600 text-[11px]">|</span>
+          <Link href="/privacy"><span className="text-[11px] tracking-destiny uppercase text-gray-500 hover:text-gray-300 transition-colors cursor-pointer" data-testid="link-desktop-privacy">{t('footer.privacy')}</span></Link>
         </div>
       </div>
     </div>

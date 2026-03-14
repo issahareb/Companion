@@ -42,7 +42,7 @@ const tabVariants = {
 const WEAPON_SLOTS = ['kinetic', 'energy', 'power'];
 
 const verdictConfig: Record<string, { label: string; color: string; bgColor: string; borderColor: string }> = {
-  god_roll: { label: 'GOD ROLL', color: '#E5C76B', bgColor: 'rgba(229, 199, 107, 0.15)', borderColor: 'rgba(229, 199, 107, 0.3)' },
+  god_roll: { label: 'GOD ROLL', color: 'var(--color-gold-accent)', bgColor: 'rgba(229, 199, 107, 0.15)', borderColor: 'rgba(229, 199, 107, 0.3)' },
   great: { label: 'GREAT', color: '#818cf8', bgColor: 'rgba(129, 140, 248, 0.15)', borderColor: 'rgba(129, 140, 248, 0.3)' },
   good: { label: 'GOOD', color: '#34d399', bgColor: 'rgba(52, 211, 153, 0.15)', borderColor: 'rgba(52, 211, 153, 0.3)' },
   average: { label: 'AVERAGE', color: '#f59e0b', bgColor: 'rgba(245, 158, 11, 0.15)', borderColor: 'rgba(245, 158, 11, 0.3)' },
@@ -50,7 +50,7 @@ const verdictConfig: Record<string, { label: string; color: string; bgColor: str
 };
 
 const ratingColors: Record<string, string> = {
-  s: '#E5C76B',
+  s: 'var(--color-gold-accent)',
   a: '#818cf8',
   b: '#34d399',
   c: '#f59e0b',
@@ -62,7 +62,7 @@ function RatingRing({ rating, size = 96 }: { rating: number; size?: number }) {
   const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
   const progress = (rating / 10) * circumference;
-  const color = rating >= 8 ? '#E5C76B' : rating >= 6 ? '#818cf8' : rating >= 4 ? '#f59e0b' : '#ef4444';
+  const color = rating >= 8 ? 'var(--color-gold-accent)' : rating >= 6 ? '#818cf8' : rating >= 4 ? '#f59e0b' : '#ef4444';
 
   return (
     <div className="relative" style={{ width: size, height: size }} data-testid="rating-ring-weapon">
@@ -84,7 +84,7 @@ function RatingRing({ rating, size = 96 }: { rating: number; size?: number }) {
         >
           {rating}
         </motion.span>
-        <span className="text-[9px] text-gray-500 uppercase tracking-[0.2em]">/10</span>
+        <span className="text-[11px] text-gray-500 uppercase tracking-destiny-wide">/10</span>
       </div>
     </div>
   );
@@ -212,7 +212,7 @@ export function WeaponRollPanel({ tabDirection, vaultItems, characterItems }: We
           className="flex items-center gap-3 mb-2"
         >
           <Crosshair className="w-5 h-5 text-orange-400" />
-          <h2 className="font-display text-sm tracking-[0.2em] text-white uppercase" data-testid="text-weapon-roll-title">{t('roll.title')}</h2>
+          <h2 className="font-display text-sm tracking-destiny-wide text-white uppercase" data-testid="text-weapon-roll-title">{t('roll.title')}</h2>
         </motion.div>
 
         <motion.div
@@ -297,14 +297,14 @@ export function WeaponRollPanel({ tabDirection, vaultItems, characterItems }: We
                             <img
                               src={bungieIcon(weapon.icon)}
                               alt=""
-                              className={`w-8 h-8 rounded ${weapon.rarity === 'exotic' ? 'ring-1 ring-[#E5C76B]/30' : ''}`}
+                              className={`w-8 h-8 rounded ${weapon.rarity === 'exotic' ? 'ring-1 ring-[var(--color-gold-accent)]/30' : ''}`}
                             />
                           )}
                           <div className="flex-1 min-w-0">
                             <p className="text-sm text-gray-200 truncate">{weapon.name}</p>
                             <p className="text-xs text-gray-500">{weapon.type} · {weapon.power}</p>
                           </div>
-                          <span className={`text-[10px] uppercase tracking-wider ${weapon.rarity === 'exotic' ? 'text-[#E5C76B]/60' : 'text-purple-400/60'}`}>
+                          <span className={`text-[11px] uppercase tracking-wider ${weapon.rarity === 'exotic' ? 'text-[var(--color-gold-accent)]/60' : 'text-purple-400/60'}`}>
                             {weapon.rarity}
                           </span>
                           {cache[weapon.id] && (
@@ -332,7 +332,7 @@ export function WeaponRollPanel({ tabDirection, vaultItems, characterItems }: We
               <p className="text-gray-400 text-sm text-center max-w-sm">{t('roll.description')}</p>
               <button
                 onClick={evaluateRoll}
-                className="press-scale px-8 py-3 bg-orange-600 hover:bg-orange-500 text-white text-xs font-display tracking-[0.2em] uppercase transition-all duration-300 destiny-clip-sm border border-orange-500/30"
+                className="press-scale px-8 py-3 bg-orange-600 hover:bg-orange-500 text-white text-xs font-display tracking-destiny-wide uppercase transition-all duration-300 destiny-clip-sm border border-orange-500/30"
                 data-testid="button-evaluate-roll"
               >
                 {t('roll.evaluate')}
@@ -379,7 +379,7 @@ export function WeaponRollPanel({ tabDirection, vaultItems, characterItems }: We
               </div>
               <div className="absolute -inset-2 rounded-full border border-orange-500/20 animate-ping" style={{ animationDuration: '2s' }} />
             </div>
-            <p className="text-gray-400 text-xs font-display tracking-[0.2em] uppercase">{t('roll.loading')}</p>
+            <p className="text-gray-400 text-xs font-display tracking-destiny-wide uppercase">{t('roll.loading')}</p>
           </motion.div>
         )}
 
@@ -401,7 +401,7 @@ export function WeaponRollPanel({ tabDirection, vaultItems, characterItems }: We
                     className="flex items-center gap-3 flex-wrap"
                   >
                     <span
-                      className="inline-block px-3 py-1 rounded-full text-xs font-display tracking-[0.15em] uppercase"
+                      className="inline-block px-3 py-1 rounded-full text-xs font-display tracking-destiny uppercase"
                       style={{
                         color: verdictConfig[evaluation.verdict]?.color,
                         backgroundColor: verdictConfig[evaluation.verdict]?.bgColor,
@@ -437,7 +437,7 @@ export function WeaponRollPanel({ tabDirection, vaultItems, characterItems }: We
             >
               <div className="flex items-center gap-2 mb-4">
                 <Crosshair className="w-4 h-4 text-orange-400" />
-                <h3 className="font-display text-xs tracking-[0.15em] text-orange-400 uppercase" data-testid="text-perk-breakdown-title">{t('roll.perkBreakdown')}</h3>
+                <h3 className="font-display text-xs tracking-destiny text-orange-400 uppercase" data-testid="text-perk-breakdown-title">{t('roll.perkBreakdown')}</h3>
               </div>
               <div className="space-y-3" data-testid="list-perk-breakdown">
                 {evaluation.perkBreakdown.map((perk, i) => (
@@ -477,8 +477,8 @@ export function WeaponRollPanel({ tabDirection, vaultItems, characterItems }: We
               className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-5 hover-lift"
             >
               <div className="flex items-center gap-2 mb-3">
-                <Sparkles className="w-4 h-4 text-[#E5C76B]" />
-                <h3 className="font-display text-xs tracking-[0.15em] text-[#E5C76B] uppercase" data-testid="text-ideal-perks-title">{t('roll.idealPerks')}</h3>
+                <Sparkles className="w-4 h-4 text-[var(--color-gold-accent)]" />
+                <h3 className="font-display text-xs tracking-destiny text-[var(--color-gold-accent)] uppercase" data-testid="text-ideal-perks-title">{t('roll.idealPerks')}</h3>
               </div>
               <ul className="space-y-2" data-testid="list-ideal-perks">
                 {evaluation.idealPerks.map((perk, i) => (
@@ -489,7 +489,7 @@ export function WeaponRollPanel({ tabDirection, vaultItems, characterItems }: We
                     transition={{ delay: 0.4 + i * 0.08, duration: 0.4, ease: appleEase as unknown as number[] }}
                     className="flex items-start gap-2 text-sm text-gray-300"
                   >
-                    <Star className="w-3.5 h-3.5 text-[#E5C76B]/60 mt-0.5 shrink-0" />
+                    <Star className="w-3.5 h-3.5 text-[var(--color-gold-accent)]/60 mt-0.5 shrink-0" />
                     {perk}
                   </motion.li>
                 ))}
@@ -513,7 +513,7 @@ export function WeaponRollPanel({ tabDirection, vaultItems, characterItems }: We
                     setEvaluation(null);
                   }
                 }}
-                className="press-scale flex items-center gap-2 px-5 py-2.5 bg-white/[0.04] hover:bg-white/[0.08] text-gray-400 hover:text-white text-xs font-display tracking-[0.15em] uppercase transition-all duration-300 border border-white/[0.06] rounded-lg"
+                className="press-scale flex items-center gap-2 px-5 py-2.5 bg-white/[0.04] hover:bg-white/[0.08] text-gray-400 hover:text-white text-xs font-display tracking-destiny uppercase transition-all duration-300 border border-white/[0.06] rounded-lg"
                 data-testid="button-reevaluate"
               >
                 <RefreshCw className="w-3.5 h-3.5" />
@@ -521,7 +521,7 @@ export function WeaponRollPanel({ tabDirection, vaultItems, characterItems }: We
               </button>
               <button
                 onClick={clearSelection}
-                className="press-scale flex items-center gap-2 px-5 py-2.5 bg-white/[0.04] hover:bg-white/[0.08] text-gray-400 hover:text-white text-xs font-display tracking-[0.15em] uppercase transition-all duration-300 border border-white/[0.06] rounded-lg"
+                className="press-scale flex items-center gap-2 px-5 py-2.5 bg-white/[0.04] hover:bg-white/[0.08] text-gray-400 hover:text-white text-xs font-display tracking-destiny uppercase transition-all duration-300 border border-white/[0.06] rounded-lg"
                 data-testid="button-select-another"
               >
                 <ChevronRight className="w-3.5 h-3.5" />

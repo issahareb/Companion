@@ -19,15 +19,8 @@ interface NewsPanelProps {
   tabDirection: number;
 }
 
-
-const tabVariants = {
-  enter: (dir: number) => ({ x: dir > 0 ? 60 : -60, opacity: 0 }),
-  center: { x: 0, opacity: 1 },
-  exit: (dir: number) => ({ x: dir > 0 ? -60 : 60, opacity: 0 }),
-};
-
 const contentTypeConfig: Record<string, { label: string; color: string; icon: typeof Newspaper }> = {
-  twid: { label: 'TWID', color: '#E5C76B', icon: Sparkles },
+  twid: { label: 'TWID', color: 'var(--color-gold-accent)', icon: Sparkles },
   patch: { label: 'PATCH', color: '#60a5fa', icon: Wrench },
   maintenance: { label: 'MAINTENANCE', color: '#f87171', icon: Shield },
   announcement: { label: 'ANNOUNCEMENT', color: '#a78bfa', icon: Megaphone },
@@ -84,52 +77,39 @@ export function NewsPanel({ tabDirection }: NewsPanelProps) {
   return (
     <motion.div
       key="news"
-      custom={tabDirection}
-      variants={tabVariants}
-      initial="enter"
-      animate="center"
-      exit="exit"
-      transition={{ duration: 0.45, ease: appleEase as unknown as number[] }}
-      className="h-full overflow-y-auto scroll-container px-4 md:px-8 py-6"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.3, ease: appleEase as unknown as number[] }}
+      className="h-full overflow-y-auto scroll-container px-4 md:px-6 py-6"
       data-scroll-container
       data-testid="panel-news"
     >
       <div className="max-w-4xl mx-auto space-y-6">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, ease: appleEase as unknown as number[] }}
-          className="flex items-center justify-between"
-        >
+        <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Newspaper className="w-5 h-5 text-indigo-400" />
-            <h2 className="font-display text-sm tracking-[0.2em] text-white uppercase" data-testid="text-news-title">
+            <h2 className="font-display text-sm tracking-destiny-wide text-white uppercase" data-testid="text-news-title">
               {t('news.title')}
             </h2>
           </div>
           <button
             onClick={() => refetch()}
             disabled={isFetching}
-            className="press-scale flex items-center gap-2 px-3 py-1.5 bg-white/[0.04] hover:bg-white/[0.08] text-gray-400 hover:text-white text-[10px] font-display tracking-[0.15em] uppercase transition-all duration-300 border border-white/[0.06] rounded-lg disabled:opacity-40"
+            className="press-scale flex items-center gap-2 px-3 py-1.5 bg-white/[0.04] hover:bg-white/[0.08] text-gray-400 hover:text-white text-[11px] font-display tracking-destiny uppercase transition-all duration-300 border border-white/[0.06] rounded-lg disabled:opacity-40"
             data-testid="button-refresh-news"
           >
             <RefreshCw className={`w-3 h-3 ${isFetching ? 'animate-spin' : ''}`} />
             {t('news.refresh')}
           </button>
-        </motion.div>
+        </div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 15 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, ease: appleEase as unknown as number[], delay: 0.05 }}
-          className="flex items-center gap-1.5 flex-wrap"
-          data-testid="news-filter-bar"
-        >
+        <div className="flex items-center gap-1.5 flex-wrap" data-testid="news-filter-bar">
           {filterOptions.map(opt => (
             <button
               key={opt.id}
               onClick={() => setFilter(opt.id)}
-              className={`px-3 py-1.5 text-[10px] font-display tracking-[0.12em] uppercase transition-all rounded-md ${
+              className={`px-3 py-1.5 text-[11px] font-display tracking-destiny uppercase transition-all rounded-md ${
                 filter === opt.id
                   ? 'bg-white/[0.08] text-white border border-white/[0.1]'
                   : 'text-gray-500 hover:text-gray-300 border border-transparent'
@@ -139,48 +119,36 @@ export function NewsPanel({ tabDirection }: NewsPanelProps) {
               {opt.label}
             </button>
           ))}
-        </motion.div>
+        </div>
 
         {isLoading && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="flex flex-col items-center justify-center py-20 space-y-4"
-          >
+          <div className="flex flex-col items-center justify-center py-20 space-y-4">
             <div className="relative">
               <div className="w-16 h-16 rounded-full bg-indigo-500/10 flex items-center justify-center">
                 <Loader2 className="w-7 h-7 text-indigo-400 animate-spin" />
               </div>
             </div>
-            <p className="text-gray-400 text-xs font-display tracking-[0.2em] uppercase" data-testid="text-news-loading">
+            <p className="text-gray-400 text-xs font-display tracking-destiny-wide uppercase" data-testid="text-news-loading">
               {t('news.loading')}
             </p>
-          </motion.div>
+          </div>
         )}
 
         {error && !isLoading && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="flex flex-col items-center justify-center py-20 space-y-4"
-          >
+          <div className="flex flex-col items-center justify-center py-20 space-y-4">
             <AlertTriangle className="w-8 h-8 text-red-400/60" />
             <p className="text-red-400/80 text-sm" data-testid="text-news-error">{t('news.error')}</p>
             <button onClick={() => refetch()} className="press-scale px-4 py-2 bg-white/[0.04] hover:bg-white/[0.08] text-gray-300 text-xs border border-white/[0.06] rounded-lg" data-testid="button-news-retry">
               {t('error.retry')}
             </button>
-          </motion.div>
+          </div>
         )}
 
         {!isLoading && !error && filteredArticles.length === 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="flex flex-col items-center justify-center py-20 space-y-3"
-          >
+          <div className="flex flex-col items-center justify-center py-20 space-y-3">
             <Newspaper className="w-8 h-8 text-gray-600" />
             <p className="text-gray-500 text-sm" data-testid="text-news-empty">{t('news.empty')}</p>
-          </motion.div>
+          </div>
         )}
 
         {!isLoading && !error && filteredArticles.length > 0 && (
@@ -199,7 +167,7 @@ export function NewsPanel({ tabDirection }: NewsPanelProps) {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.95 }}
                     transition={{ duration: 0.5, ease: appleEase as unknown as number[], delay: Math.min(i * 0.06, 0.6) }}
-                    className="group block bg-white/[0.02] hover:bg-white/[0.05] border border-white/[0.06] hover:border-white/[0.12] rounded-xl overflow-hidden transition-all duration-500 hover-lift"
+                    className="group block bg-white/[0.02] hover:bg-white/[0.05] border border-white/[0.06] hover:border-white/[0.12] rounded-xl overflow-hidden transition-all duration-500 item-card-hover"
                     data-testid={`card-news-article-${i}`}
                   >
                     <div className="flex flex-col sm:flex-row">
@@ -218,18 +186,18 @@ export function NewsPanel({ tabDirection }: NewsPanelProps) {
                       <div className="flex-1 p-4 sm:p-5 flex flex-col justify-center min-w-0">
                         <div className="flex items-center gap-2 mb-2">
                           <span
-                            className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-display tracking-[0.15em] uppercase border"
+                            className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-display tracking-destiny uppercase border"
                             style={{
                               color: typeConfig.color,
-                              borderColor: `${typeConfig.color}30`,
-                              backgroundColor: `${typeConfig.color}10`,
+                              borderColor: `color-mix(in srgb, ${typeConfig.color} 20%, transparent)`,
+                              backgroundColor: `color-mix(in srgb, ${typeConfig.color} 8%, transparent)`,
                             }}
                             data-testid={`badge-news-type-${i}`}
                           >
                             <TypeIcon className="w-2.5 h-2.5" />
                             {typeConfig.label}
                           </span>
-                          <span className="flex items-center gap-1 text-[10px] text-gray-600">
+                          <span className="flex items-center gap-1 text-[11px] text-gray-600">
                             <Clock className="w-2.5 h-2.5" />
                             {formatDate(article.date, language)}
                           </span>
@@ -242,9 +210,9 @@ export function NewsPanel({ tabDirection }: NewsPanelProps) {
                             {article.subtitle}
                           </p>
                         )}
-                        <div className="flex items-center gap-1.5 mt-3 text-[10px] text-gray-600 group-hover:text-indigo-400/60 transition-colors">
+                        <div className="flex items-center gap-1.5 mt-3 text-[11px] text-gray-600 group-hover:text-indigo-400/60 transition-colors">
                           <ExternalLink className="w-3 h-3" />
-                          <span className="font-display tracking-[0.1em] uppercase">bungie.net</span>
+                          <span className="font-display tracking-destiny uppercase">bungie.net</span>
                         </div>
                       </div>
                     </div>

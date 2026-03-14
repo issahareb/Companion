@@ -35,7 +35,7 @@ export default function Home() {
         >
           <div className="absolute inset-0 bg-app-overlay" />
           <Loader2 className="w-10 h-10 text-indigo-500 animate-spin mb-6 relative z-10" />
-          <p className="text-white/50 font-display tracking-[0.3em] relative z-10 uppercase text-[10px]">
+          <p className="text-white/50 font-display tracking-destiny-widest relative z-10 uppercase text-[11px]">
             {t('loading.orbit')}
           </p>
         </motion.div>

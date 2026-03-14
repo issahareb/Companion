@@ -55,18 +55,18 @@ function RecordDetail({ record }: { record: RecordItem }) {
       <div className="mt-4 pt-4 border-t border-white/[0.06]">
         <div className="flex items-start gap-3 mb-3">
           <div className={`w-12 h-12 shrink-0 flex items-center justify-center overflow-hidden ring-1 rounded ${
-            record.completed ? 'ring-[#E5C76B]/30' : 'ring-white/10'
+            record.completed ? 'ring-[var(--color-gold-accent)]/30' : 'ring-white/10'
           }`}>
             {record.icon ? (
               <img src={record.icon} alt="" className="w-full h-full object-cover" loading="lazy" />
             ) : (
-              <Trophy className={`w-6 h-6 ${record.completed ? 'text-[#E5C76B]' : 'text-gray-600'}`} />
+              <Trophy className={`w-6 h-6 ${record.completed ? 'text-[var(--color-gold-accent)]' : 'text-gray-600'}`} />
             )}
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
               <h4 className={`text-xs font-bold tracking-wider uppercase truncate ${
-                record.completed ? 'text-[#E5C76B]' : 'text-white'
+                record.completed ? 'text-[var(--color-gold-accent)]' : 'text-white'
               }`}>{record.name}</h4>
               {record.completed && (
                 <div className="shrink-0 w-4 h-4 bg-green-500/80 rounded-full flex items-center justify-center">
@@ -74,11 +74,11 @@ function RecordDetail({ record }: { record: RecordItem }) {
                 </div>
               )}
               {record.scoreValue > 0 && (
-                <span className="text-[9px] text-[#E5C76B]/60 shrink-0">{record.scoreValue} pts</span>
+                <span className="text-[11px] text-[var(--color-gold-accent)]/60 shrink-0">{record.scoreValue} pts</span>
               )}
             </div>
             {record.description && (
-              <p className="text-[10px] text-gray-400 mt-1 leading-relaxed">{record.description}</p>
+              <p className="text-[11px] text-gray-400 mt-1 leading-relaxed">{record.description}</p>
             )}
           </div>
         </div>
@@ -87,15 +87,15 @@ function RecordDetail({ record }: { record: RecordItem }) {
           <div className="space-y-2.5 mt-3">
             <div className="flex items-center gap-1.5">
               <Target className="w-3 h-3 text-indigo-400" />
-              <span className="text-[9px] text-gray-500 uppercase tracking-[0.15em] font-display">{t('triumph.objectives')}</span>
+              <span className="text-[11px] text-gray-500 uppercase tracking-destiny font-display">{t('triumph.objectives')}</span>
             </div>
             {record.objectives.map((obj, i) => {
               const pct = obj.completionValue > 0 ? Math.min(100, (obj.progress / obj.completionValue) * 100) : 0;
               return (
                 <div key={i} className="bg-white/[0.02] border border-white/[0.04] rounded-lg px-3 py-2">
                   <div className="flex items-center justify-between mb-1">
-                    <span className="text-[10px] text-gray-300 flex-1 truncate">{obj.description || t('triumphs.progress')}</span>
-                    <span className={`text-[10px] shrink-0 ml-2 font-mono ${obj.complete ? 'text-green-400' : 'text-gray-400'}`}>
+                    <span className="text-[11px] text-gray-300 flex-1 truncate">{obj.description || t('triumphs.progress')}</span>
+                    <span className={`text-[11px] shrink-0 ml-2 font-mono ${obj.complete ? 'text-green-400' : 'text-gray-400'}`}>
                       {obj.progress.toLocaleString()}/{obj.completionValue.toLocaleString()}
                     </span>
                   </div>
@@ -200,7 +200,7 @@ export function TriumphAdvisorPanel({ tabDirection, selectedCharacter, records }
           className="flex items-center gap-3 mb-2"
         >
           <Trophy className="w-5 h-5 text-amber-400" />
-          <h2 className="font-display text-sm tracking-[0.2em] text-white uppercase" data-testid="text-triumph-advisor-title">{t('triumph.title')}</h2>
+          <h2 className="font-display text-sm tracking-destiny-wide text-white uppercase" data-testid="text-triumph-advisor-title">{t('triumph.title')}</h2>
         </motion.div>
 
         {!result && !isLoading && (
@@ -224,7 +224,7 @@ export function TriumphAdvisorPanel({ tabDirection, selectedCharacter, records }
             <button
               onClick={runAnalysis}
               disabled={!selectedCharacter || incompleteRecords.length === 0}
-              className="press-scale px-8 py-3 bg-amber-600 hover:bg-amber-500 disabled:opacity-30 disabled:cursor-not-allowed text-white text-xs font-display tracking-[0.2em] uppercase transition-all duration-300 destiny-clip-sm border border-amber-500/30"
+              className="press-scale px-8 py-3 bg-amber-600 hover:bg-amber-500 disabled:opacity-30 disabled:cursor-not-allowed text-white text-xs font-display tracking-destiny-wide uppercase transition-all duration-300 destiny-clip-sm border border-amber-500/30"
               data-testid="button-analyze-triumphs"
             >
               {t('triumph.analyze')}
@@ -253,7 +253,7 @@ export function TriumphAdvisorPanel({ tabDirection, selectedCharacter, records }
               </div>
               <div className="absolute -inset-2 rounded-full border border-amber-500/20 animate-ping" style={{ animationDuration: '2s' }} />
             </div>
-            <p className="text-gray-400 text-xs font-display tracking-[0.2em] uppercase" data-testid="text-triumph-loading">{t('triumph.loading')}</p>
+            <p className="text-gray-400 text-xs font-display tracking-destiny-wide uppercase" data-testid="text-triumph-loading">{t('triumph.loading')}</p>
           </motion.div>
         )}
 
@@ -307,13 +307,13 @@ export function TriumphAdvisorPanel({ tabDirection, selectedCharacter, records }
                         {triumph.tips.length > 0 && (
                           <div className="space-y-1.5 pt-1">
                             <div className="flex items-center gap-1.5">
-                              <Lightbulb className="w-3 h-3 text-[#E5C76B]/70" />
-                              <span className="text-[10px] text-gray-500 uppercase tracking-[0.15em] font-display">{t('triumph.tips')}</span>
+                              <Lightbulb className="w-3 h-3 text-[var(--color-gold-accent)]/70" />
+                              <span className="text-[11px] text-gray-500 uppercase tracking-destiny font-display">{t('triumph.tips')}</span>
                             </div>
                             <ul className="space-y-1">
                               {triumph.tips.map((tip, j) => (
                                 <li key={j} className="flex items-start gap-2 text-xs text-gray-400">
-                                  <ChevronRight className="w-3 h-3 text-[#E5C76B]/40 mt-0.5 shrink-0" />
+                                  <ChevronRight className="w-3 h-3 text-[var(--color-gold-accent)]/40 mt-0.5 shrink-0" />
                                   <span data-testid={`text-triumph-tip-${i}-${j}`}>{tip}</span>
                                 </li>
                               ))}
@@ -328,10 +328,10 @@ export function TriumphAdvisorPanel({ tabDirection, selectedCharacter, records }
                         </AnimatePresence>
 
                         {matchedRecord && !isExpanded && (
-                          <p className="text-[9px] text-gray-600 italic mt-1">{t('triumph.clickToExpand')}</p>
+                          <p className="text-[11px] text-gray-600 italic mt-1">{t('triumph.clickToExpand')}</p>
                         )}
                         {!matchedRecord && (
-                          <p className="text-[9px] text-gray-600 italic mt-1">{t('triumph.noMatch')}</p>
+                          <p className="text-[11px] text-gray-600 italic mt-1">{t('triumph.noMatch')}</p>
                         )}
                       </div>
                     </div>
@@ -349,7 +349,7 @@ export function TriumphAdvisorPanel({ tabDirection, selectedCharacter, records }
               >
                 <div className="flex items-center gap-2 mb-3">
                   <Target className="w-4 h-4 text-indigo-400" />
-                  <h3 className="font-display text-xs tracking-[0.15em] text-indigo-400 uppercase" data-testid="text-triumph-advice-title">{t('triumph.advice')}</h3>
+                  <h3 className="font-display text-xs tracking-destiny text-indigo-400 uppercase" data-testid="text-triumph-advice-title">{t('triumph.advice')}</h3>
                 </div>
                 <p className="text-gray-400 text-sm leading-relaxed" data-testid="text-triumph-advice">{result.generalAdvice}</p>
               </motion.div>
@@ -363,7 +363,7 @@ export function TriumphAdvisorPanel({ tabDirection, selectedCharacter, records }
             >
               <button
                 onClick={runAnalysis}
-                className="press-scale flex items-center gap-2 px-5 py-2.5 bg-white/[0.04] hover:bg-white/[0.08] text-gray-400 hover:text-white text-xs font-display tracking-[0.15em] uppercase transition-all duration-300 border border-white/[0.06] rounded-lg"
+                className="press-scale flex items-center gap-2 px-5 py-2.5 bg-white/[0.04] hover:bg-white/[0.08] text-gray-400 hover:text-white text-xs font-display tracking-destiny uppercase transition-all duration-300 border border-white/[0.06] rounded-lg"
                 data-testid="button-reanalyze-triumphs"
               >
                 <RefreshCw className="w-3.5 h-3.5" />

@@ -34,7 +34,7 @@ function RatingRing({ rating, size = 96 }: { rating: number; size?: number }) {
   const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
   const progress = (rating / 10) * circumference;
-  const color = rating >= 8 ? '#E5C76B' : rating >= 6 ? '#818cf8' : rating >= 4 ? '#f59e0b' : '#ef4444';
+  const color = rating >= 8 ? 'var(--color-gold-accent)' : rating >= 6 ? '#818cf8' : rating >= 4 ? '#f59e0b' : '#ef4444';
 
   return (
     <div className="relative" style={{ width: size, height: size }} data-testid="rating-ring">
@@ -56,7 +56,7 @@ function RatingRing({ rating, size = 96 }: { rating: number; size?: number }) {
         >
           {rating}
         </motion.span>
-        <span className="text-[9px] text-gray-500 uppercase tracking-[0.2em]">/10</span>
+        <span className="text-[11px] text-gray-500 uppercase tracking-destiny-wide">/10</span>
       </div>
     </div>
   );
@@ -137,7 +137,7 @@ export function PlaystylePanel({ tabDirection, selectedCharacter, artifact }: Pl
           className="flex items-center gap-3 mb-2"
         >
           <Brain className="w-5 h-5 text-indigo-400" />
-          <h2 className="font-display text-sm tracking-[0.2em] text-white uppercase">{t('analysis.title')}</h2>
+          <h2 className="font-display text-sm tracking-destiny-wide text-white uppercase">{t('analysis.title')}</h2>
         </motion.div>
 
         {!analysis && !isLoading && (
@@ -159,7 +159,7 @@ export function PlaystylePanel({ tabDirection, selectedCharacter, artifact }: Pl
             <button
               onClick={runAnalysis}
               disabled={!selectedCharacter}
-              className="press-scale px-8 py-3 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-30 disabled:cursor-not-allowed text-white text-xs font-display tracking-[0.2em] uppercase transition-all duration-300 destiny-clip-sm border border-indigo-500/30"
+              className="press-scale px-8 py-3 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-30 disabled:cursor-not-allowed text-white text-xs font-display tracking-destiny-wide uppercase transition-all duration-300 destiny-clip-sm border border-indigo-500/30"
               data-testid="button-start-analysis"
             >
               {t('analysis.start')}
@@ -188,7 +188,7 @@ export function PlaystylePanel({ tabDirection, selectedCharacter, artifact }: Pl
               </div>
               <div className="absolute -inset-2 rounded-full border border-indigo-500/20 animate-ping" style={{ animationDuration: '2s' }} />
             </div>
-            <p className="text-gray-400 text-xs font-display tracking-[0.2em] uppercase">{t('analysis.loading')}</p>
+            <p className="text-gray-400 text-xs font-display tracking-destiny-wide uppercase">{t('analysis.loading')}</p>
           </motion.div>
         )}
 
@@ -208,7 +208,7 @@ export function PlaystylePanel({ tabDirection, selectedCharacter, artifact }: Pl
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: 0.3, duration: 0.5, ease: appleEase as unknown as number[] }}
                   >
-                    <span className="inline-block px-3 py-1 bg-indigo-500/20 border border-indigo-500/30 rounded-full text-indigo-300 text-xs font-display tracking-[0.15em] uppercase" data-testid="text-playstyle-label">
+                    <span className="inline-block px-3 py-1 bg-indigo-500/20 border border-indigo-500/30 rounded-full text-indigo-300 text-xs font-display tracking-destiny uppercase" data-testid="text-playstyle-label">
                       {analysis.playstyle}
                     </span>
                   </motion.div>
@@ -234,7 +234,7 @@ export function PlaystylePanel({ tabDirection, selectedCharacter, artifact }: Pl
               >
                 <div className="flex items-center gap-2 mb-3">
                   <Shield className="w-4 h-4 text-emerald-400" />
-                  <h3 className="font-display text-xs tracking-[0.15em] text-emerald-400 uppercase">{t('analysis.strengths')}</h3>
+                  <h3 className="font-display text-xs tracking-destiny text-emerald-400 uppercase">{t('analysis.strengths')}</h3>
                 </div>
                 <ul className="space-y-2" data-testid="list-strengths">
                   {analysis.strengths.map((s, i) => (
@@ -260,7 +260,7 @@ export function PlaystylePanel({ tabDirection, selectedCharacter, artifact }: Pl
               >
                 <div className="flex items-center gap-2 mb-3">
                   <AlertTriangle className="w-4 h-4 text-amber-400" />
-                  <h3 className="font-display text-xs tracking-[0.15em] text-amber-400 uppercase">{t('analysis.weaknesses')}</h3>
+                  <h3 className="font-display text-xs tracking-destiny text-amber-400 uppercase">{t('analysis.weaknesses')}</h3>
                 </div>
                 <ul className="space-y-2" data-testid="list-weaknesses">
                   {analysis.weaknesses.map((w, i) => (
@@ -287,7 +287,7 @@ export function PlaystylePanel({ tabDirection, selectedCharacter, artifact }: Pl
             >
               <div className="flex items-center gap-2 mb-3">
                 <Zap className="w-4 h-4 text-purple-400" />
-                <h3 className="font-display text-xs tracking-[0.15em] text-purple-400 uppercase">{t('analysis.synergies')}</h3>
+                <h3 className="font-display text-xs tracking-destiny text-purple-400 uppercase">{t('analysis.synergies')}</h3>
               </div>
               <ul className="space-y-2" data-testid="list-synergies">
                 {analysis.synergies.map((s, i) => (
@@ -312,8 +312,8 @@ export function PlaystylePanel({ tabDirection, selectedCharacter, artifact }: Pl
               className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-5 hover-lift"
             >
               <div className="flex items-center gap-2 mb-3">
-                <Lightbulb className="w-4 h-4 text-[#E5C76B]" />
-                <h3 className="font-display text-xs tracking-[0.15em] text-[#E5C76B] uppercase">{t('analysis.tips')}</h3>
+                <Lightbulb className="w-4 h-4 text-[var(--color-gold-accent)]" />
+                <h3 className="font-display text-xs tracking-destiny text-[var(--color-gold-accent)] uppercase">{t('analysis.tips')}</h3>
               </div>
               <ul className="space-y-2" data-testid="list-tips">
                 {analysis.tips.map((tip, i) => (
@@ -324,7 +324,7 @@ export function PlaystylePanel({ tabDirection, selectedCharacter, artifact }: Pl
                     transition={{ delay: 0.6 + i * 0.08, duration: 0.4, ease: appleEase as unknown as number[] }}
                     className="flex items-start gap-2 text-sm text-gray-300"
                   >
-                    <Target className="w-3.5 h-3.5 text-[#E5C76B]/60 mt-0.5 shrink-0" />
+                    <Target className="w-3.5 h-3.5 text-[var(--color-gold-accent)]/60 mt-0.5 shrink-0" />
                     {tip}
                   </motion.li>
                 ))}
@@ -339,7 +339,7 @@ export function PlaystylePanel({ tabDirection, selectedCharacter, artifact }: Pl
             >
               <button
                 onClick={runAnalysis}
-                className="press-scale flex items-center gap-2 px-5 py-2.5 bg-white/[0.04] hover:bg-white/[0.08] text-gray-400 hover:text-white text-xs font-display tracking-[0.15em] uppercase transition-all duration-300 border border-white/[0.06] rounded-lg"
+                className="press-scale flex items-center gap-2 px-5 py-2.5 bg-white/[0.04] hover:bg-white/[0.08] text-gray-400 hover:text-white text-xs font-display tracking-destiny uppercase transition-all duration-300 border border-white/[0.06] rounded-lg"
                 data-testid="button-reanalyze"
               >
                 <RefreshCw className="w-3.5 h-3.5" />

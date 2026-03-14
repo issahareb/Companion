@@ -14,10 +14,10 @@ The project is organized as a monorepo with `client/` (React frontend), `server/
 ### Frontend
 -   **Framework**: React 18 with TypeScript, Vite, Wouter for routing, TanStack React Query for state management.
 -   **UI/UX**: shadcn/ui with Radix UI, Tailwind CSS, Framer Motion for animations.
-    -   **Theming**: Dark, Destiny-inspired with a gold/indigo palette, custom clip-paths, subtle animations.
-    -   **Typography**: Protest Strike (headings), Plus Jakarta Sans (body), JetBrains Mono (code).
-    -   **Animations**: Cinematic animation system using Framer Motion + CSS, Apple ease curve, spring physics. Includes reveal, lift, scale, 3D card effects, and various hover interactions. Supports `prefers-reduced-motion` for accessibility.
-    -   **Layout**: Consolidated header, tab-style character selector, responsive design with hamburger menu and desktop sidebar.
+    -   **Theming**: Dark, Destiny-inspired with a gold/indigo palette, custom clip-paths, subtle animations. Rarity CSS vars: `--color-exotic=#ceae33`, `--color-legendary=#522f65`, `--color-rare=#5076a3`, `--color-gold-accent=#E5C76B`. All colors reference CSS vars, no hardcoded hex in components.
+    -   **Typography**: Protest Strike (headings), Plus Jakarta Sans (body), JetBrains Mono (code). Minimum font size: 11px. Tracking: `tracking-destiny` (0.12em), `tracking-destiny-wide` (0.2em), `tracking-destiny-widest` (0.3em). Uppercase limited to section headers and tab labels only.
+    -   **Animations**: Cinematic animation system using Framer Motion + CSS, Apple ease curve, spring physics. Tab transitions use crossfade (opacity only), not horizontal slide. Entry animations only on first load, not tab switches. Supports `prefers-reduced-motion` for accessibility.
+    -   **Layout**: Consolidated header, tab-style character selector, collapsible desktop sidebar (icon-only mode via PanelLeft toggle), mobile bottom tab bar with "Mehr" overflow, full-screen loadout modal on small screens. iOS overscroll fixed. Safe area padding for mobile. Section visual hierarchy with `ai-section-badge` and `section-stripe-*` CSS classes.
 -   **Core Pages**: Home/Login, Dashboard (characters, vault, loadouts, postmaster, collections, triumphs, season progression, AI analysis), loadout sharing page with smart matching, and legal pages (Impressum, Datenschutz/Privacy Policy) with DE/EN/FR translations.
 -   **Loadout Builder**: Items added to loadouts automatically include perks, mods, and stats. Subclass can be added with full socket configuration (super, abilities, aspects, fragments). EquippedSlot in the loadout sidebar shows expandable perk/mod/socket details.
 
