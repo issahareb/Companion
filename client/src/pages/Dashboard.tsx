@@ -16,7 +16,7 @@ import ggLogoImg from '@assets/IMG_0608_1772051654559.png';
 import { useBungieAuth } from '@/hooks/use-bungie-auth';
 import { useLoadouts, useSaveLoadout, useDeleteLoadout } from '@/hooks/use-loadouts';
 import { useProfileState, getBungieErrorType, type InventoryItem } from '@/hooks/use-profile-state';
-import { useTransferItem, useEquipItem, useSwapItem, usePullFromPostmaster, useSetLockState, useEquipItems, useIsBungieMutating } from '@/hooks/use-transfer';
+import { useTransferItem, useEquipItem, useSwapItem, usePullFromPostmaster, useSetLockState, useEquipItems, useIsBungieMutating, useProfileTabSync } from '@/hooks/use-transfer';
 import { useOnlineStatus } from '@/hooks/use-online-status';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 
@@ -130,6 +130,8 @@ export default function Dashboard() {
   const [triumphsSearch, setTriumphsSearch] = useState('');
   const [triumphsFilter, setTriumphsFilter] = useState<'all' | 'completed' | 'incomplete'>('all');
 
+  useProfileTabSync();
+
   const characters = profileState?.characters || [];
   const vaultItems = profileState?.vaultItems || [];
   const postmasterItems = profileState?.postmasterItems || [];
@@ -224,8 +226,7 @@ export default function Dashboard() {
 
   const handleSaveLoadout = async (name: string) => {
     if (!destinyProfile?.membershipId) return;
-    const shareCode = Math.random().toString(36).substring(2, 10);
-    await saveLoadoutMutation.mutateAsync({ bungieMembershipId: destinyProfile.membershipId, name, items: loadout as any, shareCode });
+    await saveLoadoutMutation.mutateAsync({ bungieMembershipId: destinyProfile.membershipId, name, items: loadout as any });
     toast({ title: t('toast.saved'), description: `"${name}" ${t('toast.savedDesc')}` });
     setActiveTab('loadouts');
   };
@@ -363,6 +364,8 @@ export default function Dashboard() {
               onClick={() => setIsMenuOpen(!isMenuOpen)}
               className="hidden md:block p-2 -ml-1 text-white hover:text-indigo-400 transition-colors"
               data-testid="button-menu-toggle"
+              aria-label={isMenuOpen ? 'Close menu' : 'Open menu'}
+              aria-expanded={isMenuOpen}
             >
               <AnimatePresence mode="wait">
                 {isMenuOpen ? (
@@ -397,6 +400,7 @@ export default function Dashboard() {
             <motion.button
               onClick={() => refetchProfile()}
               className="p-2 text-gray-500 hover:text-white transition-all hover:bg-white/5 rounded icon-bounce-hover"
+              aria-label="Refresh profile data"
               data-testid="button-refresh"
               whileTap={{ rotate: 180 }}
               transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}

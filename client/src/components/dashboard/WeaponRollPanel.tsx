@@ -1,4 +1,5 @@
 import { useState, useCallback, useMemo, useRef, useEffect } from 'react';
+import { appleEase } from './shared';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Crosshair, Search, Loader2, AlertTriangle, ChevronRight, Star, ChevronDown, RefreshCw, Sparkles, X } from 'lucide-react';
 import { useI18n } from '@/lib/i18n';
@@ -31,7 +32,6 @@ interface WeaponRollPanelProps {
   characterItems: InventoryItem[];
 }
 
-const appleEase = [0.16, 1, 0.3, 1] as const;
 
 const tabVariants = {
   enter: (dir: number) => ({ x: dir > 0 ? 60 : -60, opacity: 0 }),

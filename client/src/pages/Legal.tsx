@@ -2,8 +2,7 @@ import { ArrowLeft } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Link } from 'wouter';
 import { useI18n } from '@/lib/i18n';
-
-const appleEase = [0.16, 1, 0.3, 1] as const;
+import { appleEase } from '@/components/dashboard/shared';
 
 function Section({ title, children, delay = 0 }: { title: string; children: React.ReactNode; delay?: number }) {
   return (

@@ -1,9 +1,9 @@
 import { Search, Trophy, Check } from 'lucide-react';
+import { appleEase } from './shared';
 import { motion } from 'framer-motion';
 import type { RecordItem } from '@/hooks/use-profile-state';
 import { useI18n } from '@/lib/i18n';
 
-const appleEase = [0.16, 1, 0.3, 1] as const;
 
 function TriumphRecord({ record, index }: { record: RecordItem; index: number }) {
   const { t } = useI18n();

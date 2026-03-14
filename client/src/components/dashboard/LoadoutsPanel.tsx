@@ -5,10 +5,9 @@ import { motion } from 'framer-motion';
 import type { Item } from '@/components/Inventory';
 import type { InGameLoadout, CharacterData } from '@/hooks/use-profile-state';
 import { useI18n } from '@/lib/i18n';
-import type { TabType } from './shared';
+import { appleEase, type TabType } from './shared';
 import { apiRequest } from '@/lib/queryClient';
 
-const appleEase = [0.16, 1, 0.3, 1] as const;
 
 interface LoadoutsPanelProps {
   tabDirection: number;

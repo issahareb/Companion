@@ -10,8 +10,7 @@ import { useProfileState, type InventoryItem, type CharacterData } from '@/hooks
 import { useTransferItem, useEquipItem } from '@/hooks/use-transfer';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useI18n } from '@/lib/i18n';
-
-const appleEase = [0.16, 1, 0.3, 1] as const;
+import { appleEase } from '@/components/dashboard/shared';
 
 const ARMOR_SLOTS = ['helmet', 'arms', 'chest', 'legs', 'class'];
 const STAT_NAMES = ['Mobility', 'Resilience', 'Recovery', 'Discipline', 'Intellect', 'Strength'];

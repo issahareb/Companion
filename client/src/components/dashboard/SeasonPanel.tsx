@@ -1,9 +1,9 @@
 import { TrendingUp } from 'lucide-react';
+import { appleEase } from './shared';
 import { motion } from 'framer-motion';
 import type { CharacterData } from '@/hooks/use-profile-state';
 import { useI18n } from '@/lib/i18n';
 
-const appleEase = [0.16, 1, 0.3, 1] as const;
 
 interface SeasonPanelProps {
   tabDirection: number;

@@ -141,6 +141,10 @@ app.use((req: Request, res: Response, next: NextFunction) => {
   next();
 });
 
+app.get('/healthz', (_req, res) => {
+  res.status(200).json({ status: 'ok', timestamp: Date.now() });
+});
+
 app.use(
   express.json({
     limit: '1mb',

@@ -1,4 +1,33 @@
+import { useEffect } from 'react';
 import { useMutation, useQueryClient, useIsMutating } from '@tanstack/react-query';
+
+const PROFILE_SYNC_CHANNEL = 'guardiangrid-profile-sync';
+
+let bc: BroadcastChannel | null = null;
+try {
+  bc = new BroadcastChannel(PROFILE_SYNC_CHANNEL);
+} catch {}
+
+function notifyOtherTabs() {
+  try {
+    bc?.postMessage({ type: 'profile-invalidate' });
+  } catch {}
+}
+
+export function useProfileTabSync() {
+  const queryClient = useQueryClient();
+
+  useEffect(() => {
+    if (!bc) return;
+    const handler = (event: MessageEvent) => {
+      if (event.data?.type === 'profile-invalidate') {
+        queryClient.invalidateQueries({ queryKey: ['/api/bungie/profile-state'] });
+      }
+    };
+    bc.addEventListener('message', handler);
+    return () => bc?.removeEventListener('message', handler);
+  }, [queryClient]);
+}
 
 interface TransferParams {
   itemReferenceHash: number;
@@ -85,6 +114,7 @@ export function useTransferItem() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/bungie/profile-state'] });
+      notifyOtherTabs();
     },
   });
 }
@@ -99,6 +129,7 @@ export function useEquipItem() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/bungie/profile-state'] });
+      notifyOtherTabs();
     },
   });
 }
@@ -161,6 +192,7 @@ export function useSwapItem() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/bungie/profile-state'] });
+      notifyOtherTabs();
     },
   });
 }
@@ -175,6 +207,7 @@ export function usePullFromPostmaster() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/bungie/profile-state'] });
+      notifyOtherTabs();
     },
   });
 }
@@ -189,6 +222,7 @@ export function useSetLockState() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/bungie/profile-state'] });
+      notifyOtherTabs();
     },
   });
 }
@@ -211,6 +245,7 @@ export function useInsertPlug() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/bungie/profile-state'] });
+      notifyOtherTabs();
     },
   });
 }
@@ -246,6 +281,7 @@ export function useEquipLoadout() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/bungie/profile-state'] });
+      notifyOtherTabs();
     },
   });
 }
@@ -260,6 +296,7 @@ export function useSnapshotLoadout() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/bungie/profile-state'] });
+      notifyOtherTabs();
     },
   });
 }
@@ -274,6 +311,7 @@ export function useClearLoadout() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/bungie/profile-state'] });
+      notifyOtherTabs();
     },
   });
 }
@@ -288,6 +326,7 @@ export function useEquipItems() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/bungie/profile-state'] });
+      notifyOtherTabs();
     },
   });
 }

@@ -26,7 +26,7 @@ function getRarityBorder(rarity: string, isInLoadout: boolean): string {
   }
 }
 
-const spring = { type: 'spring' as const, damping: 25, stiffness: 300 };
+import { springSnappy as spring } from './shared';
 
 export function VaultItemCard({ item, characters, onTransferToChar, onEquipOnChar, onAddToLoadout, isInLoadout, isPending }: {
   item: InventoryItem;
@@ -74,7 +74,13 @@ export function VaultItemCard({ item, characters, onTransferToChar, onEquipOnCha
       style={{ overflow: showDropdown ? 'visible' : 'hidden' }}
       data-dropdown-id={item.id}
     >
-      <div className={`aspect-square relative overflow-hidden rounded-t-lg cursor-pointer ${getRarityBg(item.rarity)}`} onClick={() => !isPending && setShowDropdown(!showDropdown)}>
+      <div
+        role="button"
+        aria-label={`${item.name}, ${item.rarity} ${item.type}, ${item.power} Power`}
+        aria-expanded={showDropdown}
+        className={`aspect-square relative overflow-hidden rounded-t-lg cursor-pointer ${getRarityBg(item.rarity)}`}
+        onClick={() => !isPending && setShowDropdown(!showDropdown)}
+      >
         {isPending && (
           <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/50 backdrop-blur-[2px]">
             <Loader2 className="w-6 h-6 text-indigo-400 animate-spin" />
@@ -142,11 +148,13 @@ export function VaultItemCard({ item, characters, onTransferToChar, onEquipOnCha
                   transition={{ delay: 0.08 + i * 0.04, duration: 0.2 }}
                 >
                   <button onClick={() => { onTransferToChar(c.characterId); setShowDropdown(false); }}
+                    aria-label={`Transfer ${item.name} to ${c.className}`}
                     className="flex-1 flex items-center gap-2 px-3 py-2 text-[9px] uppercase tracking-widest text-gray-400 hover:text-white hover:bg-white/[0.06] transition-all press-scale"
                     data-testid={`dropdown-transfer-${item.id}-${c.characterId}`}>
                     <ArrowRightLeft className="w-3 h-3" /> {c.className}
                   </button>
                   <button onClick={() => { onEquipOnChar(c.characterId); setShowDropdown(false); }}
+                    aria-label={`Equip ${item.name} on ${c.className}`}
                     className="px-3 py-2 text-[9px] uppercase tracking-widest text-indigo-400 hover:text-white hover:bg-indigo-500/15 transition-all press-scale" title={t('action.equip')}
                     data-testid={`dropdown-equip-${item.id}-${c.characterId}`}>
                     <Shield className="w-3 h-3" />

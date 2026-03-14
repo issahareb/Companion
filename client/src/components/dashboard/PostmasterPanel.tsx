@@ -1,4 +1,5 @@
 import { Mail, Sparkles, Download, Package, Loader2 } from 'lucide-react';
+import { appleEase } from './shared';
 import { TierStars } from './TierStars';
 import { motion } from 'framer-motion';
 import type { InventoryItem, CharacterData } from '@/hooks/use-profile-state';
@@ -31,7 +32,6 @@ function getRarityBorder(rarity: string): string {
   }
 }
 
-const appleEase = [0.16, 1, 0.3, 1] as const;
 
 function PostmasterCharSection({ char, charPostItems, handlePullPostmaster, isPullPending, index }: {
   char: CharacterData;

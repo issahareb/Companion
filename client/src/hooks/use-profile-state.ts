@@ -223,6 +223,8 @@ export function useProfileState(membershipType?: number, membershipId?: string) 
     },
     enabled: !!membershipType && !!membershipId,
     staleTime: 2 * 60 * 1000,
+    refetchInterval: 5 * 60 * 1000,
+    refetchIntervalInBackground: false,
     retry: (failureCount, error: any) => {
       if (error?.errorType === 'auth' || error?.errorType === 'maintenance') return false;
       if (error?.status === 401) return false;

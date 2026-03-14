@@ -9,9 +9,8 @@ import { useI18n } from '@/lib/i18n';
 import type { FilterState } from './shared';
 import { FilterBar } from './FilterBar';
 import { VaultItemCard } from './VaultItemCard';
-import { toItem } from './shared';
+import { toItem , appleEase } from './shared';
 
-const appleEase = [0.16, 1, 0.3, 1] as const;
 
 function useColumns() {
   const ref = useRef<HTMLDivElement>(null);

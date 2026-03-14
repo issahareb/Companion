@@ -6,6 +6,7 @@ import bgImg from '@assets/IMG_0553_1772027873435.jpeg';
 import logoImg from '@assets/IMG_0604_1772050774054.png';
 import { useI18n, LANGUAGES } from '@/lib/i18n';
 import { LegalFooter } from '@/pages/Legal';
+import { appleEase, springGentle as spring } from '@/components/dashboard/shared';
 
 interface TurnstileConfig {
   enabled: boolean;
@@ -67,9 +68,6 @@ function useTurnstile() {
 
   return { config, token, widgetRef, reset, isVerified: !config.enabled || !!token };
 }
-
-const spring = { type: 'spring' as const, damping: 25, stiffness: 120 };
-const appleEase = [0.16, 1, 0.3, 1] as const;
 
 interface LoginProps {
   onLogin: () => void;

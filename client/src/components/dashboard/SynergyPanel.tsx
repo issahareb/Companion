@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react';
+import { appleEase } from './shared';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link2, Zap, AlertTriangle, ArrowRightLeft, RefreshCw, Loader2, Shield, ChevronRight } from 'lucide-react';
 import { useI18n } from '@/lib/i18n';
@@ -39,7 +40,6 @@ interface SynergyPanelProps {
   selectedCharacter: CharacterData | null;
 }
 
-const appleEase = [0.16, 1, 0.3, 1] as const;
 
 const tabVariants = {
   enter: (dir: number) => ({ x: dir > 0 ? 60 : -60, opacity: 0 }),

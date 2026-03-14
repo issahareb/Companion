@@ -1,4 +1,5 @@
 import { useState, useCallback, useRef } from 'react';
+import { appleEase } from './shared';
 import { motion } from 'framer-motion';
 import { Swords, Shield, Target, Crosshair, Skull, Castle, Loader2, AlertTriangle, RefreshCw, ChevronRight, Flame, Gem, TrendingUp, Lightbulb } from 'lucide-react';
 import { useI18n } from '@/lib/i18n';
@@ -23,7 +24,6 @@ interface BuildAdvisorPanelProps {
   artifact?: ArtifactInfo;
 }
 
-const appleEase = [0.16, 1, 0.3, 1] as const;
 
 const tabVariants = {
   enter: (dir: number) => ({ x: dir > 0 ? 60 : -60, opacity: 0 }),

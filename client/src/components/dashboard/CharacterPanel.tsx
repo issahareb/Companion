@@ -7,14 +7,11 @@ import type { InventoryItem, CharacterData, ArtifactInfo } from '@/hooks/use-pro
 import type { Item } from '@/components/Inventory';
 import { useI18n } from '@/lib/i18n';
 import { useScrollReveal } from '@/hooks/use-scroll-reveal';
-import { toItem } from './shared';
+import { toItem, appleEase, springMedium as spring } from './shared';
 import { EquippedSlotRow } from './EquippedSlotRow';
 import { SubclassEditor } from './SubclassEditor';
 import { ArtifactDisplay } from './ArtifactDisplay';
 import { QuestCard } from './QuestCard';
-
-const appleEase = [0.16, 1, 0.3, 1] as const;
-const spring = { type: 'spring' as const, damping: 30, stiffness: 200 };
 
 function ScrollRevealSection({ children, className, delay = 0 }: { children: React.ReactNode; className?: string; delay?: number }) {
   const { ref, isVisible } = useScrollReveal(0.1);

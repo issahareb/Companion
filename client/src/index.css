@@ -465,7 +465,9 @@ body {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .noise-overlay,
+  .noise-overlay {
+    display: none !important;
+  }
   .animate-float-gentle,
   .animate-breathe,
   .animate-ambient,

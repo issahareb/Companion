@@ -1,4 +1,5 @@
 import { useState, useCallback, useMemo } from 'react';
+import { appleEase } from './shared';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Trophy, AlertTriangle, Loader2, Clock, Lightbulb, ChevronRight, Star, RefreshCw, Target, ChevronDown, Check } from 'lucide-react';
 import { useI18n } from '@/lib/i18n';
@@ -23,7 +24,6 @@ interface TriumphAdvisorPanelProps {
   records: RecordItem[];
 }
 
-const appleEase = [0.16, 1, 0.3, 1] as const;
 
 const tabVariants = {
   enter: (dir: number) => ({ x: dir > 0 ? 60 : -60, opacity: 0 }),

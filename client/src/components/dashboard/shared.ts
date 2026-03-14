@@ -2,6 +2,12 @@ import { useMemo, useDeferredValue } from 'react';
 import type { InventoryItem } from '@/hooks/use-profile-state';
 import type { Item } from '@/components/Inventory';
 
+export const appleEase = [0.16, 1, 0.3, 1] as const;
+
+export const springSnappy = { type: 'spring' as const, damping: 25, stiffness: 300 };
+export const springGentle = { type: 'spring' as const, damping: 25, stiffness: 120 };
+export const springMedium = { type: 'spring' as const, damping: 30, stiffness: 200 };
+
 export type TabType = 'characters' | 'vault' | 'loadouts' | 'postmaster' | 'collections' | 'triumphs' | 'season' | 'ai' | 'news';
 
 export type AiSubTab = 'playstyle' | 'build' | 'roll' | 'triumph' | 'synergy';

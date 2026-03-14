@@ -1,0 +1,45 @@
+Alright, Feature-Ideen — von “das fehlt offensichtlich” bis “damit hebst du dich von DIM ab”:
+Inventory Management
+Es gibt keine Massen-Transfer-Funktion. Wenn jemand 20 Items aus dem Vault auf einen Charakter ziehen will (z.B. vor einem Raid), muss er jedes einzeln klicken. Eine Mehrfachauswahl mit “Transfer All to Hunter” wäre grundlegend.
+Kein Item-Tagging oder Favoriten-System. In DIM kann man Items mit Tags versehen (keep, junk, infuse). Ohne sowas wird der Vault schnell unübersichtlich. Ein einfaches Stern-System oder farbige Tags direkt auf den Item-Cards wäre ein großer Organisationsgewinn.
+Es fehlt eine “Junk Drawer”-Funktion — Items markieren die man dismantlen will, dann eine Übersicht aller markierten Items mit Gesamtwert an Materialien die man zurückbekommt. Das existiert in keiner Destiny-App und wäre ein Alleinstellungsmerkmal.
+Kein Infuse-Helper. Wenn man ein 2010er Helmet hat und ein 2020er infusen will, muss man selbst herausfinden welches Item als Infusion-Material dient. Ein “Find Infusion Fuel”-Button pro Item der alle höheren Items im gleichen Slot zeigt wäre extrem praktisch.
+Keine Inventory-Space-Warnung. Jeder Charakter hat 10 Slots pro Bucket-Typ, der Vault hat 600 Plätze. Eine Anzeige wie “Vault: 487/600” oder “Hunter Kinetic: 9/10” würde helfen, bevor man auf “Transfer” klickt und einen Fehler bekommt.
+Loadout-System
+Loadouts speichern keine Subclass-Konfiguration vollständig. Die Sockets (Aspects, Fragments, Abilities) werden nicht mitgespeichert. Wenn jemand ein PvP-Loadout speichert, fehlen die Fragment-Choices beim Laden.
+Kein Loadout-Diff. Wenn man ein gespeichertes Loadout lädt, sieht man nicht was sich im Vergleich zur aktuellen Ausrüstung ändert. Ein “Current vs. Loadout”-View mit Stat-Differenzen vor dem Equip wäre enorm hilfreich.
+Keine Loadout-Kategorien oder Ordner. Bei 10+ gespeicherten Loadouts wird die Liste unübersichtlich. Tags wie “Raid”, “PvP”, “Farming” oder Ordner pro Aktivitätstyp würden helfen.
+Ein “Auto-Optimize Stats”-Feature fehlt. Der User gibt Ziel-Stats vor (z.B. 100 Resilience, 100 Recovery, Rest egal) und die App berechnet die optimale Armor-Kombination aus dem Vault. DIM hat das, es ist einer der meistgenutzten Features dort. Algorithmus ist nicht trivial, aber ein Greedy-Approach oder Constraint-Solver wäre ein massives Feature.
+Keine Loadout-History. Wenn man versehentlich ein Loadout überschreibt oder löscht, ist es weg. Ein Versionsverlauf der letzten 5 Änderungen pro Loadout wäre ein Safety-Net.
+Builds & Theorycraft
+Die AI-Analyse ist cool, aber es fehlt ein manueller Build-Planner. Ein Tool wo man hypothetische Builds zusammenklicken kann — auch mit Items die man nicht besitzt — um Stats zu simulieren. Das wäre nützlich für Zielplanung (“ich farme auf dieses Exotic hin, wie würde mein Build damit aussehen”).
+Kein DPS-Kalkulator. Die Waffen-Roll-Bewertung sagt “God Roll” oder “Shard”, aber nicht was der tatsächliche DPS-Unterschied zwischen zwei Rolls ist. Ein simpler DPS-Rechner der Feuerrate, Impact, Perks und Buffs einbezieht wäre für endgame-orientierte Spieler wertvoll.
+Die Mod-Energy-Berechnung fehlt komplett. Armor hat ein Energy-Budget (10 Punkte), und Mods kosten Energy. Aktuell zeigt die App Mods an, aber nicht ob das Energy-Budget überschritten wird. Ein visueller Energy-Bar pro Armor-Piece mit Mod-Kosten wäre praktisch.
+Keine Buildcraft-Community. Ein “Browse Public Builds”-Feature wo User ihre besten Builds teilen und andere sie bewerten können. Die Share-Funktion existiert bereits über Share-Codes — ein öffentliches Directory mit Filtern nach Klasse, Aktivität und Rating wäre die logische Erweiterung.
+Social & Fireteam
+Kein Fireteam-Viewer. Wenn man mit Freunden raided, wäre es hilfreich deren Loadouts zu sehen. Über die Bungie API kann man Public-Profile anderer Spieler abrufen. Ein “Inspect Player”-Feature mit Bungie-Name-Suche wäre cool.
+Keine LFG-Integration. Bungie hat eine Fireteam-Finder-API. Ein Tab der aktive LFG-Posts zeigt, gefiltert nach Aktivität, mit One-Click-Join wäre ein starker Social-Feature.
+Kein Clan-Dashboard. Clan-Mitglieder, deren letzte Aktivität, gemeinsame Raid-Stats — die Bungie API liefert das alles. Ein Clan-Tab mit Weekly-Progress-Übersicht wäre für Clan-Admins wertvoll.
+Activity Tracking
+Kein Match-History. Die Bungie API hat GetActivityHistory — eine Timeline der letzten Crucible-Matches, Raids, Nightfalls mit Stats (K/D, Completion-Time, Deaths) wäre ein natürlicher Tab neben den existierenden.
+Kein persönliches Stat-Tracking über Zeit. Wenn jemand seinen Crucible-K/D verbessern will, braucht er eine Kurve die zeigt ob er besser wird. Weekly/Monthly Aggregationen der wichtigsten PvP- und PvE-Metriken mit Charts wären motivierend.
+Kein Raid-Report-ähnliches Feature. Raid-Completions, schnellste Zeiten, Flawless-Runs — das sind Daten die die Bungie API hergibt und die raid.report populär gemacht haben. Eine eingebettete Version davon wäre praktisch.
+Kein Nightfall-Farming-Tracker. “Wie oft habe ich diese Nightfall schon gemacht, welche Waffe bin ich am Farmen, wie viele Drops hatte ich” — ein einfacher Zähler mit Loot-Log.
+Notifications & Automation
+Keine Push-Notifications. “Xûr ist da”, “Weekly Reset”, “Dein Postmaster ist fast voll” — das sind Benachrichtigungen die einen User zurück in die App bringen.
+Kein automatischer Postmaster-Pull. Wenn der Postmaster voll ist und neue Items droppen, gehen sie verloren. Eine Auto-Pull-Option die bei 18/21 Postmaster-Items automatisch alles zum Vault transferiert wäre ein Lebensretter.
+Keine geplanten Transfers. “Verschiebe mein Raid-Loadout jeden Dienstag nach dem Reset automatisch auf meinen Hunter” — Scheduled-Loadout-Application.
+Kein Xûr-Tracker. Jedes Wochenende verkauft Xûr Exotics. Ein Tab der zeigt was Xûr gerade anbietet und ob man die Items schon besitzt wäre nützlich. Die Bungie API hat einen Vendor-Endpoint dafür.
+Wishlist & Collection
+Keine Wishlist-Integration. In DIM kann man Community-Wishlists importieren (z.B. von voltron.sh) die automatisch markieren ob ein Drop gut ist. Ein ähnliches Feature — entweder Community-Wishlists importieren oder eigene erstellen — würde die Vault-Cleaning-Experience verbessern.
+Kein “Missing Exotics”-View. Die Collectibles-Seite zeigt alles, aber es gibt keinen gefilterten View der nur fehlende Exotics zeigt, sortiert nach Schwierigkeit sie zu bekommen (Quest vs. Random Drop vs. Raid-Exotic).
+Kein Seal/Title-Tracker. Triumphe sind da, aber es gibt keine Gruppierung nach Seals. “Wie weit bin ich vom Conqueror-Title entfernt” als dedizierter Progress-Ring wäre motivierender als die flache Triumph-Liste.
+Kein Pattern-Progress-Tracker. Craftable Weapons brauchen Pattern-Completions. Eine Übersicht “welche Patterns fehlen mir, wo droppen sie, wie viele Runs brauche ich noch” existiert in keiner App gut.
+Quality of Life
+Keine Keyboard-Shortcuts. Power-User wollen 1 für Hüter, 2 für Tresor, V für Vault-Suche, L für Loadouts. Eine Shortcut-Leiste wie in DIM (oder zumindest Cmd+K für eine globale Suche) würde die Effizienz drastisch steigern.
+Keine globale Suche. Aktuell kann man nur innerhalb des Vaults oder der Collections suchen. Eine globale Suche die über alle Tabs hinweg funktioniert — “wo ist mein Gjallarhorn” zeigt ob es auf einem Charakter, im Vault oder im Postmaster liegt — wäre eine der nützlichsten Features überhaupt.
+Keine Item-Transfer-Queue. Wenn man 5 Items transferieren will, muss man warten bis jeder einzelne Transfer abgeschlossen ist. Eine Queue die Transfers nacheinander abarbeitet und den Gesamtfortschritt zeigt wäre flüssiger.
+Kein Widget oder Quick-Action. Auf Mobile wäre ein Home-Screen-Widget das den aktuellen Power-Level oder Postmaster-Status zeigt ein schöner Touch. Alternativ ein Shortcut “Equip Raid-Loadout” direkt vom Homescreen.
+Keine Offline-Inventory-Ansicht. Wenn man in der U-Bahn ist und schauen will was im Vault liegt, zeigt die App nichts. Ein lokaler Cache der letzten Inventory-Snapshot mit “Stand von vor 2 Stunden”-Hinweis wäre hilfreich.
+Monetarisierung (falls relevant)
+Kein Premium-Tier. Falls du die App langfristig betreiben willst: die AI-Features kosten dich OpenAI-Credits. Ein optionales Premium mit unbegrenzten AI-Analysen, erweiterten Stat-Tracking-Charts und Priority-Support wäre eine natürliche Monetarisierung ohne die Kernfunktionen einzuschränken.​​​​​​​​​​​​​​​​

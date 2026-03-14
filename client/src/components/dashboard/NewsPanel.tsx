@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { appleEase } from './shared';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Newspaper, ExternalLink, Clock, Loader2, AlertTriangle, RefreshCw, Megaphone, Wrench, Shield, Sparkles } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
@@ -18,7 +19,6 @@ interface NewsPanelProps {
   tabDirection: number;
 }
 
-const appleEase = [0.16, 1, 0.3, 1] as const;
 
 const tabVariants = {
   enter: (dir: number) => ({ x: dir > 0 ? 60 : -60, opacity: 0 }),

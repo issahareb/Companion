@@ -24,9 +24,11 @@ The project is organized as a monorepo with `client/` (React frontend), `server/
 ### Backend
 -   **Framework**: Express 5 on Node.js.
 -   **API**: Manages Bungie API interactions (fetching profile data, item transfers, equips, subclass mods, in-game loadouts) and CRUD for user-saved loadouts. Includes endpoints for AI services and Bungie news.
+-   **Route Modules**: `server/routes.ts` delegates to four sub-routers: `routes/auth.ts` (login/logout/me/turnstile), `routes/bungie.ts` (profile, transfer, equip, loadout actions + profile cache), `routes/loadouts.ts` (CRUD + share code), `routes/ai.ts` (5 AI endpoints). Shared middleware/helpers in `routes/shared.ts`.
 -   **Bungie API Integration**: Fetches comprehensive player profile states. Implements `bungieRequestWithRetry` with exponential backoff, 15s timeout, and handles various HTTP and Bungie-specific errors. Features a server-side 30s TTL in-memory profile cache and robust error classification.
 -   **AI Advisor Suite**: Integrates OpenAI GPT-4o via Replit AI Integrations. Provides endpoints for Playstyle Analysis, Build Recommendation, Weapon Roll Evaluation, Triumph Advisor, and Equipment Synergy Analysis. All AI endpoints are rate-limited and require authentication.
 -   **Bungie News Feed**: Provides a public endpoint for the latest Bungie.net news, with a 10-minute server-side cache and content type detection.
+-   **Health Check**: `/healthz` endpoint returns `{ status: 'ok', timestamp }` for monitoring.
 
 ### Data Management & Persistence
 -   **Database**: PostgreSQL with Drizzle ORM.
@@ -39,6 +41,10 @@ The project is organized as a monorepo with `client/` (React frontend), `server/
 -   **Error Handling**: React Error Boundary, `useOnlineStatus` hook for offline support (disables action buttons when offline), React Query retry logic (rate-limit-aware — skips retries on 429), mutation locking to prevent concurrent Bungie mutations, and AbortController for fetch cleanup. AI error handling uses `handleAiError` helper with robust status extraction.
 -   **Internationalization**: Supports German, English, and French. Language preference stored under `guardiangrid_language` localStorage key (migrated from legacy `forge_language`).
 -   **Code Splitting**: Secondary Dashboard tabs (Collections, Triumphs, Season, AI panels, News) are lazy-loaded with `React.lazy()` and `Suspense` to reduce initial bundle size.
+-   **Animation Constants**: `appleEase`, `springSnappy`, `springGentle`, `springMedium` centralized in `client/src/components/dashboard/shared.ts` (no longer duplicated per-file).
+-   **Tab Sync**: `BroadcastChannel` notifies other browser tabs on mutation success; profile auto-refetches every 5 minutes when tab is active.
+-   **Share Code Collision**: Server generates share codes with `nanoid(10)` and retries up to 3 times on unique constraint violation.
+-   **Accessibility**: Key interactive elements (item cards, dropdown actions, menu toggle, refresh) have `aria-label` and `aria-expanded` attributes. Noise overlay fully hidden via `display: none` under `prefers-reduced-motion`.
 
 ## External Dependencies
 

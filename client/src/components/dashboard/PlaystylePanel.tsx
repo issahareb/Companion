@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react';
+import { appleEase } from './shared';
 import { motion } from 'framer-motion';
 import { Brain, Zap, AlertTriangle, Shield, Target, Lightbulb, RefreshCw, Loader2, TrendingUp, ChevronRight } from 'lucide-react';
 import { useI18n } from '@/lib/i18n';
@@ -21,7 +22,6 @@ interface PlaystylePanelProps {
   artifact?: ArtifactInfo;
 }
 
-const appleEase = [0.16, 1, 0.3, 1] as const;
 
 const tabVariants = {
   enter: (dir: number) => ({ x: dir > 0 ? 60 : -60, opacity: 0 }),
