@@ -1,6 +1,9 @@
-import { pgTable, text, serial, jsonb, timestamp, integer, uniqueIndex } from "drizzle-orm/pg-core";
+import { pgSchema, text, serial, jsonb, timestamp, integer, uniqueIndex } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
+
+export const companionSchema = pgSchema("companion");
+const pgTable = companionSchema.table;
 
 export const savedLoadouts = pgTable("saved_loadouts", {
   id: serial("id").primaryKey(),
