@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 
 const BUNGIE_CLIENT_ID = '51625';
 const BUNGIE_AUTH_URL = `https://www.bungie.net/en/OAuth/Authorize?client_id=${BUNGIE_CLIENT_ID}&response_type=code`;
+const TURNSTILE_STORAGE_KEY = 'bungie_turnstile_token';
 
 export interface DestinyProfile {
   membershipId: string;
@@ -73,11 +74,17 @@ export function useBungieAuth() {
     const controller = new AbortController();
     abortControllerRef.current = controller;
 
+    let turnstileToken: string | null = null;
+    try {
+      turnstileToken = sessionStorage.getItem(TURNSTILE_STORAGE_KEY);
+      sessionStorage.removeItem(TURNSTILE_STORAGE_KEY);
+    } catch {}
+
     try {
       const res = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ code }),
+        body: JSON.stringify(turnstileToken ? { code, turnstileToken } : { code }),
         credentials: 'include',
         signal: controller.signal,
       });
@@ -107,7 +114,12 @@ export function useBungieAuth() {
     }
   }, []);
 
-  const login = useCallback(() => {
+  const login = useCallback((turnstileToken?: string | null) => {
+    if (turnstileToken) {
+      try {
+        sessionStorage.setItem(TURNSTILE_STORAGE_KEY, turnstileToken);
+      } catch {}
+    }
     window.location.href = BUNGIE_AUTH_URL;
   }, []);
 

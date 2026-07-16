@@ -10,7 +10,7 @@ export const LANGUAGES: { id: Language; label: string; flag: string }[] = [
 
 const translations: Record<Language, Record<string, string>> = {
   de: {
-    'login.subtitle': 'Authenticate via Bungie.net to gain access between Shaxx\'s legs',
+    'login.subtitle': 'Melde dich über Bungie.net an, um auf deine Hüter, deinen Tresor und deine Loadouts zuzugreifen',
     'login.button': 'LOGIN VIA BUNGIE.NET',
     'login.connecting': 'VERBINDE...',
     'login.error': 'Authentifizierungs-Fehler',
@@ -345,7 +345,7 @@ const translations: Record<Language, Record<string, string>> = {
     'privacy.contactText': 'Bei Fragen zum Datenschutz wende dich bitte an die im Impressum angegebene E-Mail-Adresse.',
   },
   en: {
-    'login.subtitle': 'Authenticate via Bungie.net to gain access between Shaxx\'s legs',
+    'login.subtitle': 'Sign in via Bungie.net to access your Guardians, vault and loadouts',
     'login.button': 'LOGIN VIA BUNGIE.NET',
     'login.connecting': 'CONNECTING...',
     'login.error': 'Authentication Error',
@@ -680,7 +680,7 @@ const translations: Record<Language, Record<string, string>> = {
     'privacy.contactText': 'For privacy-related questions, please contact the email address listed in the Legal Notice.',
   },
   fr: {
-    'login.subtitle': 'Authenticate via Bungie.net to gain access between Shaxx\'s legs',
+    'login.subtitle': 'Connecte-toi via Bungie.net pour accéder à tes Gardiens, ton coffre et tes équipements',
     'login.button': 'CONNEXION VIA BUNGIE.NET',
     'login.connecting': 'CONNEXION...',
     'login.error': "Erreur d'authentification",

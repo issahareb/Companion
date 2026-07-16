@@ -544,7 +544,7 @@ export default function SharePage() {
         ) : (
           <div className="space-y-3">
             <button
-              onClick={login}
+              onClick={() => login()}
               className="w-full py-4 bg-indigo-600 hover:bg-indigo-500 text-white transition-all destiny-clip-sm text-[11px] tracking-destiny-widest font-bold uppercase"
             >
               {t('action.loginToAdopt')}

@@ -70,7 +70,7 @@ function useTurnstile() {
 }
 
 interface LoginProps {
-  onLogin: () => void;
+  onLogin: (turnstileToken?: string | null) => void;
   isAuthenticating: boolean;
   error: string | null;
 }
@@ -341,7 +341,7 @@ export default function Login({ onLogin, isAuthenticating, error }: LoginProps) 
           />
           <div className="absolute -inset-1 bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 rounded-lg blur-md opacity-[0.18] group-hover:opacity-[0.35] transition duration-1000" />
           <motion.button 
-            onClick={onLogin}
+            onClick={() => onLogin(turnstileToken)}
             disabled={isAuthenticating || !isVerified}
             className={`relative w-full bg-[#0c1020]/60 border border-white/10 hover:border-white/40 p-6 flex items-center justify-center transition-all duration-500 backdrop-blur-xl destiny-clip ${!isVerified ? 'opacity-40 cursor-not-allowed' : ''}`}
             whileHover={{ y: -3, scale: 1.01 }}

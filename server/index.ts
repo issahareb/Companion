@@ -47,6 +47,8 @@ app.use(
 );
 
 const allowedOrigins = [
+  'https://guardiangrid.io',
+  'https://www.guardiangrid.io',
   'https://guardiangrid.net',
   'https://www.guardiangrid.net',
   process.env.REPLIT_DEV_DOMAIN ? `https://${process.env.REPLIT_DEV_DOMAIN}` : '',
@@ -208,7 +210,8 @@ app.use((req, res, next) => {
     if (path.startsWith("/api")) {
       let logLine = `${req.method} ${path} ${res.statusCode} in ${duration}ms`;
       if (capturedJsonResponse) {
-        logLine += ` :: ${JSON.stringify(capturedJsonResponse)}`;
+        const body = JSON.stringify(capturedJsonResponse);
+        logLine += ` :: ${body.length > 120 ? body.slice(0, 119) + '…' : body}`;
       }
 
       log(logLine);

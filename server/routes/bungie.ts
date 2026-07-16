@@ -150,6 +150,11 @@ router.get('/api/bungie/profile-state/:membershipType/:membershipId', requireAut
   try {
     const membershipType = req.params.membershipType as string;
     const membershipId = req.params.membershipId as string;
+
+    if (!req.sessionMembershipId || req.sessionMembershipId !== membershipId) {
+      return res.status(403).json({ message: 'Access denied: membership mismatch' });
+    }
+
     const fresh = req.query.fresh === 'true';
     const cacheKey = `${membershipType}:${membershipId}`;
 

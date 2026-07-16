@@ -19,6 +19,7 @@ router.get(api.loadouts.list.path, requireAuth, async (req, res) => {
 router.post(api.loadouts.create.path, requireAuth, async (req, res) => {
   try {
     const input = api.loadouts.create.input.parse(req.body);
+    input.bungieMembershipId = req.sessionMembershipId!;
     const shareCode = input.shareCode || nanoid(10);
     const MAX_RETRIES = 3;
     for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
