@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback, lazy, Suspense } from 'react';
+import { useState, useEffect, useMemo, useCallback, lazy, Suspense, Fragment } from 'react';
 import { Link } from 'wouter';
 import { 
   Hexagon, Loader2, AlertTriangle, RefreshCw,
@@ -422,28 +422,36 @@ export default function Dashboard() {
 
         <AnimatePresence>
           {isMenuOpen && (
-            <>
+            <Fragment key="mobile-nav-drawer">
               <motion.div
+                key="backdrop"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.3 }}
-                className="fixed inset-0 bg-black/60 backdrop-blur-sm z-30"
+                className="fixed inset-0 bg-black/70 backdrop-blur-sm z-[70]"
                 onClick={() => setIsMenuOpen(false)}
               />
               <motion.div
+                key="drawer"
                 initial={{ x: '-100%' }}
                 animate={{ x: 0 }}
                 exit={{ x: '-100%' }}
                 transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-                className="fixed top-0 left-0 bottom-0 w-72 bg-[#0a0e1a]/98 backdrop-blur-2xl border-r border-white/[0.08] z-40 flex flex-col"
+                className="fixed top-0 left-0 bottom-0 w-72 bg-[#0a0e1a]/98 backdrop-blur-2xl border-r border-white/[0.08] z-[80] flex flex-col shadow-[8px_0_40px_rgba(0,0,0,0.5)]"
+                onClick={(e) => e.stopPropagation()}
               >
+                <div className="absolute top-0 right-0 bottom-0 w-px bg-gradient-to-b from-transparent via-indigo-400/40 to-transparent" />
                 <div className="p-6 pb-4 border-b border-white/[0.06]">
                   <div className="flex items-center justify-between">
                     <span className="font-display text-lg tracking-destiny text-white">GUARDIANGRID <span className="text-[var(--color-gold-accent)] text-sm">(Adept)</span></span>
-                    <button onClick={() => setIsMenuOpen(false)} className="p-1.5 text-gray-500 hover:text-white transition-colors">
+                    <motion.button
+                      whileTap={{ scale: 0.9 }}
+                      onClick={() => setIsMenuOpen(false)}
+                      className="p-1.5 text-gray-500 hover:text-white transition-colors"
+                    >
                       <X className="w-5 h-5" />
-                    </button>
+                    </motion.button>
                   </div>
                 </div>
                 <nav className="flex-1 py-4 px-3">
@@ -463,6 +471,7 @@ export default function Dashboard() {
                       key={item.key}
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
+                      whileTap={{ scale: 0.97 }}
                       transition={{ delay: 0.05 + i * 0.06, duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
                       onClick={() => { setActiveTab(item.id); setIsMenuOpen(false); }}
                       className={`w-full flex items-center gap-4 px-4 py-3.5 mb-1 rounded-lg transition-all duration-300 ${
@@ -484,17 +493,18 @@ export default function Dashboard() {
                   ))}
                 </nav>
                 <div className="px-3 pb-4 border-t border-white/[0.06] pt-3">
-                  <button
+                  <motion.button
+                    whileTap={{ scale: 0.97 }}
                     onClick={() => { setIsMenuOpen(false); logout(); }}
                     className="w-full flex items-center gap-4 px-4 py-3.5 rounded-lg text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-all duration-300"
                     data-testid="menu-item-logout"
                   >
                     <LogOut className="w-5 h-5" />
                     <span className="text-sm font-display tracking-destiny uppercase">{t('nav.logout')}</span>
-                  </button>
+                  </motion.button>
                 </div>
               </motion.div>
-            </>
+            </Fragment>
           )}
         </AnimatePresence>
 

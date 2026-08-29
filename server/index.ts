@@ -77,6 +77,9 @@ const sessionSecret = process.env.SESSION_SECRET;
 if (!sessionSecret && process.env.NODE_ENV === 'production') {
   throw new Error('SESSION_SECRET environment variable is required in production');
 }
+if (!process.env.TOKEN_ENCRYPTION_KEY && process.env.NODE_ENV === 'production') {
+  throw new Error('TOKEN_ENCRYPTION_KEY environment variable is required in production (generate with: openssl rand -base64 32)');
+}
 app.use(cookieParser(sessionSecret || 'dev-secret-change-me'));
 
 const CLOUDFLARE_IP_RANGES = [

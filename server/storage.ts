@@ -13,6 +13,15 @@ import {
   type UserPremium,
 } from "@shared/schema";
 import { eq, lt, and } from "drizzle-orm";
+import { encryptToken, decryptToken } from "./tokenCrypto";
+
+function decryptSessionRow(row: Session): Session {
+  return {
+    ...row,
+    accessToken: decryptToken(row.accessToken, `${row.id}:access`),
+    refreshToken: row.refreshToken ? decryptToken(row.refreshToken, `${row.id}:refresh`) : row.refreshToken,
+  };
+}
 
 export interface IStorage {
   getLoadouts(bungieMembershipId: string): Promise<SavedLoadout[]>;
@@ -56,17 +65,32 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createSession(session: InsertSession): Promise<Session> {
-    const [created] = await db.insert(sessions).values(session).returning();
-    return created;
+    const [created] = await db.insert(sessions).values({
+      ...session,
+      accessToken: encryptToken(session.accessToken, `${session.id}:access`),
+      refreshToken: session.refreshToken ? encryptToken(session.refreshToken, `${session.id}:refresh`) : null,
+    }).returning();
+    return decryptSessionRow(created);
   }
 
   async getSession(id: string): Promise<Session | undefined> {
     const [session] = await db.select().from(sessions).where(eq(sessions.id, id));
-    return session;
+    if (!session) return undefined;
+    try {
+      return decryptSessionRow(session);
+    } catch {
+      // Pre-encryption plaintext session or tampered ciphertext: treat as invalid.
+      await this.deleteSession(id);
+      return undefined;
+    }
   }
 
   async updateSessionTokens(id: string, accessToken: string, refreshToken: string | null, tokenExpiresAt: Date): Promise<void> {
-    await db.update(sessions).set({ accessToken, refreshToken, tokenExpiresAt }).where(eq(sessions.id, id));
+    await db.update(sessions).set({
+      accessToken: encryptToken(accessToken, `${id}:access`),
+      refreshToken: refreshToken ? encryptToken(refreshToken, `${id}:refresh`) : null,
+      tokenExpiresAt,
+    }).where(eq(sessions.id, id));
   }
 
   async deleteSession(id: string): Promise<void> {
