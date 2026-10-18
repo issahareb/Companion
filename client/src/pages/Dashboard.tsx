@@ -859,7 +859,7 @@ export default function Dashboard() {
                   <Sparkles className="w-4 h-4 text-[var(--color-gold-accent)]" /> AKTIVES LOADOUT
                 </h3>
                 <div className="flex items-center gap-2">
-                  <button onClick={() => setIsSaveModalOpen(true)} disabled={Object.keys(loadout).length === 0}
+                  <button onClick={() => { setShowMobileLoadout(false); setIsSaveModalOpen(true); }} disabled={Object.keys(loadout).length === 0}
                     className="px-4 py-2 bg-white/5 hover:bg-white text-white hover:text-black transition-all disabled:opacity-20 border border-white/10 text-[11px] font-bold tracking-destiny-wide destiny-clip-sm uppercase">
                     SPEICHERN
                   </button>
