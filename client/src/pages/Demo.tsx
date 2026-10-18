@@ -585,7 +585,7 @@ export default function DemoDashboard() {
 
         <header className="h-14 md:h-16 border-b border-white/[0.06] bg-header backdrop-blur-xl flex items-center justify-between px-4 md:px-8 shrink-0 z-10">
           <div className="flex items-center space-x-4">
-            <button onClick={() => setIsMenuOpen(!isMenuOpen)} aria-label="Open demo navigation" aria-expanded={isMenuOpen} className="p-2 -ml-1 text-white hover:text-indigo-400 transition-colors" data-testid="button-demo-menu">
+            <button onClick={() => setIsMenuOpen(!isMenuOpen)} aria-label="Open demo navigation" aria-expanded={isMenuOpen} className="md:hidden p-2 -ml-1 text-white hover:text-indigo-400 transition-colors" data-testid="button-demo-menu">
               <AnimatePresence mode="wait">
                 {isMenuOpen ? (
                   <motion.div key="close" initial={{ rotate: -90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: 90, opacity: 0 }} transition={{ duration: 0.2 }}><X className="w-6 h-6" /></motion.div>
