@@ -163,6 +163,18 @@ try {
     await context.route('**/api/auth/me', r => r.fulfill({ json: profile }));
     await context.route('**/api/bungie/profile-state/**', r => r.fulfill({ json: state }));
     await context.route('**/api/loadouts/123', r => r.fulfill({ json: [] }));
+    let saveAttempts = 0;
+    await context.route('**/api/loadouts', async route => {
+      saveAttempts++;
+      const payload = route.request().postDataJSON();
+      if (saveAttempts === 1) {
+        return route.fulfill({ status: 400, json: { message: 'Test validation failure' } });
+      }
+      await route.fulfill({ status: 201, json: {
+        ...payload, id: 100 + saveAttempts, shareCode: 'test-share-code',
+        createdAt: new Date().toISOString(),
+      } });
+    });
     await context.route('**/api/premium/status', r => r.fulfill({
       json: { isPremium: false, aiUsage: { used: 0, limit: 5, remaining: 5 } },
     }));
@@ -210,9 +222,23 @@ try {
         await page.getByTestId('button-mobile-loadout').click();
         const dialog = page.getByRole('dialog', { name: 'Active loadout' });
         await dialog.waitFor();
-        await dialog.getByRole('button', { name: 'Close loadout' }).click();
+        await dialog.getByRole('button', { name: /speichern/i }).click();
+        await dialog.waitFor({ state: 'hidden' });
+      } else {
+        await page.getByTestId('button-save-loadout').click();
       }
-      await assertLayout(page, name + '/dashboard/vault');
+      const saveDialog = page.getByRole('dialog', { name: /Loadout speichern/i });
+      await saveDialog.waitFor({ timeout: 8000 });
+      await page.locator('#loadout-name').fill('Chromium Test Build');
+      await saveDialog.getByRole('button', { name: /speichern/i }).click();
+      await saveDialog.getByRole('alert').getByText('Test validation failure').waitFor({ timeout: 8000 });
+      assert.equal(saveAttempts, 1);
+      await saveDialog.getByRole('button', { name: /speichern/i }).click();
+      await saveDialog.waitFor({ state: 'hidden', timeout: 9000 });
+      assert.equal(saveAttempts, 2);
+      await page.getByTestId('text-header-title').waitFor();
+      assert.match((await page.getByTestId('text-header-title').innerText()).toLowerCase(), /loadouts/);
+      await assertLayout(page, name + '/dashboard/loadout-saved');
     });
     await step(name + ' connected dashboard: navigation and lazy panels', async () => {
       for (const section of ['loadouts', 'postmaster', 'collections', 'triumphs', 'season', 'activity', 'ai', 'news', 'characters']) {
