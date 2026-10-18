@@ -106,14 +106,14 @@ const DEMO_SUBCLASS: InventoryItem = {
   icon: B + '/common/destiny2_content/icons/1269daea1c8b58ef10306971ef3e7331.png',
   screenshot: '', location: 'equipped', characterId: 'char-1',
   sockets: [
-    { socketIndex: 0, plugHash: 10, name: 'Golden Gun - Marksman', icon: B + '/common/destiny2_content/icons/1269daea1c8b58ef10306971ef3e7331.png', description: 'Summon a precision firearm.', reusablePlugs: [
-      { plugHash: 10, name: 'Golden Gun - Marksman', icon: B + '/common/destiny2_content/icons/1269daea1c8b58ef10306971ef3e7331.png', description: 'Precision', canInsert: true },
-      { plugHash: 11, name: 'Blade Barrage', icon: B + '/common/destiny2_content/icons/1269daea1c8b58ef10306971ef3e7331.png', description: 'Throw knives', canInsert: true },
+    { socketIndex: 0, plugHash: 10, name: 'Golden Gun - Marksman', icon: B + '/common/destiny2_content/icons/1269daea1c8b58ef10306971ef3e7331.png', description: 'Summon a precision firearm.', isEnabled: true, reusablePlugs: [
+      { plugHash: 10, name: 'Golden Gun - Marksman', icon: B + '/common/destiny2_content/icons/1269daea1c8b58ef10306971ef3e7331.png', description: 'Precision' },
+      { plugHash: 11, name: 'Blade Barrage', icon: B + '/common/destiny2_content/icons/1269daea1c8b58ef10306971ef3e7331.png', description: 'Throw knives' },
     ]},
-    { socketIndex: 1, plugHash: 20, name: 'Marksman Dodge', icon: '', description: 'Dodge to reload.', reusablePlugs: [] },
-    { socketIndex: 2, plugHash: 30, name: 'Triple Jump', icon: '', description: 'Jump 3 times.', reusablePlugs: [] },
-    { socketIndex: 3, plugHash: 40, name: 'Knife Trick', icon: '', description: 'Throw a fan of knives.', reusablePlugs: [] },
-    { socketIndex: 4, plugHash: 50, name: 'Solar Grenade', icon: '', description: 'A lingering grenade.', reusablePlugs: [] },
+    { socketIndex: 1, plugHash: 20, name: 'Marksman Dodge', icon: '', description: 'Dodge to reload.', isEnabled: true, reusablePlugs: [] },
+    { socketIndex: 2, plugHash: 30, name: 'Triple Jump', icon: '', description: 'Jump 3 times.', isEnabled: true, reusablePlugs: [] },
+    { socketIndex: 3, plugHash: 40, name: 'Knife Trick', icon: '', description: 'Throw a fan of knives.', isEnabled: true, reusablePlugs: [] },
+    { socketIndex: 4, plugHash: 50, name: 'Solar Grenade', icon: '', description: 'A lingering grenade.', isEnabled: true, reusablePlugs: [] },
   ],
 };
 
@@ -228,23 +228,24 @@ const DEMO_RECORDS: RecordItem[] = [
 ];
 
 const DEMO_PROGRESSIONS: ProgressionInfo[] = [
-  { progressionHash: 10001, name: 'Vanguard', level: 16, progressToNextLevel: 8400, nextLevelAt: 10000, currentResetCount: 2, icon: B + '/common/destiny2_content/icons/de55c53fb0cde6bf8b51a9e32a755c22.jpg' },
-  { progressionHash: 10002, name: 'Crucible', level: 12, progressToNextLevel: 3200, nextLevelAt: 10000, currentResetCount: 1, icon: B + '/common/destiny2_content/icons/c67a8bab0898b0e6a3d60a7cd206e981.jpg' },
-  { progressionHash: 10003, name: 'Gambit', level: 8, progressToNextLevel: 5600, nextLevelAt: 10000, currentResetCount: 0, icon: B + '/common/destiny2_content/icons/e09a8d93e8dc0a9fceea8267a31d68ff.jpg' },
+  { progressionHash: 10001, name: 'Vanguard', level: 16, currentProgress: 8400, dailyProgress: 0, progressToNextLevel: 8400, nextLevelAt: 10000, currentResetCount: 2, icon: B + '/common/destiny2_content/icons/de55c53fb0cde6bf8b51a9e32a755c22.jpg' },
+  { progressionHash: 10002, name: 'Crucible', level: 12, currentProgress: 3200, dailyProgress: 0, progressToNextLevel: 3200, nextLevelAt: 10000, currentResetCount: 1, icon: B + '/common/destiny2_content/icons/c67a8bab0898b0e6a3d60a7cd206e981.jpg' },
+  { progressionHash: 10003, name: 'Gambit', level: 8, currentProgress: 5600, dailyProgress: 0, progressToNextLevel: 5600, nextLevelAt: 10000, currentResetCount: 0, icon: B + '/common/destiny2_content/icons/e09a8d93e8dc0a9fceea8267a31d68ff.jpg' },
 ];
 
 const DEMO_ARTIFACT: ArtifactInfo = {
+  artifactHash: 123456,
   name: 'Queensfoil Censer',
   icon: B + '/common/destiny2_content/icons/97d3148b3a385bb7a820a1fc3cbb1795.jpg',
   powerBonus: 14,
   pointsUsed: 10,
   pointsAvailable: 12,
   tiers: [
-    { items: [
+    { tierHash: 1, items: [
       { itemHash: 11001, name: 'Anti-Barrier Auto Rifle', icon: B + '/common/destiny2_content/icons/de55c53fb0cde6bf8b51a9e32a755c22.jpg', isActive: true },
       { itemHash: 11002, name: 'Unstoppable Pulse Rifle', icon: B + '/common/destiny2_content/icons/c67a8bab0898b0e6a3d60a7cd206e981.jpg', isActive: true },
     ]},
-    { items: [
+    { tierHash: 2, items: [
       { itemHash: 11003, name: 'Molten Overload', icon: B + '/common/destiny2_content/icons/e09a8d93e8dc0a9fceea8267a31d68ff.jpg', isActive: true },
     ]},
   ],
