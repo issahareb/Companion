@@ -6,7 +6,7 @@ import { useI18n } from '@/lib/i18n';
 import { rateWeaponRoll } from '@/lib/roll-ratings';
 import { RollRatingBadge } from './EquippedSlotRow';
 import { TierStars } from './TierStars';
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 
 function bungieIcon(url: string | undefined): string {
   if (!url) return '';
@@ -51,6 +51,22 @@ export function ItemDetailModal({
   isInLoadout?: boolean;
 }) {
   const { t } = useI18n();
+
+  useEffect(() => {
+    const previousFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        onClose();
+      }
+    };
+    document.addEventListener('keydown', onKeyDown);
+    return () => {
+      document.removeEventListener('keydown', onKeyDown);
+      previousFocus?.focus();
+    };
+  }, [onClose]);
+
   const isExotic = item.rarity === 'exotic';
   const isWeapon = ['kinetic', 'energy', 'power'].includes(item.slot);
   const rarityColor = isExotic ? 'var(--color-exotic)' : item.rarity === 'legendary' ? 'var(--color-legendary)' : item.rarity === 'rare' ? 'var(--color-rare)' : '#555';
@@ -79,6 +95,7 @@ export function ItemDetailModal({
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         transition={{ duration: 0.2 }}
+        role="dialog" aria-modal="true" aria-label={item.name}
         className="fixed inset-0 z-[70] bg-black/80 backdrop-blur-sm flex items-end sm:items-center justify-center"
         onClick={onClose}
         data-testid="item-detail-overlay"
@@ -109,6 +126,7 @@ export function ItemDetailModal({
 
           <button
             onClick={onClose}
+            aria-label="Close item details"
             className="absolute top-3 right-3 p-2 text-gray-400 hover:text-white bg-black/40 backdrop-blur-sm rounded-lg transition-colors z-10"
             data-testid="button-close-detail"
           >
