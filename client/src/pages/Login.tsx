@@ -1,7 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { Loader2, ExternalLink, AlertTriangle, Globe, ChevronDown, ShieldCheck } from 'lucide-react';
 import { motion, useScroll, useTransform, useSpring } from 'framer-motion';
-import ghostImg from '@assets/IMG_0547_1772026484289.gif';
 import bgImg from '@assets/IMG_0553_1772027873435.jpeg';
 import logoImg from '@assets/IMG_0604_1772050774054.png';
 import { useI18n, LANGUAGES } from '@/lib/i18n';
@@ -153,7 +152,7 @@ export default function Login({ onLogin, isAuthenticating, error }: LoginProps) 
   const currentLang = LANGUAGES.find(l => l.id === language)!;
 
   return (
-    <div ref={containerRef} className="min-h-screen text-gray-200 flex flex-col items-center justify-center p-6 relative pt-0" style={{ justifyContent: 'start', paddingTop: '10vh' }}>
+    <div ref={containerRef} className="gg-login min-h-screen text-gray-200 flex flex-col items-center justify-center p-6 relative pt-0" style={{ justifyContent: 'start', paddingTop: '10vh' }}>
       <div
         className="fixed inset-[-60px] z-0 transition-[filter,transform] duration-300 ease-out"
         style={{
@@ -188,6 +187,8 @@ export default function Login({ onLogin, isAuthenticating, error }: LoginProps) 
       >
         <button
           onClick={() => setLangOpen(!langOpen)}
+          aria-expanded={langOpen}
+          aria-label="Choose language"
           className="flex items-center gap-2 px-3 py-2 bg-white/5 border border-white/10 hover:border-white/30 backdrop-blur-md text-white/80 hover:text-white transition-all text-xs tracking-wider press-scale"
           data-testid="button-language-selector"
         >
@@ -257,8 +258,8 @@ export default function Login({ onLogin, isAuthenticating, error }: LoginProps) 
               className="animate-float-gentle"
             >
               <img
-                src={ghostImg}
-                alt="Destiny Ghost"
+                src="/guardian-crest.svg"
+                alt="GuardianGrid geometric emblem"
                 className="w-24 h-24 object-contain drop-shadow-[0_0_30px_rgba(255,255,255,0.3)]"
                 data-testid="img-ghost-logo"
               />
@@ -275,7 +276,15 @@ export default function Login({ onLogin, isAuthenticating, error }: LoginProps) 
           </motion.div>
         </div>
 
-        <div className="flex-1" />
+        <h1 className="sr-only">GuardianGrid (Adept) — Destiny 2 companion</h1>
+        <span className="gg-login-eyebrow mt-4">{t('login.eyebrow')}</span>
+        <p className="gg-login-tagline">{t('login.headline')}</p>
+        <div className="gg-feature-grid" aria-label="GuardianGrid features">
+          <div className="gg-feature"><strong>{t('login.featureCharacters')}</strong><span>{t('login.featureCharactersDesc')}</span></div>
+          <div className="gg-feature"><strong>{t('login.featureLoadouts')}</strong><span>{t('login.featureLoadoutsDesc')}</span></div>
+          <div className="gg-feature"><strong>{t('login.featureAi')}</strong><span>{t('login.featureAiDesc')}</span></div>
+        </div>
+        <div className="flex-1 min-h-5" />
 
         {error && (
           <motion.div 
@@ -343,7 +352,7 @@ export default function Login({ onLogin, isAuthenticating, error }: LoginProps) 
           <motion.button 
             onClick={() => onLogin(turnstileToken)}
             disabled={isAuthenticating || !isVerified}
-            className={`relative w-full bg-[#0c1020]/60 border border-white/10 hover:border-white/40 p-6 flex items-center justify-center transition-all duration-500 backdrop-blur-xl destiny-clip ${!isVerified ? 'opacity-40 cursor-not-allowed' : ''}`}
+            className={`gg-login-cta relative w-full bg-[#0c1020]/60 border border-white/10 hover:border-white/40 p-6 flex items-center justify-center transition-all duration-500 backdrop-blur-xl destiny-clip ${!isVerified ? 'opacity-40 cursor-not-allowed' : ''}`}
             whileHover={{ y: -3, scale: 1.01 }}
             whileTap={{ scale: 0.97 }}
             transition={spring}
