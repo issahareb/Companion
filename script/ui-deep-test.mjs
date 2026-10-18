@@ -92,6 +92,12 @@ try {
       await search.waitFor();
       assert.equal(await page.locator('[data-testid^="vault-item-"]').count(), 8);
       await search.fill('Witherhoard');
+      // React useDeferredValue intentionally keeps the previous result briefly.
+      // Wait until the filtered DOM settles rather than asserting synchronously.
+      await page.waitForFunction(
+        () => document.querySelectorAll('[data-testid^="vault-item-"]').length === 1,
+        { timeout: 8_000 }
+      );
       assert.equal(await page.locator('[data-testid^="vault-item-"]').count(), 1);
       await page.getByTestId('vault-item-v1').click();
       await page.getByTestId('text-item-name').waitFor();
@@ -213,6 +219,12 @@ try {
       await search.waitFor({ timeout: 12000 });
       assert.equal(await page.locator('[data-testid^="vault-item-"]').count(), 2);
       await search.fill('Witherhoard');
+      // React useDeferredValue intentionally keeps the previous result briefly.
+      // Wait until the filtered DOM settles rather than asserting synchronously.
+      await page.waitForFunction(
+        () => document.querySelectorAll('[data-testid^="vault-item-"]').length === 1,
+        { timeout: 8_000 }
+      );
       assert.equal(await page.locator('[data-testid^="vault-item-"]').count(), 1);
       await page.getByTestId('vault-item-v1').click();
       await page.getByTestId('detail-action-loadout').click();
