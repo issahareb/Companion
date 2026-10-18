@@ -1,0 +1,297 @@
+/* GuardianGrid 2.0 — cohesive, responsive visual language.
+   This layer intentionally comes after the legacy stylesheet while existing
+   Destiny / Bungie data and interaction components remain untouched. */
+.guardian-app {
+  --gg-void: #070a10;
+  --gg-surface: #101824;
+  --gg-surface-raised: #162132;
+  --gg-line: rgba(190, 212, 240, .11);
+  --gg-line-active: rgba(152, 190, 248, .34);
+  --gg-ice: #9bcaff;
+  --gg-ice-bright: #d0e9ff;
+  --gg-text: #f2f6fc;
+  --gg-muted: #a2b2c8;
+  --gg-gold: #eac78a;
+  --color-gold-accent: var(--gg-gold);
+  --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  --font-display: 'Oxanium', 'Plus Jakarta Sans', sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+  min-height: 100dvh;
+  color: var(--gg-text);
+  background: var(--gg-void);
+  font-family: var(--font-sans);
+  color-scheme: dark;
+}
+.guardian-app ::selection { background: rgba(152, 190, 248, .34); color: #fff; }
+.guardian-app :is(button, input, a, select, textarea, [role="button"]):focus-visible {
+  outline: 2px solid var(--gg-ice);
+  outline-offset: 3px;
+}
+.guardian-app :is(button, a, input, select, textarea) { -webkit-tap-highlight-color: transparent; }
+.guardian-app button:disabled { cursor: not-allowed; }
+.guardian-app .font-display { font-family: var(--font-display); }
+.guardian-app .font-mono { font-family: var(--font-mono); }
+.guardian-app .bg-app {
+  background-color: var(--gg-void);
+  background-image:
+    radial-gradient(ellipse 80% 48% at 86% 1%, rgba(54, 94, 158, .14), transparent 70%),
+    radial-gradient(ellipse 70% 55% at 3% 87%, rgba(86, 56, 136, .12), transparent 75%),
+    linear-gradient(135deg, #070a10, #0a111c 55%, #070a10);
+}
+.guardian-app .bg-app-overlay {
+  background-image: linear-gradient(transparent 31px, rgba(139, 182, 246, .018) 32px),
+    linear-gradient(90deg, transparent 31px, rgba(139, 182, 246, .018) 32px);
+  background-size: 32px 32px;
+}
+.guardian-app .glass,
+.guardian-app .glass-subtle {
+  background: linear-gradient(155deg, rgba(23, 35, 52, .86), rgba(10, 16, 26, .88));
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-color: var(--gg-line);
+}
+.guardian-app .glass-subtle { background: rgba(17, 26, 40, .68); }
+.guardian-app .destiny-clip { clip-path: polygon(0 0, 97.5% 0, 100% 14%, 100% 100%, 2.5% 100%, 0 86%); }
+.guardian-app .destiny-clip-sm { clip-path: polygon(0 0, 98.5% 0, 100% 12%, 100% 100%, 1.5% 100%, 0 88%); }
+.guardian-app .text-shadow-glow { text-shadow: 0 5px 30px rgba(0,0,0,.7), 0 0 40px rgba(156, 201, 255, .12); }
+.guardian-app .section-divider { background: linear-gradient(90deg, transparent, var(--gg-line-active), transparent); }
+.guardian-app .scroll-container { scrollbar-color: rgba(157,187,228,.28) transparent; }
+.guardian-app .scroll-container::-webkit-scrollbar { width: 6px; }
+.guardian-app .scroll-container::-webkit-scrollbar-thumb { background: rgba(157,187,228,.24); border-radius: 999px; }
+.guardian-app .loading-skeleton {
+  background: linear-gradient(100deg, rgba(164,194,230,.04), rgba(164,194,230,.13), rgba(164,194,230,.04));
+  background-size: 200% 100%;
+  border: 1px solid var(--gg-line);
+  border-radius: 12px;
+}
+/* Application shell */
+.gg-dashboard {
+  min-height: 100dvh;
+  height: 100dvh;
+  background: var(--gg-void);
+}
+.gg-sidebar {
+  background: linear-gradient(180deg, rgba(16,25,39,.98), rgba(8,13,23,.98));
+  box-shadow: 12px 0 45px rgba(0,0,0,.23);
+  border-color: var(--gg-line);
+}
+.gg-brand-lockup {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  gap: 9px;
+  letter-spacing: .08em;
+  font-weight: 600;
+}
+.gg-brand-symbol {
+  display: grid;
+  place-items: center;
+  width: 35px;
+  height: 35px;
+  flex: 0 0 35px;
+  border: 1px solid rgba(155,202,255,.28);
+  border-radius: 10px;
+  background: radial-gradient(circle at 24% 18%, rgba(111,179,252,.22), rgba(111,179,252,.03));
+  box-shadow: inset 0 1px rgba(255,255,255,.08);
+  color: var(--gg-ice);
+}
+.gg-sidebar [data-gg-nav] {
+  min-height: 43px;
+  border-radius: 10px;
+  margin: 2px 0;
+  overflow: hidden;
+  isolation: isolate;
+  font-weight: 500;
+}
+.gg-sidebar [data-gg-nav][aria-current="page"] {
+  color: #f6fbff;
+  background: linear-gradient(90deg, rgba(102,150,224,.14), rgba(102,150,224,.025));
+}
+.gg-sidebar [data-gg-nav]:hover:not([aria-current="page"]) {
+  background: rgba(177,211,255,.055);
+}
+.gg-sidebar [data-gg-nav] span { letter-spacing: .05em; }
+.gg-sidebar .sidebar-expanded { width: 265px; }
+.gg-dashboard-header {
+  min-height: 68px;
+  background: linear-gradient(90deg, rgba(12,20,32,.95), rgba(10,17,28,.89));
+  border-color: var(--gg-line);
+}
+.gg-page-eyebrow {
+  font-size: 10px;
+  letter-spacing: .22em;
+  text-transform: uppercase;
+  color: var(--gg-muted);
+  font-family: var(--font-mono);
+}
+.gg-page-title {
+  font-family: var(--font-display);
+  font-size: clamp(17px, 2vw, 22px);
+  font-weight: 600;
+  color: var(--gg-text);
+  letter-spacing: .025em;
+  line-height: 1.15;
+}
+.gg-status-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: #a9e4cf;
+  white-space: nowrap;
+  padding: 7px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(84,211,160,.2);
+  background: rgba(84,211,160,.055);
+}
+.gg-status-chip::before { content: ''; width: 5px; height: 5px; border-radius: 100%; background: #6dd6ae; box-shadow: 0 0 9px rgba(109,214,174,.5); }
+.gg-sidebar-divider {
+  display: block;
+  margin: 13px 12px 7px;
+  font: 500 10px/1.5 var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: .18em;
+  color: rgba(179,203,231,.42);
+}
+.gg-sidebar button[title] { border-radius: 9px; }
+.gg-dashboard .header-border-glow::after { background: linear-gradient(90deg, transparent, rgba(121,179,249,.32), transparent); animation: none; }
+.gg-dashboard [data-scroll-container] { overscroll-behavior: contain; }
+.gg-dashboard .focus-glow:focus-within { border-color: var(--gg-line-active) !important; box-shadow: 0 0 0 3px rgba(112,165,237,.1); }
+.gg-dashboard :is(input, textarea, select) {
+  color: var(--gg-text);
+  accent-color: #91bff8;
+}
+.gg-dashboard :is(input, textarea)::placeholder { color: #8395ad; opacity: 1; }
+.gg-dashboard :is(.rarity-exotic-glow, .godroll-glow) { animation-duration: 7s; }
+/* Mobile navigation and safe area */
+.gg-mobile-bottom {
+  background: rgba(10,17,28,.97);
+  border-color: rgba(158,195,234,.19);
+  box-shadow: 0 -15px 40px rgba(0,0,0,.34);
+}
+.gg-mobile-bottom button {
+  position: relative;
+  min-height: 56px;
+  color: var(--gg-muted);
+}
+.gg-mobile-bottom button[aria-current="page"] { color: var(--gg-ice-bright); }
+.gg-mobile-bottom button[aria-current="page"]::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 24%;
+  width: 52%;
+  height: 2px;
+  border-radius: 3px;
+  background: var(--gg-ice);
+  box-shadow: 0 0 12px rgba(143,199,255,.38);
+}
+.gg-mobile-sheet {
+  width: min(360px, 90vw);
+  height: 100dvh;
+  overflow-y: auto;
+  background: #0d1624;
+  border-right: 1px solid var(--gg-line-active);
+  box-shadow: 20px 0 80px rgba(0,0,0,.55);
+}
+.gg-mobile-sheet button { min-height: 44px; }
+.gg-loadout-fab {
+  background: linear-gradient(150deg, #c9e2ff, #8ebaf0);
+  color: #0c192d;
+  border: 1px solid rgba(255,255,255,.6);
+  box-shadow: 0 8px 35px rgba(70,132,216,.25);
+}
+.gg-loadout-fab:hover { background: #e3f1ff; }
+/* Login / entry experience */
+.gg-login {
+  isolation: isolate;
+  background: var(--gg-void);
+  min-height: 100dvh;
+}
+.gg-login::before {
+  content: '';
+  position: absolute;
+  pointer-events: none;
+  inset: 0;
+  z-index: 1;
+  background: radial-gradient(ellipse 55% 70% at 50% 28%, transparent 15%, rgba(4,8,16,.3) 85%);
+}
+.gg-login-hero { position: relative; z-index: 2; }
+.gg-login-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  border: 1px solid rgba(212,226,249,.2);
+  background: rgba(10,18,30,.55);
+  border-radius: 999px;
+  padding: 9px 14px;
+  color: #c9d9ef;
+  font: 500 10px/1.2 var(--font-mono);
+  letter-spacing: .15em;
+  text-transform: uppercase;
+  backdrop-filter: blur(12px);
+}
+.gg-login-eyebrow::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: #d7bb81; box-shadow: 0 0 12px rgba(215,187,129,.5); }
+.gg-login-tagline {
+  max-width: 35ch;
+  margin: 20px auto 0;
+  font: 500 clamp(15px, 2.5vw, 18px)/1.65 var(--font-sans);
+  color: #dae5f4;
+  text-wrap: balance;
+}
+.gg-feature-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 8px; width: 100%; margin: 22px 0 8px; }
+.gg-feature {
+  padding: 13px 8px;
+  text-align: center;
+  background: rgba(12,21,34,.55);
+  border: 1px solid rgba(186,211,245,.12);
+  border-radius: 10px;
+  backdrop-filter: blur(12px);
+}
+.gg-feature strong { display: block; font: 600 12px/1.5 var(--font-display); letter-spacing: .04em; color: #f2f7fc; }
+.gg-feature span { display: block; font-size: 10px; line-height: 1.4; color: var(--gg-muted); }
+.gg-login-cta {
+  border-radius: 11px;
+  clip-path: none;
+  background: linear-gradient(130deg, rgba(208,232,255,.96), rgba(146,192,250,.92));
+  color: #061425;
+  border: 1px solid rgba(237,246,255,.9);
+  box-shadow: 0 14px 45px rgba(81,142,223,.25), inset 0 1px rgba(255,255,255,.6);
+}
+.gg-login-cta span { color: #061425 !important; }
+.gg-login-cta:hover { filter: brightness(1.09); }
+.gg-login .noise-overlay { display: none; }
+/* Shared panels and menus */
+.guardian-app [role="dialog"] { color: var(--gg-text); }
+.guardian-app :is(.bg-header,.bg-sidebar) { border-color: var(--gg-line); }
+.guardian-app :is(.hover-lift, .card-sheen, .sidebar-shine-hover) { transition-duration: .24s; }
+.guardian-app :is(.hover-lift, .card-sheen):hover { border-color: rgba(154,200,255,.25); }
+.guardian-app a { text-underline-offset: 3px; }
+.guardian-app .animate-spin-once { animation-duration: .4s; }
+/* Let the user's OS and reduced-motion choice win over decoration. */
+@media (max-width: 767px) {
+  .gg-dashboard-header { min-height: 58px; }
+  .gg-page-title { font-size: 17px; }
+  .gg-sidebar { display: none; }
+  .gg-dashboard .glass, .gg-dashboard .glass-subtle { backdrop-filter: none; -webkit-backdrop-filter: none; }
+  .gg-dashboard .blur-\[150px\], .gg-dashboard .blur-\[130px\] { display: none; }
+  .gg-login-hero { padding-top: 18px; }
+  .gg-feature { padding: 11px 6px; }
+  .gg-mobile-bottom button { min-height: 55px; }
+}
+@media (max-width: 370px) {
+  .gg-feature-grid { gap: 5px; }
+  .gg-feature strong { font-size: 11px; }
+  .gg-feature span { font-size: 9px; }
+  .gg-mobile-bottom button { padding-inline: 4px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .guardian-app *, .guardian-app *::before, .guardian-app *::after {
+    scroll-behavior: auto !important;
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
+  .guardian-app .noise-overlay { display: none; }
+}
