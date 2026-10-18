@@ -512,7 +512,7 @@ export default function DemoDashboard() {
   };
 
   return (
-    <div className="h-screen bg-app text-gray-300 font-sans selection:bg-indigo-500/30 flex flex-col md:flex-row overflow-hidden relative">
+    <div className="gg-dashboard gg-demo h-screen bg-app text-gray-300 font-sans selection:bg-indigo-500/30 flex flex-col md:flex-row overflow-hidden relative">
       <div className="fixed inset-0 pointer-events-none z-0 bg-app-overlay">
         <div className="absolute top-[-15%] left-[-5%] w-[45%] h-[45%] bg-indigo-900/15 blur-[150px] rounded-full animate-pulse-glow" />
         <div className="absolute bottom-[-15%] right-[-5%] w-[40%] h-[40%] bg-purple-900/10 blur-[130px] rounded-full" />
@@ -523,7 +523,7 @@ export default function DemoDashboard() {
         DEMO MODE — Dummy Data
       </div>
 
-      <aside className="hidden md:flex flex-col w-64 bg-sidebar backdrop-blur-xl border-r border-white/[0.06] shrink-0 z-20 shadow-2xl relative overflow-hidden pt-8">
+      <aside className="gg-sidebar hidden md:flex flex-col w-64 bg-sidebar backdrop-blur-xl border-r border-white/[0.06] shrink-0 z-20 shadow-2xl relative overflow-hidden pt-8">
         <div className="p-6 pb-2 relative">
           <div className="flex items-center space-x-3 mb-6">
             <div className="relative">
@@ -544,7 +544,7 @@ export default function DemoDashboard() {
           </div>
         )}
 
-        <nav className="flex-1 py-2 flex flex-col space-y-1.5 px-3">
+        <nav aria-label="Demo navigation" className="flex-1 min-h-0 overflow-y-auto scroll-container py-2 flex flex-col space-y-1.5 px-3">
           <DesktopNavButton icon={Users} label="HÜTER" active={activeTab === 'characters'} onClick={() => setActiveTab('characters')} />
           <DesktopNavButton icon={Package} label="TRESOR" active={activeTab === 'vault'} onClick={() => setActiveTab('vault')} />
           <DesktopNavButton icon={Archive} label="LOADOUTS" active={activeTab === 'loadouts'} onClick={() => setActiveTab('loadouts')} />
