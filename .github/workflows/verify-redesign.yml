@@ -14,6 +14,24 @@ jobs:
   typecheck-build:
     runs-on: ubuntu-latest
     timeout-minutes: 22
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: guardiangrid_test
+          POSTGRES_USER: guardian
+          POSTGRES_PASSWORD: guardian
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U guardian -d guardiangrid_test"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=8
+    env:
+      DATABASE_URL: postgresql://guardian:guardian@127.0.0.1:5432/guardiangrid_test
+      SESSION_SECRET: guardian-ci-isolated-test-secret
+      BUNGIE_API_KEY: isolated-ci-no-real-api
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -26,6 +44,21 @@ jobs:
         run: npm run check
       - name: Production bundling
         run: npm run build
+      - name: Provision isolated integration database
+        run: npx drizzle-kit push --force
+      - name: Test real Express API with Postgres
+        run: |
+          set -euo pipefail
+          NODE_ENV=production PORT=4174 node dist/index.cjs > /tmp/gg-api-server.log 2>&1 &
+          api_pid=$!
+          trap 'kill $api_pid 2>/dev/null || true' EXIT
+          ready=0
+          for attempt in $(seq 1 25); do
+            if curl -fsS http://127.0.0.1:4174/healthz >/dev/null; then ready=1; break; fi
+            sleep 1
+          done
+          if [ "$ready" -ne 1 ]; then cat /tmp/gg-api-server.log; exit 1; fi
+          node script/api-integration-test.mjs || { tail -100 /tmp/gg-api-server.log; exit 1; }
       - name: Install browser test runner
         run: |
           npm install --no-save --ignore-scripts playwright@1.56.1
