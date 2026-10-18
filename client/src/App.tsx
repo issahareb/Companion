@@ -1,5 +1,5 @@
 import { Switch, Route } from "wouter";
-import { Suspense, lazy } from "react";
+import { Suspense, lazy, useEffect } from "react";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
@@ -29,6 +29,30 @@ function Router() {
 }
 
 function App() {
+  useEffect(() => {
+    // Bungie occasionally invalidates historical manifest paths or rate-limits
+    // artwork. Prevent broken-image symbols in inventories and public previews.
+    const recoverBungieImage = (event: Event) => {
+      const image = event.target;
+      if (!(image instanceof HTMLImageElement)) return;
+      if (image.dataset.ggRecovered === 'true') return;
+      const src = image.currentSrc || image.src;
+      if (!/bungie\\.net|destiny2_content/i.test(src)) return;
+      image.dataset.ggRecovered = 'true';
+      const bounds = image.getBoundingClientRect();
+      if (bounds.width >= 260 || bounds.height >= 190) {
+        // Large banners already have gradient background layers.
+        image.style.visibility = 'hidden';
+        return;
+      }
+      image.src = '/guardian-crest.svg';
+      image.style.objectFit = 'contain';
+      image.style.background = 'rgba(15,26,43,.85)';
+      image.style.padding = bounds.width < 27 ? '1px' : '5px';
+    };
+    document.addEventListener('error', recoverBungieImage, true);
+    return () => document.removeEventListener('error', recoverBungieImage, true);
+  }, []);
   return (
     <I18nProvider>
       <QueryClientProvider client={queryClient}>
