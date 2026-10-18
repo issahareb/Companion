@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Loader2, X, Save } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useI18n } from '@/lib/i18n';
@@ -12,17 +12,34 @@ interface SaveLoadoutModalProps {
 export function SaveLoadoutModal({ isOpen, onClose, onSave }: SaveLoadoutModalProps) {
   const [name, setName] = useState('');
   const [isSaving, setIsSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
   const { t } = useI18n();
+
+  useEffect(() => {
+    if (isOpen) setSaveError(null);
+  }, [isOpen]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && !isSaving) onClose();
+    };
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, [isOpen, isSaving, onClose]);
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim()) return;
     
+    setSaveError(null);
     setIsSaving(true);
     try {
-      await onSave(name);
+      await onSave(name.trim());
       setName('');
       onClose();
+    } catch (error) {
+      setSaveError(error instanceof Error ? error.message : 'Loadout could not be saved.');
     } finally {
       setIsSaving(false);
     }
@@ -37,23 +54,25 @@ export function SaveLoadoutModal({ isOpen, onClose, onSave }: SaveLoadoutModalPr
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+            className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[90] flex items-center justify-center p-4"
           >
             <motion.div 
               initial={{ scale: 0.95, opacity: 0, y: 20 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.95, opacity: 0, y: 20 }}
               onClick={(e) => e.stopPropagation()}
+              role="dialog" aria-modal="true" aria-labelledby="gg-save-loadout-title"
               className="bg-[#141417] border border-white/10 p-6 w-full max-w-md shadow-2xl relative"
             >
               <button 
                 onClick={onClose}
+                type="button" aria-label="Close save loadout"
                 className="absolute top-4 right-4 text-gray-500 hover:text-white transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
               
-              <h2 className="text-xl font-display font-medium text-white mb-2 tracking-wider flex items-center gap-2">
+              <h2 id="gg-save-loadout-title" className="text-xl font-display font-medium text-white mb-2 tracking-wider flex items-center gap-2">
                 <Save className="w-5 h-5 opacity-70" />
                 {t('modal.saveLoadout')}
               </h2>
@@ -74,10 +93,12 @@ export function SaveLoadoutModal({ isOpen, onClose, onSave }: SaveLoadoutModalPr
                     placeholder={t('modal.loadoutPlaceholder')}
                     className="w-full bg-black/50 border border-white/20 text-white px-4 py-3 focus:outline-none focus:border-white/50 focus:ring-1 focus:ring-white/20 transition-all font-display text-lg tracking-wide"
                     autoFocus
+                    maxLength={80}
                     required
                   />
                 </div>
                 
+                {saveError && <p role="alert" className="text-sm text-red-300 mb-4">{saveError}</p>}
                 <div className="flex justify-end gap-3">
                   <button
                     type="button"

@@ -11,6 +11,11 @@ export const LANGUAGES: { id: Language; label: string; flag: string }[] = [
 const translations: Record<Language, Record<string, string>> = {
   de: {
     'login.subtitle': 'Melde dich über Bungie.net an, um auf deine Hüter, deinen Tresor und deine Loadouts zuzugreifen',
+    'login.eyebrow': 'DEIN DESTINY 2 KOMMANDOZENTRUM',
+    'login.headline': 'Dein Arsenal. Deine Legende. Alles an einem Ort.',
+    'login.featureCharacters': 'HÜTER', 'login.featureCharactersDesc': 'Ausrüstung & Werte',
+    'login.featureLoadouts': 'LOADOUTS', 'login.featureLoadoutsDesc': 'Bauen & teilen',
+    'login.featureAi': 'ANALYSE', 'login.featureAiDesc': 'Builds & Insights',
     'login.button': 'LOGIN VIA BUNGIE.NET',
     'login.connecting': 'VERBINDE...',
     'login.error': 'Authentifizierungs-Fehler',
@@ -346,6 +351,11 @@ const translations: Record<Language, Record<string, string>> = {
   },
   en: {
     'login.subtitle': 'Sign in via Bungie.net to access your Guardians, vault and loadouts',
+    'login.eyebrow': 'YOUR DESTINY 2 COMMAND CENTER',
+    'login.headline': 'Your arsenal. Your legend. All in one place.',
+    'login.featureCharacters': 'GUARDIANS', 'login.featureCharactersDesc': 'Gear & stats',
+    'login.featureLoadouts': 'LOADOUTS', 'login.featureLoadoutsDesc': 'Create & share',
+    'login.featureAi': 'INSIGHTS', 'login.featureAiDesc': 'Build analysis',
     'login.button': 'LOGIN VIA BUNGIE.NET',
     'login.connecting': 'CONNECTING...',
     'login.error': 'Authentication Error',
@@ -681,6 +691,11 @@ const translations: Record<Language, Record<string, string>> = {
   },
   fr: {
     'login.subtitle': 'Connecte-toi via Bungie.net pour accéder à tes Gardiens, ton coffre et tes équipements',
+    'login.eyebrow': 'TON CENTRE DE COMMANDE DESTINY 2',
+    'login.headline': 'Ton arsenal. Ta légende. Tout au même endroit.',
+    'login.featureCharacters': 'GARDIENS', 'login.featureCharactersDesc': 'Équipement & stats',
+    'login.featureLoadouts': 'SETS', 'login.featureLoadoutsDesc': 'Créer & partager',
+    'login.featureAi': 'ANALYSE', 'login.featureAiDesc': 'Conseils de build',
     'login.button': 'CONNEXION VIA BUNGIE.NET',
     'login.connecting': 'CONNEXION...',
     'login.error': "Erreur d'authentification",

@@ -1,0 +1,52 @@
+name: Compress GuardianGrid Ghost
+on:
+  push:
+    branches:
+      - feat/guardiangrid-2-audit-redesign-20261018
+    paths:
+      - .github/workflows/optimize-ghost.yml
+      - attached_assets/IMG_0547_1772026484289.gif
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  optimize-ghost:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - name: Convert animated Ghost into optimized animated WebP
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg
+          input="attached_assets/IMG_0547_1772026484289.gif"
+          output="client/public/guardian-ghost-animated.webp"
+          ffmpeg -hide_banner -loglevel error -y -i "$input" -an \
+            -vf "fps=24,scale='min(480,iw)':-2:flags=lanczos" \
+            -c:v libwebp_anim -lossless 0 -q:v 79 -loop 0 "$output"
+          python3 - <<'PY'
+          from pathlib import Path
+          old = Path("attached_assets/IMG_0547_1772026484289.gif")
+          new = Path("client/public/guardian-ghost-animated.webp")
+          data = new.read_bytes()
+          assert data[:4] == b"RIFF" and data[8:12] == b"WEBP", "Invalid WebP output"
+          assert b"ANIM" in data[:100] and b"ANMF" in data, "Ghost animation was not preserved"
+          assert len(data) < old.stat().st_size, "Optimized file must be smaller than source"
+          print(f"Optimized animated Ghost: {old.stat().st_size:,} -> {len(data):,} bytes")
+          PY
+      - name: Commit compressed image into redesign branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add client/public/guardian-ghost-animated.webp
+          if ! git diff --cached --quiet; then
+            git commit -m "perf(assets): compress animated GuardianGrid Ghost"
+            # A second CI workflow may have advanced the branch since checkout.
+            # Rebase safely; never force-push or overwrite the user's commits.
+            git fetch origin "${GITHUB_REF_NAME}"
+            git rebase "origin/${GITHUB_REF_NAME}"
+            git push origin "HEAD:${GITHUB_REF_NAME}"
+          fi

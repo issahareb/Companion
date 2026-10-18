@@ -21,6 +21,9 @@ export function DesktopNavButton({ icon: Icon, label, active, onClick, collapsed
   return (
     <button 
       onClick={onClick}
+      data-gg-nav
+      aria-current={active ? 'page' : undefined}
+      aria-label={label}
       title={collapsed ? label : undefined}
       className={`w-full flex items-center ${collapsed ? 'justify-center px-2' : 'space-x-3 px-4'} py-3 transition-all duration-300 relative overflow-hidden group sidebar-shine-hover ${
         active 
@@ -77,7 +80,9 @@ export function DesktopNavButton({ icon: Icon, label, active, onClick, collapsed
 export function MobileNavButton({ icon: Icon, label, active, onClick }: NavButtonProps) {
   return (
     <button 
-      onClick={onClick} 
+      onClick={onClick}
+      aria-current={active ? 'page' : undefined}
+      aria-label={label}
       className={`flex flex-col items-center justify-center space-y-1.5 w-16 transition-colors duration-300 ${
         active ? 'text-white' : 'text-gray-500 hover:text-gray-300'
       }`}
@@ -122,6 +127,7 @@ export function UserProfile({ profile, onLogout }: UserProfileProps) {
           onClick={onLogout}
           className="p-2 text-gray-600 hover:text-red-400 transition-all duration-300 ml-2 shrink-0 rounded hover:bg-red-500/10"
           title={t('nav.logout')}
+          aria-label={t('nav.logout')}
         >
           <LogOut className="w-4 h-4" />
         </button>

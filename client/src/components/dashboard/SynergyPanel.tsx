@@ -116,16 +116,16 @@ export default function SynergyPanel({ tabDirection, selectedCharacter }: Synerg
           mods: (item.mods || []).map((m: any) => ({ name: m.name })),
         }));
 
-      const subclass = selectedCharacter.subclass
-        ? {
-            name: selectedCharacter.subclass.name || 'Unknown',
-            element: selectedCharacter.subclass.element || '',
-            sockets: (selectedCharacter.subclass.sockets || []).map((s: any) => ({
-              name: s.name || '',
-              category: s.category || '',
-            })),
-          }
-        : null;
+      // A Bungie subclass is an equipped inventory item, not a CharacterData property.
+      const equippedSubclass = selectedCharacter.equippedItems?.find(item => item.slot === 'subclass');
+      const subclass = equippedSubclass ? {
+        name: equippedSubclass.name || 'Unknown',
+        element: equippedSubclass.type || '',
+        sockets: (equippedSubclass.sockets || []).map(socket => ({
+          name: socket.name || '',
+          category: socket.socketIndex < 5 ? 'ability' : socket.socketIndex < 7 ? 'aspect' : 'fragment',
+        })),
+      } : null;
 
       const stats = (selectedCharacter.stats || []).map((s: any) => ({
         name: s.name || '',
