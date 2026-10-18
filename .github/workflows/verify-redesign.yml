@@ -43,3 +43,4 @@ jobs:
           done
           if [ "$ready" -ne 1 ]; then cat /tmp/gg-vite-preview.log; exit 1; fi
           node script/ui-smoke.mjs
+          node script/ui-deep-test.mjs
