@@ -258,12 +258,18 @@ export default function Login({ onLogin, isAuthenticating, error }: LoginProps) 
               transition={{ delay: 0.3, duration: 1, ease: appleEase }}
               className="animate-float-gentle"
             >
-              <img
-                src={ghostImg}
-                alt="Animierter Destiny Ghost"
-                className="w-24 h-24 object-contain drop-shadow-[0_0_30px_rgba(255,255,255,0.3)]"
-                data-testid="img-ghost-logo"
-              />
+              <picture>
+                <source srcSet="/guardian-ghost-animated.webp" type="image/webp" />
+                <img
+                  src={ghostImg}
+                  alt="Animierter Destiny Ghost"
+                  className="w-24 h-24 object-contain drop-shadow-[0_0_30px_rgba(255,255,255,0.3)]"
+                  width={96}
+                  height={96}
+                  decoding="async"
+                  data-testid="img-ghost-logo"
+                />
+              </picture>
             </motion.div>
           </motion.div>
 
