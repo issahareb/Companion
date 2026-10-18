@@ -20,6 +20,8 @@ jobs:
       - name: Convert animated Ghost into optimized animated WebP
         run: |
           set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg
           input="attached_assets/IMG_0547_1772026484289.gif"
           output="client/public/guardian-ghost-animated.webp"
           ffmpeg -hide_banner -loglevel error -y -i "$input" -an \
