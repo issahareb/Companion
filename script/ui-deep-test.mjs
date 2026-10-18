@@ -96,6 +96,7 @@ try {
       // Wait until the filtered DOM settles rather than asserting synchronously.
       await page.waitForFunction(
         () => document.querySelectorAll('[data-testid^="vault-item-"]').length === 1,
+        null,
         { timeout: 8_000 }
       );
       assert.equal(await page.locator('[data-testid^="vault-item-"]').count(), 1);
@@ -223,6 +224,7 @@ try {
       // Wait until the filtered DOM settles rather than asserting synchronously.
       await page.waitForFunction(
         () => document.querySelectorAll('[data-testid^="vault-item-"]').length === 1,
+        null,
         { timeout: 8_000 }
       );
       assert.equal(await page.locator('[data-testid^="vault-item-"]').count(), 1);
