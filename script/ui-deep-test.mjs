@@ -46,6 +46,13 @@ async function step(label, callback) {
   console.log('PASS ' + label);
 }
 async function visitDemoSection(page, section) {
+  const width = page.viewportSize()?.width || 0;
+  if (width >= 768) {
+    const sections = ['guardian', 'vault', 'loadouts', 'postmaster', 'collections', 'triumphs', 'season'];
+    const nav = page.getByRole('navigation', { name: 'Demo navigation' });
+    await nav.locator('button').nth(sections.indexOf(section)).click();
+    return;
+  }
   const menu = page.getByTestId('button-demo-menu');
   await menu.click();
   const nav = page.getByRole('dialog', { name: 'Demo navigation' });
