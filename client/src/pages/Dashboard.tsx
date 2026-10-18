@@ -918,7 +918,7 @@ export default function Dashboard() {
         </div>
       </nav>
 
-      <div className="hidden md:block fixed bottom-0 left-0 right-0 z-50 bg-[#080b14]/90 glass-subtle border-t border-white/[0.04] py-2 px-4">
+      <div className={`hidden md:block fixed bottom-0 right-0 z-40 bg-[#080b14]/90 glass-subtle border-t border-white/[0.04] py-2 px-4 ${sidebarCollapsed ? "left-[72px]" : "left-64"}`}>
         <div className="flex items-center justify-center gap-3">
           <Link href="/imprint"><span className="text-[11px] tracking-destiny uppercase text-gray-500 hover:text-gray-300 transition-colors cursor-pointer" data-testid="link-desktop-imprint">{t('footer.imprint')}</span></Link>
           <span className="text-gray-600 text-[11px]">|</span>
