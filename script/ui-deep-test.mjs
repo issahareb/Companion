@@ -1,10 +1,12 @@
 import assert from 'node:assert/strict';
+import { mkdirSync } from 'node:fs';
 import { chromium } from 'playwright';
 
 const base = process.env.GG_PREVIEW_URL || 'http://127.0.0.1:4173';
 const browser = await chromium.launch({ headless: true, args: ['--no-sandbox'] });
 const results = [];
 const failures = [];
+mkdirSync('artifacts/guardian-e2e', { recursive: true });
 
 const item = (id, name, slot, rarity = 'legendary') => ({
   id, itemHash: id === 'v1' ? 123456 : 456789, name,
@@ -72,6 +74,7 @@ try {
       await page.getByTestId('button-demo-char-char-2').click();
       assert.ok(await page.getByTestId('button-demo-char-char-2').isVisible());
       await page.getByTestId('button-demo-char-char-1').click();
+      await page.screenshot({ path: `artifacts/guardian-e2e/${name}-demo-character.png` });
       await assertLayout(page, name + '/demo/characters');
     });
 
@@ -90,6 +93,7 @@ try {
       await search.fill('');
       assert.equal(await page.locator('[data-testid^="vault-item-"]').count(), 8);
       await assertLayout(page, name + '/demo/vault');
+      await page.screenshot({ path: `artifacts/guardian-e2e/${name}-demo-vault.png` });
     });
 
     await step(name + ' demo: all navigation sections', async () => {
@@ -127,6 +131,7 @@ try {
       await page.locator('h1').first().waitFor();
       await page.goto(base + '/lost-sector-404', { waitUntil: 'domcontentloaded' });
       await page.getByText('Signal verloren.').waitFor();
+      await page.screenshot({ path: `artifacts/guardian-e2e/${name}-404.png` });
       await page.goto(base + '/share/not-a-real-build', { waitUntil: 'domcontentloaded' });
       await page.locator('h1').first().waitFor();
       await page.goto(base + '/dashboard', { waitUntil: 'domcontentloaded' });
@@ -158,6 +163,7 @@ try {
       await page.getByTestId('text-power-level').waitFor({ timeout: 16_000 });
       assert.match(await page.getByTestId('text-power-level').innerText(), /2000/);
       await assertLayout(page, name + '/dashboard/characters');
+      await page.screenshot({ path: `artifacts/guardian-e2e/${name}-dashboard.png` });
     });
     async function tab(section) {
       if (width < 768) {
