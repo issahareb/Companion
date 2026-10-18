@@ -214,7 +214,7 @@ export function LoadoutsPanel({
                   </motion.button>
                   <motion.button
                     onClick={() => handleDeleteLoadout(saved.id)}
-                    className="w-8 h-8 bg-red-500/10 flex items-center justify-center text-red-400 hover:bg-red-500 hover:text-white transition-all destiny-clip-sm border border-red-500/10 opacity-0 group-hover:opacity-100"
+                    className="w-8 h-8 bg-red-500/10 flex items-center justify-center text-red-400 hover:bg-red-500 hover:text-white transition-all destiny-clip-sm border border-red-500/10 opacity-100 md:opacity-0 md:group-hover:opacity-100 focus-visible:opacity-100"
                     whileTap={{ scale: 0.9 }}
                     title="Loschen"
                     data-testid={`button-delete-${saved.id}`}
