@@ -870,7 +870,7 @@ export default function DemoDashboard() {
                     <p className="text-[11px] text-gray-600 tracking-widest uppercase">{filteredVaultItems.length} Gegenstände</p>
                   </div>
                   <div className="flex-1 overflow-y-auto p-4 md:p-6 pt-2">
-                    <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-7 gap-2 md:gap-3">
+                    <div className="grid grid-cols-2 min-[540px]:grid-cols-3 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-7 gap-3 md:gap-3">
                       {filteredVaultItems.map(item => (
                         <VaultItemCard
                           key={item.id}
