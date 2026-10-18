@@ -16,8 +16,11 @@ export function SaveLoadoutModal({ isOpen, onClose, onSave }: SaveLoadoutModalPr
   const { t } = useI18n();
 
   useEffect(() => {
+    if (isOpen) setSaveError(null);
+  }, [isOpen]);
+
+  useEffect(() => {
     if (!isOpen) return;
-    setSaveError(null);
     const handleEscape = (event: KeyboardEvent) => {
       if (event.key === 'Escape' && !isSaving) onClose();
     };
