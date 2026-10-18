@@ -77,6 +77,7 @@ jobs:
           if [ "$ready" -ne 1 ]; then cat /tmp/gg-vite-preview.log; exit 1; fi
           node script/ui-smoke.mjs
           node script/ui-deep-test.mjs
+          node script/oauth-browser-test.mjs
       - uses: actions/upload-artifact@v4
         if: always()
         with:
