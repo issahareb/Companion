@@ -292,6 +292,9 @@ router.post('/api/bungie/clear-loadout', requireAuth, validateBody(clearLoadoutS
 router.get('/api/bungie/activity-history/:membershipType/:membershipId/:characterId', requireAuth, async (req, res) => {
   try {
     const { membershipType, membershipId, characterId } = req.params;
+    if (typeof membershipType !== 'string' || typeof membershipId !== 'string' || typeof characterId !== 'string') {
+      return res.status(400).json({ message: 'Invalid membership parameters' });
+    }
 
     if (!req.sessionMembershipId || req.sessionMembershipId !== membershipId) {
       return res.status(403).json({ message: 'Access denied: membership mismatch' });
