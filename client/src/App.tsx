@@ -33,9 +33,11 @@ function App() {
       <QueryClientProvider client={queryClient}>
         <TooltipProvider>
           <ErrorBoundary fallbackTitle="GuardianGrid encountered an error">
-            <Toaster />
-            <Router />
-            <div className="noise-overlay" aria-hidden="true" />
+            <div className="guardian-app">
+              <Toaster />
+              <Router />
+              <div className="noise-overlay" aria-hidden="true" />
+            </div>
           </ErrorBoundary>
         </TooltipProvider>
       </QueryClientProvider>
