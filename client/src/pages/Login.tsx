@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { Loader2, ExternalLink, AlertTriangle, Globe, ChevronDown, ShieldCheck } from 'lucide-react';
 import { motion, useScroll, useTransform, useSpring } from 'framer-motion';
+import ghostImg from '@assets/IMG_0547_1772026484289.gif';
 import bgImg from '@assets/IMG_0553_1772027873435.jpeg';
 import logoImg from '@assets/IMG_0604_1772050774054.png';
 import { useI18n, LANGUAGES } from '@/lib/i18n';
@@ -258,8 +259,8 @@ export default function Login({ onLogin, isAuthenticating, error }: LoginProps) 
               className="animate-float-gentle"
             >
               <img
-                src="/guardian-crest.svg"
-                alt="GuardianGrid geometric emblem"
+                src={ghostImg}
+                alt="Animierter Destiny Ghost"
                 className="w-24 h-24 object-contain drop-shadow-[0_0_30px_rgba(255,255,255,0.3)]"
                 data-testid="img-ghost-logo"
               />
