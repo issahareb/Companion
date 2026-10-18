@@ -1,17 +1,18 @@
 import { Switch, Route } from "wouter";
+import { Suspense, lazy } from "react";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { I18nProvider } from "@/lib/i18n";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
-import NotFound from "@/pages/not-found";
-import Home from "@/pages/Home";
-
-import Dashboard from "@/pages/Dashboard";
-import SharePage from "@/pages/SharePage";
-import DemoDashboard from "@/pages/Demo";
-import { ImprintPage, PrivacyPage } from "@/pages/Legal";
+const NotFound = lazy(() => import("@/pages/not-found"));
+const Home = lazy(() => import("@/pages/Home"));
+const Dashboard = lazy(() => import("@/pages/Dashboard"));
+const SharePage = lazy(() => import("@/pages/SharePage"));
+const DemoDashboard = lazy(() => import("@/pages/Demo"));
+const ImprintPage = lazy(() => import("@/pages/Legal").then(m => ({ default: m.ImprintPage })));
+const PrivacyPage = lazy(() => import("@/pages/Legal").then(m => ({ default: m.PrivacyPage })));
 
 function Router() {
   return (
@@ -35,7 +36,14 @@ function App() {
           <ErrorBoundary fallbackTitle="GuardianGrid encountered an error">
             <div className="guardian-app">
               <Toaster />
-              <Router />
+              <Suspense fallback={
+                <div className="gg-route-loading min-h-[100dvh] flex flex-col items-center justify-center gap-4" role="status" aria-live="polite">
+                  <div className="gg-route-loader" aria-hidden="true" />
+                  <span className="font-mono text-xs tracking-[.24em] uppercase text-[var(--gg-muted)]">GuardianGrid / Loading</span>
+                </div>
+              }>
+                <Router />
+              </Suspense>
               <div className="noise-overlay" aria-hidden="true" />
             </div>
           </ErrorBoundary>
