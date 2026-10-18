@@ -81,6 +81,7 @@ try {
       await page.getByTestId('button-demo-char-char-2').click();
       assert.ok(await page.getByTestId('button-demo-char-char-2').isVisible());
       await page.getByTestId('button-demo-char-char-1').click();
+      await page.waitForTimeout(1050);
       await page.screenshot({ path: `artifacts/guardian-e2e/${name}-demo-character.png` });
       await assertLayout(page, name + '/demo/characters');
     });
@@ -100,6 +101,7 @@ try {
       await search.fill('');
       assert.equal(await page.locator('[data-testid^="vault-item-"]').count(), 8);
       await assertLayout(page, name + '/demo/vault');
+      await page.waitForTimeout(2300);
       await page.screenshot({ path: `artifacts/guardian-e2e/${name}-demo-vault.png` });
     });
 
@@ -143,6 +145,9 @@ try {
       await page.locator('h1').first().waitFor();
       await page.goto(base + '/dashboard', { waitUntil: 'domcontentloaded' });
       await page.waitForURL(u => u.pathname === '/', { timeout: 15_000 });
+      await page.getByTestId('button-login').waitFor();
+      await page.waitForTimeout(950);
+      await page.screenshot({ path: `artifacts/guardian-e2e/${name}-login.png` });
       await assertLayout(page, name + '/unauthenticated');
     });
     await context.close();
@@ -170,6 +175,7 @@ try {
       await page.getByTestId('text-power-level').waitFor({ timeout: 16_000 });
       assert.match(await page.getByTestId('text-power-level').innerText(), /2000/);
       await assertLayout(page, name + '/dashboard/characters');
+      await page.waitForTimeout(1200);
       await page.screenshot({ path: `artifacts/guardian-e2e/${name}-dashboard.png` });
     });
     async function tab(section) {
