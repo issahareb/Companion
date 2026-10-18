@@ -439,6 +439,14 @@ export default function DemoDashboard() {
   const [vaultFilters, setVaultFilters] = useState<FilterState>({ search: '', slot: 'all', rarity: 'all', minPower: '', maxPower: '' });
   const [slotPickerSlot, setSlotPickerSlot] = useState<string | null>(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  useEffect(() => {
+    if (!isMenuOpen) return;
+    const closeWithEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setIsMenuOpen(false);
+    };
+    document.addEventListener('keydown', closeWithEscape);
+    return () => document.removeEventListener('keydown', closeWithEscape);
+  }, [isMenuOpen]);
   const [collectionsSearch, setCollectionsSearch] = useState('');
   const [collectionsFilter, setCollectionsFilter] = useState<'all' | 'acquired' | 'notAcquired'>('all');
   const [triumphsSearch, setTriumphsSearch] = useState('');
@@ -577,7 +585,7 @@ export default function DemoDashboard() {
 
         <header className="h-14 md:h-16 border-b border-white/[0.06] bg-header backdrop-blur-xl flex items-center justify-between px-4 md:px-8 shrink-0 z-10">
           <div className="flex items-center space-x-4">
-            <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="p-2 -ml-1 text-white hover:text-indigo-400 transition-colors" data-testid="button-demo-menu">
+            <button onClick={() => setIsMenuOpen(!isMenuOpen)} aria-label="Open demo navigation" aria-expanded={isMenuOpen} className="p-2 -ml-1 text-white hover:text-indigo-400 transition-colors" data-testid="button-demo-menu">
               <AnimatePresence mode="wait">
                 {isMenuOpen ? (
                   <motion.div key="close" initial={{ rotate: -90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: 90, opacity: 0 }} transition={{ duration: 0.2 }}><X className="w-6 h-6" /></motion.div>
@@ -594,7 +602,7 @@ export default function DemoDashboard() {
           {isMenuOpen && (
             <>
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }} className="fixed inset-0 bg-black/60 backdrop-blur-sm z-30" onClick={() => setIsMenuOpen(false)} />
-              <motion.div initial={{ x: '-100%' }} animate={{ x: 0 }} exit={{ x: '-100%' }} transition={{ type: 'spring', damping: 30, stiffness: 300 }} className="fixed top-7 left-0 bottom-0 w-72 bg-[#0a0e1a]/98 backdrop-blur-2xl border-r border-white/[0.08] z-40 flex flex-col">
+              <motion.div initial={{ x: '-100%' }} animate={{ x: 0 }} exit={{ x: '-100%' }} transition={{ type: 'spring', damping: 30, stiffness: 300 }} role="dialog" aria-modal="true" aria-label="Demo navigation" className="gg-mobile-sheet fixed top-7 left-0 bottom-0 w-72 bg-[#0a0e1a]/98 backdrop-blur-2xl border-r border-white/[0.08] z-40 flex flex-col">
                 <div className="p-6 pb-4 border-b border-white/[0.06]">
                   <span className="font-display text-lg tracking-destiny text-white">GUARDIANGRID <span className="text-[var(--color-gold-accent)] text-sm">(Adept)</span></span>
                 </div>
@@ -610,6 +618,8 @@ export default function DemoDashboard() {
                   ].map((item, i) => (
                     <motion.button key={item.key} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.05 + i * 0.06, duration: 0.3 }}
                       onClick={() => { setActiveTab(item.id); setIsMenuOpen(false); }}
+                      data-testid={`demo-nav-${item.key}`}
+                      aria-current={activeTab === item.id ? 'page' : undefined}
                       className={`w-full flex items-center gap-4 px-4 py-3.5 mb-1 rounded-lg transition-all duration-300 ${activeTab === item.id ? 'bg-white/[0.08] text-white' : 'text-gray-500 hover:text-white hover:bg-white/[0.04]'}`}>
                       <item.icon className={`w-5 h-5 ${activeTab === item.id ? 'text-indigo-400' : ''}`} />
                       <span className="text-sm font-display tracking-destiny uppercase">{item.label}</span>
@@ -1031,7 +1041,8 @@ export default function DemoDashboard() {
 
       {(activeTab === 'vault' || activeTab === 'characters') && (
         <button onClick={() => setShowMobileLoadout(true)}
-          className="lg:hidden fixed bottom-6 right-4 z-30 w-14 h-14 bg-indigo-600 hover:bg-indigo-500 text-white rounded-full flex items-center justify-center shadow-lg shadow-indigo-900/50 transition-all">
+          aria-label="Open demo loadout"
+           className="gg-loadout-fab lg:hidden fixed bottom-6 right-4 z-30 w-14 h-14 bg-indigo-600 hover:bg-indigo-500 text-white rounded-full flex items-center justify-center shadow-lg shadow-indigo-900/50 transition-all">
           <Sparkles className="w-5 h-5" />
           {Object.keys(loadout).length > 0 && (
             <span className="absolute -top-1 -right-1 w-5 h-5 bg-[var(--color-gold-accent)] text-black text-[11px] font-bold rounded-full flex items-center justify-center">{Object.keys(loadout).length}</span>
@@ -1043,14 +1054,15 @@ export default function DemoDashboard() {
         {showMobileLoadout && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="lg:hidden fixed inset-0 z-40 bg-black/80 backdrop-blur-sm" onClick={() => setShowMobileLoadout(false)}>
             <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }} transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-              className="absolute bottom-0 left-0 right-0 max-h-[85vh] bg-[#0a0e18] border-t border-white/[0.08] rounded-t-2xl flex flex-col"
+              role="dialog" aria-modal="true" aria-label="Demo loadout"
+               className="absolute bottom-0 left-0 right-0 max-h-[85vh] bg-[#0a0e18] border-t border-white/[0.08] rounded-t-2xl flex flex-col"
               onClick={(e) => e.stopPropagation()}>
               <div className="flex items-center justify-center pt-3 pb-1"><div className="w-10 h-1 bg-white/20 rounded-full" /></div>
               <div className="p-4 border-b border-white/5 flex items-center justify-between">
                 <h3 className="text-white font-display font-light tracking-destiny-wide flex items-center gap-3 text-sm">
                   <Sparkles className="w-4 h-4 text-[var(--color-gold-accent)]" /> AKTIVES LOADOUT
                 </h3>
-                <button onClick={() => setShowMobileLoadout(false)} className="p-2 text-gray-400 hover:text-white"><X className="w-5 h-5" /></button>
+                <button onClick={() => setShowMobileLoadout(false)} aria-label="Close demo loadout" className="p-2 text-gray-400 hover:text-white"><X className="w-5 h-5" /></button>
               </div>
               <div className="flex-1 overflow-y-auto p-4 space-y-3">
                 {ITEM_SLOTS.map(slot => (
