@@ -168,15 +168,12 @@ try {
           await page.getByTestId('menu-item-' + (section === 'characters' ? 'guardian' : section)).click();
         }
       } else {
-        const labels = {
-          characters: 'HÜTER', vault: 'TRESOR', loadouts: 'LOADOUTS',
-          postmaster: 'POSTMEISTER', collections: 'SAMMLUNGEN',
-          triumphs: 'TRIUMPHE', season: 'SAISON',
-          activity: 'AKTIVITÄTEN', ai: 'SPIELSTIL', news: 'NEUIGKEITEN',
-        };
+        const order = [
+          'characters', 'vault', 'loadouts', 'postmaster', 'collections',
+          'triumphs', 'season', 'activity', 'ai', 'news',
+        ];
         const nav = page.getByRole('navigation', { name: 'GuardianGrid sections' });
-        const button = nav.locator('button').filter({ hasText: labels[section] || '' }).first();
-        await button.click();
+        await nav.locator('button').nth(order.indexOf(section)).click();
       }
     }
     await step(name + ' connected dashboard: vault and equipment', async () => {
