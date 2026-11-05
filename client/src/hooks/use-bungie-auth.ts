@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { queryClient } from '@/lib/queryClient';
-import { canonicalLoginEntry } from '@/lib/auth-origin';
+import { canonicalLoginEntry, OAUTH_REDIRECT_URI } from '@/lib/auth-origin';
 
 const BUNGIE_CLIENT_ID = '51625';
 const BUNGIE_AUTH_URL = `https://www.bungie.net/en/OAuth/Authorize?client_id=${BUNGIE_CLIENT_ID}&response_type=code`;
@@ -153,6 +153,7 @@ export function useBungieAuth() {
       if (turnstileToken) sessionStorage.setItem(TURNSTILE_STORAGE_KEY, turnstileToken);
       const destination = new URL(BUNGIE_AUTH_URL);
       destination.searchParams.set('state', state);
+      destination.searchParams.set('redirect_uri', OAUTH_REDIRECT_URI);
       window.location.assign(destination.toString());
     } catch {
       setAuthError('Die Anmeldung konnte nicht sicher gestartet werden. Bitte erlaube Sitzungsspeicher im Browser.');
