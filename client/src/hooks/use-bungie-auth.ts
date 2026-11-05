@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { queryClient } from '@/lib/queryClient';
+import { canonicalLoginEntry } from '@/lib/auth-origin';
 
 const BUNGIE_CLIENT_ID = '51625';
 const BUNGIE_AUTH_URL = `https://www.bungie.net/en/OAuth/Authorize?client_id=${BUNGIE_CLIENT_ID}&response_type=code`;
@@ -137,6 +138,13 @@ export function useBungieAuth() {
   }, []);
 
   const login = useCallback((turnstileToken?: string | null) => {
+    // sessionStorage and cookies are origin-bound. Enter the registered callback
+    // origin before creating state, rather than losing it on the Bungie return.
+    const entry = canonicalLoginEntry(window.location.origin);
+    if (entry) {
+      window.location.assign(entry);
+      return;
+    }
     try {
       const randomBytes = new Uint8Array(24);
       crypto.getRandomValues(randomBytes);

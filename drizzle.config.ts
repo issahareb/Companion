@@ -6,9 +6,11 @@ if (!process.env.DATABASE_URL) {
 
 export default defineConfig({
   out: "./migrations",
-  schema: "./shared/schema.ts",
+  schema: "./shared/deployment-schema.ts",
   dialect: "postgresql",
-  schemaFilter: ["public", "companion"],
+  // Never introspect public: this database also contains unrelated LUKAS data.
+  schemaFilter: ["companion"],
+  tablesFilter: ["saved_loadouts", "sessions", "ai_usage", "user_premium"],
   dbCredentials: {
     url: process.env.DATABASE_URL,
   },

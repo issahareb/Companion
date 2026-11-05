@@ -34,9 +34,8 @@ try {
     await login.waitFor({ timeout: 20_000 });
     assert.ok(await login.isVisible());
     const language = page.getByTestId('button-language-selector');
-    await language.click();
-    assert.ok(await page.getByTestId('button-lang-en').isVisible());
-    await page.getByTestId('button-lang-en').click();
+    await language.selectOption('en');
+    assert.match(await login.innerText(), /Sign in with Bungie/);
     assert.ok(await login.isVisible());
 
     const overflow = await page.evaluate(() =>
