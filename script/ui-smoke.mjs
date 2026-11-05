@@ -20,7 +20,7 @@ try {
     const page = await context.newPage();
     page.on('pageerror', error => errors.push(viewport.name + ': ' + error.message));
     await page.goto(base, { waitUntil: 'domcontentloaded', timeout: 30_000 });
-    await page.getByRole('heading', { name: /GuardianGrid.*Destiny 2 companion/i }).waitFor({ timeout: 20_000 });
+    await page.getByRole('heading', { name: /GuardianGrid/i, level: 1 }).waitFor({ timeout: 20_000 });
     const animatedGhost = page.locator('img[data-testid="img-ghost-logo"]');
     await animatedGhost.waitFor();
     assert.ok((await animatedGhost.getAttribute('src'))?.endsWith('.gif'), 'Original Ghost fallback is missing');
