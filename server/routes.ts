@@ -5,6 +5,7 @@ import authRouter from "./routes/auth";
 import bungieRouter from "./routes/bungie";
 import loadoutRouter from "./routes/loadouts";
 import aiRouter from "./routes/ai";
+import companionRouter from "./routes/companion";
 import premiumRouter from "./routes/premium";
 
 declare global {
@@ -23,6 +24,7 @@ export async function registerRoutes(
 
   app.use(authRouter);
   app.use(bungieRouter);
+  app.use(companionRouter);
   app.use(loadoutRouter);
   app.use(aiRouter);
   app.use(premiumRouter);

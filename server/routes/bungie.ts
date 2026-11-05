@@ -1,74 +1,10 @@
 import { Router } from "express";
 import { z } from "zod";
-import { fetchMemberships, fetchProfileState, transferItem, equipItem, pullFromPostmaster, setLockState, equipItems, insertSocketPlug, equipLoadout, snapshotLoadout, clearLoadout, fetchBungieNews, fetchActivityHistory, BungieApiError } from "../bungie";
+import { fetchMemberships, fetchProfileState, transferItem, equipItem, pullFromPostmaster, setLockState, equipItems, insertSocketPlug, equipLoadout, snapshotLoadout, clearLoadout, updateLoadoutName, fetchBungieNews, fetchActivityHistory, BungieApiError } from "../bungie";
 import { handleBungieError, requireAuth } from "./shared";
 
-const transferSchema = z.object({
-  itemReferenceHash: z.number(),
-  stackSize: z.number().int().min(1).default(1),
-  transferToVault: z.boolean(),
-  itemId: z.string(),
-  characterId: z.string(),
-  membershipType: z.string(),
-});
-
-const equipSchema = z.object({
-  itemId: z.string(),
-  characterId: z.string(),
-  membershipType: z.string(),
-});
-
-const pullPostmasterSchema = z.object({
-  itemReferenceHash: z.number(),
-  stackSize: z.number().int().min(1).default(1),
-  itemId: z.string(),
-  characterId: z.string(),
-  membershipType: z.string(),
-});
-
-const lockSchema = z.object({
-  itemId: z.string(),
-  characterId: z.string(),
-  membershipType: z.string(),
-  state: z.boolean(),
-});
-
-const equipItemsSchema = z.object({
-  itemIds: z.array(z.string()).min(1).max(10),
-  characterId: z.string(),
-  membershipType: z.string(),
-});
-
-const insertPlugSchema = z.object({
-  itemInstanceId: z.string(),
-  socketIndex: z.number().int().min(0),
-  socketArrayType: z.number().int(),
-  plug: z.object({ plugItemHash: z.number() }),
-  characterId: z.string(),
-  membershipType: z.string(),
-});
-
-const equipLoadoutSchema = z.object({
-  loadoutIndex: z.number().int().min(0),
-  characterId: z.string(),
-  membershipType: z.string(),
-});
-
-const snapshotLoadoutSchema = z.object({
-  loadoutIndex: z.number().int().min(0),
-  characterId: z.string(),
-  membershipType: z.string(),
-  colorHash: z.number().optional(),
-  iconHash: z.number().optional(),
-  nameHash: z.number().optional(),
-  items: z.array(z.any()).optional(),
-});
-
-const clearLoadoutSchema = z.object({
-  loadoutIndex: z.number().int().min(0),
-  characterId: z.string(),
-  membershipType: z.string(),
-});
+import { transferSchema, equipSchema, pullPostmasterSchema, lockSchema, equipItemsSchema,
+  insertPlugSchema, equipLoadoutSchema, snapshotLoadoutSchema, clearLoadoutSchema, updateLoadoutSchema } from '../../shared/bungie-actions';
 
 function validateBody<T>(schema: z.ZodSchema<T>) {
   return (req: any, res: any, next: any) => {
@@ -110,7 +46,7 @@ function setCachedProfile(key: string, data: any): void {
   }
 }
 
-function invalidateProfileCaches(membershipType?: number) {
+function invalidateProfileCaches(membershipType?: number | string) {
   if (membershipType) {
     for (const key of profileCache.keys()) {
       if (key.startsWith(`${membershipType}:`)) {
@@ -287,6 +223,14 @@ router.post('/api/bungie/clear-loadout', requireAuth, validateBody(clearLoadoutS
   } catch (err: any) {
     handleBungieError(err, res, 'Clear loadout failed');
   }
+});
+
+router.post('/api/bungie/update-loadout-name', requireAuth, validateBody(updateLoadoutSchema), async (req, res) => {
+  try {
+    const result = await updateLoadoutName(req.body, req.sessionAccessToken!);
+    invalidateProfileCaches(req.body.membershipType);
+    res.json(result);
+  } catch (err) { handleBungieError(err, res, 'Loadout name update failed'); }
 });
 
 router.get('/api/bungie/activity-history/:membershipType/:membershipId/:characterId', requireAuth, async (req, res) => {

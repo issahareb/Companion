@@ -64,6 +64,7 @@ export interface InventoryItem {
   description?: string;
   classType?: number;
   isInstanced?: boolean;
+  locked?: boolean;
   stats?: { statHash: number; name: string; value: number }[];
   perks?: PerkInfo[];
   mods?: ModInfo[];

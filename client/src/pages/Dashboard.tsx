@@ -45,6 +45,7 @@ const TriumphAdvisorPanel = lazy(() => import('@/components/dashboard/TriumphAdv
 const NewsPanel = lazy(() => import('@/components/dashboard/NewsPanel').then(m => ({ default: m.NewsPanel })));
 const SynergyPanel = lazy(() => import('@/components/dashboard/SynergyPanel'));
 const RaidReportPanel = lazy(() => import('@/components/dashboard/RaidReportPanel').then(m => ({ default: m.RaidReportPanel })));
+const CompanionPanel = lazy(() => import('@/components/dashboard/CompanionPanel').then(m => ({ default: m.CompanionPanel })));
 const AiUsageBanner = lazy(() => import('@/components/dashboard/AiUsageBanner').then(m => ({ default: m.AiUsageBanner })));
 const PremiumSidebarBadge = lazy(() => import('@/components/dashboard/AiUsageBanner').then(m => ({ default: m.PremiumSidebarBadge })));
 
@@ -112,7 +113,7 @@ export default function Dashboard() {
     { id: 'rare', label: t('filter.rare') },
   ];
 
-  const TAB_ORDER: TabType[] = ['characters', 'vault', 'loadouts', 'postmaster', 'collections', 'triumphs', 'season', 'activity', 'ai', 'news'];
+  const TAB_ORDER: TabType[] = ['characters', 'vault', 'loadouts', 'postmaster', 'collections', 'triumphs', 'season', 'activity', 'companion', 'ai', 'news'];
   const [activeTab, setActiveTabRaw] = useState<TabType>(() => {
     try {
       const saved = sessionStorage.getItem('gg_active_tab') as TabType | null;
@@ -337,6 +338,7 @@ export default function Dashboard() {
     triumphs: t('nav.triumphs'),
     season: t('nav.season'),
     activity: t('nav.activity'),
+    companion: 'Companion',
     ai: t('nav.playstyle'),
     news: t('nav.news'),
   };
@@ -386,6 +388,7 @@ export default function Dashboard() {
           <DesktopNavButton icon={TrendingUp} label={t('nav.season').toUpperCase()} active={activeTab === 'season'} onClick={() => setActiveTab('season')} collapsed={sidebarCollapsed} />
           <DesktopNavButton icon={Swords} label={t('nav.activity').toUpperCase()} active={activeTab === 'activity'} onClick={() => setActiveTab('activity')} collapsed={sidebarCollapsed} />
           {sidebarCollapsed ? <div className="h-px bg-white/[0.06] my-2" /> : <span className="gg-sidebar-divider">INTELLIGENCE</span>}
+          <DesktopNavButton icon={Package} label="COMPANION" active={activeTab === 'companion'} onClick={() => setActiveTab('companion')} collapsed={sidebarCollapsed} />
           <DesktopNavButton icon={Brain} label={t('nav.playstyle').toUpperCase()} active={activeTab === 'ai'} onClick={() => setActiveTab('ai')} collapsed={sidebarCollapsed} />
           <DesktopNavButton icon={Newspaper} label={t('nav.news').toUpperCase()} active={activeTab === 'news'} onClick={() => setActiveTab('news')} collapsed={sidebarCollapsed} />
         </nav>
@@ -482,6 +485,7 @@ export default function Dashboard() {
                     { key: 'triumphs', id: 'triumphs' as TabType, icon: Trophy, label: t('nav.triumphs') },
                     { key: 'season', id: 'season' as TabType, icon: TrendingUp, label: t('nav.season') },
                     { key: 'activity', id: 'activity' as TabType, icon: Swords, label: t('nav.activity') },
+                    { key: 'companion', id: 'companion' as TabType, icon: Package, label: 'Companion' },
                     { key: 'ai', id: 'ai' as TabType, icon: Brain, label: t('nav.playstyle') },
                     { key: 'news', id: 'news' as TabType, icon: Newspaper, label: t('nav.news') },
                   ].map((item, i) => (
@@ -713,6 +717,19 @@ export default function Dashboard() {
                   membershipId={destinyProfile?.membershipId}
                   characterIds={characters.map(c => c.characterId)}
                 />
+                </Suspense>
+              )}
+
+              {activeTab === 'companion' && (
+                <Suspense fallback={<LazyTabLoader />}>
+                  <CompanionPanel membershipType={destinyProfile.membershipType} membershipId={destinyProfile.membershipId}
+                    characters={characters} vaultItems={vaultItems} selectedCharacterId={selectedCharacterId} inGameLoadouts={profileState?.inGameLoadouts || {}}
+                    onAdoptArmor={(items, characterId) => {
+                      setSelectedCharacterId(characterId);
+                      setLoadout(prev => ({ ...prev, ...Object.fromEntries(items.map(item => [item.slot, toItem(item)])) }));
+                      setActiveTab('characters');
+                      setShowMobileLoadout(true);
+                    }} />
                 </Suspense>
               )}
 
