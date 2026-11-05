@@ -190,7 +190,7 @@ try {
     await page.getByTestId("companion-tab-vendors").click();
     await page.getByText("Test Rifle", { exact: true }).waitFor();
     await page.getByTestId("companion-tab-stats").click();
-    await page.locator("select").last().selectOption("777");
+    await page.getByLabel(/Aktivitätsbericht|Activity report/).selectOption("777");
     await page.getByText("Test Rifle: 8 Kills", { exact: true }).waitFor();
     await page.getByTestId("companion-tab-arsenal").click();
     await page.getByRole("button", { name: /^Ausrüsten$|^Equip$/ }).click();
