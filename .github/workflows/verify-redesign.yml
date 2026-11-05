@@ -1,8 +1,11 @@
 name: GuardianGrid verification
 on:
+  pull_request:
+    branches: [main]
   push:
     branches:
       - feat/guardiangrid-2-audit-redesign-20261018
+      - codex/bungie-companion-features
     paths-ignore:
       - client/public/guardian-ghost-animated.webp
   workflow_dispatch:
@@ -12,7 +15,7 @@ permissions:
 
 jobs:
   typecheck-build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 22
     services:
       postgres:
@@ -42,6 +45,8 @@ jobs:
         run: npm ci --no-audit --no-fund
       - name: TypeScript typecheck
         run: npm run check
+      - name: Bungie contracts and companion integration
+        run: node --import tsx --test script/bungie-companion.test.ts
       - name: Production bundling
         run: npm run build
       - name: Provision isolated integration database
@@ -78,6 +83,7 @@ jobs:
           node script/ui-smoke.mjs
           node script/ui-deep-test.mjs
           node script/oauth-browser-test.mjs
+          node script/companion-browser-test.mjs
       - uses: actions/upload-artifact@v4
         if: always()
         with:

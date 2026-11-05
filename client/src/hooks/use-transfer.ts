@@ -330,3 +330,15 @@ export function useEquipItems() {
     },
   });
 }
+
+export function useUpdateLoadoutName() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationKey: BUNGIE_MUTATION_KEY,
+    mutationFn: (params: EquipLoadoutParams & { nameHash: number }) => bungiePostRequest('/api/bungie/update-loadout-name', params),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/bungie/profile-state'] });
+      notifyOtherTabs();
+    },
+  });
+}

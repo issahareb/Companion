@@ -270,7 +270,7 @@ async function bungieRequestWithRetry(
   throw lastError || new Error('Bungie API request failed after all retries');
 }
 
-async function bungieGet(path: string, accessToken?: string) {
+export async function bungieGet(path: string, accessToken?: string) {
   const headers: Record<string, string> = {
     'X-API-Key': BUNGIE_API_KEY || '',
   };
@@ -289,10 +289,10 @@ async function bungiePost(path: string, body: any, accessToken: string) {
       'Authorization': `Bearer ${accessToken}`,
     },
     body: JSON.stringify(body),
-  });
+  }, 1);
 }
 
-async function fetchManifest(): Promise<ManifestCache> {
+export async function fetchManifest(): Promise<ManifestCache> {
   if (manifestCache && Date.now() - manifestCache.fetchedAt < MANIFEST_TTL) {
     return manifestCache;
   }
@@ -590,6 +590,7 @@ export interface InventoryItem {
   description?: string;
   classType?: number;
   isInstanced?: boolean;
+  locked?: boolean;
   stats?: ItemStatValue[];
   perks?: PerkInfo[];
   mods?: ModInfo[];
@@ -740,7 +741,7 @@ function parseGearItem(
     if (itemStatEntry?.stats) {
       for (const [hash, stat] of Object.entries(itemStatEntry.stats) as [string, any][]) {
         const statName = ARMOR_STAT_HASHES_MAP[hash] || manifestData?.stats[hash]?.name;
-        if (statName && stat.value) {
+        if (statName && Number.isFinite(stat.value)) {
           stats.push({ statHash: Number(hash), name: statName, value: stat.value });
         }
       }
@@ -763,6 +764,7 @@ function parseGearItem(
     characterId,
     classType: manifestItem.classType,
     isInstanced: hasInstance,
+    locked: ((item.state || 0) & 1) !== 0,
     stats: stats.length > 0 ? stats : undefined,
   };
 }
@@ -813,6 +815,7 @@ function attachPerksAndMods(
 
         const reusableForSocket = reusableData?.plugs?.[String(idx)] || [];
         const reusablePlugs: SocketPlugOption[] = reusableForSocket
+          .filter((rp: any) => rp.canInsert !== false && rp.enabled !== false)
           .map((rp: any) => {
             const rpDef = manifestData.items[String(rp.plugItemHash)];
             if (!rpDef || !rpDef.name) return null;
@@ -847,7 +850,7 @@ export async function fetchProfileState(
   const [manifestData, profileData] = await Promise.all([
     fetchManifest(),
     bungieGet(
-      `/Platform/Destiny2/${membershipType}/Profile/${membershipId}/?components=100,102,103,104,200,201,202,205,206,300,302,304,305,800,900,1200,4000`,
+      `/Platform/Destiny2/${membershipType}/Profile/${membershipId}/?components=100,102,103,104,200,201,202,205,206,300,302,304,305,310,800,900,1200,4000`,
       accessToken
     ),
   ]);
@@ -1213,7 +1216,7 @@ export async function fetchProfileState(
           if (itemStatEntry?.stats) {
             for (const [hash, stat] of Object.entries(itemStatEntry.stats) as [string, any][]) {
               const statName = ARMOR_STAT_HASHES_MAP[hash] || manifestData.stats[hash]?.name;
-              if (statName && stat.value) {
+              if (statName && Number.isFinite(stat.value)) {
                 stats.push({ statHash: Number(hash), name: statName, value: stat.value });
               }
             }
@@ -1283,6 +1286,7 @@ export interface TransferRequest {
   characterId: string;
   membershipType: number;
   transferToVault: boolean;
+  stackSize?: number;
 }
 
 export async function transferItem(request: TransferRequest, accessToken: string): Promise<any> {
@@ -1292,7 +1296,7 @@ export async function transferItem(request: TransferRequest, accessToken: string
     characterId: request.characterId,
     membershipType: request.membershipType,
     transferToVault: request.transferToVault,
-    stackSize: 1,
+    stackSize: request.stackSize ?? 1,
   }, accessToken);
 }
 
@@ -1311,6 +1315,7 @@ export async function equipItem(request: EquipRequest, accessToken: string): Pro
 }
 
 export interface PullPostmasterRequest {
+  stackSize?: number;
   itemReferenceHash: number;
   itemId: string;
   characterId: string;
@@ -1323,7 +1328,7 @@ export async function pullFromPostmaster(request: PullPostmasterRequest, accessT
     itemId: request.itemId,
     characterId: request.characterId,
     membershipType: request.membershipType,
-    stackSize: 1,
+    stackSize: request.stackSize ?? 1,
   }, accessToken);
 }
 
@@ -1367,7 +1372,7 @@ export interface InsertPlugRequest {
 
 export async function insertSocketPlug(request: InsertPlugRequest, accessToken: string): Promise<any> {
   return bungiePost('/Platform/Destiny2/Actions/Items/InsertSocketPlugFree/', {
-    itemInstanceId: request.itemInstanceId,
+    itemId: request.itemInstanceId,
     plug: {
       socketIndex: request.socketIndex,
       socketArrayType: 0,
@@ -1563,4 +1568,8 @@ export async function fetchActivityHistory(
       isFlawless: deaths === 0 && (vals.completed?.basic?.value ?? 0) === 1,
     };
   });
+}
+
+export async function updateLoadoutName(request: EquipLoadoutRequest & { nameHash: number }, accessToken: string) {
+  return bungiePost('/Platform/Destiny2/Actions/Loadouts/UpdateLoadoutIdentifiers/', request, accessToken);
 }

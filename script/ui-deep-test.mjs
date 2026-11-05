@@ -187,6 +187,7 @@ try {
     }));
     await context.route('**/api/bungie/news?*', r => r.fulfill({ json: [] }));
     await context.route('**/api/bungie/activity-history/**', r => r.fulfill({ json: [] }));
+    await context.route('**/api/bungie/weekly', r => r.fulfill({ json: [] }));
     const page = await context.newPage();
     bindRuntimeErrors(page, 'dashboard/' + name);
     await step(name + ' connected dashboard: character loads', async () => {
@@ -208,7 +209,7 @@ try {
       } else {
         const order = [
           'characters', 'vault', 'loadouts', 'postmaster', 'collections',
-          'triumphs', 'season', 'activity', 'ai', 'news',
+          'triumphs', 'season', 'activity', 'companion', 'ai', 'news',
         ];
         const nav = page.getByRole('navigation', { name: 'GuardianGrid sections' });
         await nav.locator('button').nth(order.indexOf(section)).click();
@@ -255,7 +256,7 @@ try {
       await assertLayout(page, name + '/dashboard/loadout-saved');
     });
     await step(name + ' connected dashboard: navigation and lazy panels', async () => {
-      for (const section of ['loadouts', 'postmaster', 'collections', 'triumphs', 'season', 'activity', 'ai', 'news', 'characters']) {
+      for (const section of ['loadouts', 'postmaster', 'collections', 'triumphs', 'season', 'activity', 'companion', 'ai', 'news', 'characters']) {
         await tab(section);
         await page.getByTestId('text-header-title').waitFor({ timeout: 10000 });
         await page.waitForTimeout(120);
