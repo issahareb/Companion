@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useCallback, lazy, Suspense } from 'react';
-import { Link } from 'wouter';
+import { Link, useLocation } from 'wouter';
 import { 
   Hexagon, Loader2, AlertTriangle, RefreshCw,
   Users, X, Package, Mail,
@@ -58,6 +58,7 @@ function LazyTabLoader() {
 
 export default function Dashboard() {
   const { destinyProfile, logout, isAuthenticated, isFetchingProfile } = useBungieAuth();
+  const [, navigate] = useLocation();
   const { 
     data: profileState, 
     isLoading: isLoadingProfile, 
@@ -112,14 +113,21 @@ export default function Dashboard() {
   ];
 
   const TAB_ORDER: TabType[] = ['characters', 'vault', 'loadouts', 'postmaster', 'collections', 'triumphs', 'season', 'activity', 'ai', 'news'];
-  const [activeTab, setActiveTabRaw] = useState<TabType>('characters');
+  const [activeTab, setActiveTabRaw] = useState<TabType>(() => {
+    try {
+      const saved = sessionStorage.getItem('gg_active_tab') as TabType | null;
+      return saved && TAB_ORDER.includes(saved) ? saved : 'characters';
+    } catch { return 'characters'; }
+  });
   const [aiSubTab, setAiSubTab] = useState<AiSubTab>('playstyle');
   const [tabDirection, setTabDirection] = useState(0);
   const setActiveTab = (newTab: TabType) => {
+    if (newTab === activeTab) return;
     const oldIdx = TAB_ORDER.indexOf(activeTab);
     const newIdx = TAB_ORDER.indexOf(newTab);
     setTabDirection(newIdx > oldIdx ? 1 : -1);
     setActiveTabRaw(newTab);
+    try { sessionStorage.setItem('gg_active_tab', newTab); } catch {}
   };
   const [loadout, setLoadout] = useState<Record<string, Item>>({});
   const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
@@ -128,6 +136,14 @@ export default function Dashboard() {
   const [vaultFilters, setVaultFilters] = useState<FilterState>({ search: '', slot: 'all', rarity: 'all', minPower: '', maxPower: '' });
   const [slotPickerSlot, setSlotPickerSlot] = useState<string | null>(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  useEffect(() => {
+    if (!isMenuOpen) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setIsMenuOpen(false);
+    };
+    document.addEventListener('keydown', onKeyDown);
+    return () => document.removeEventListener('keydown', onKeyDown);
+  }, [isMenuOpen]);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [pendingItemIds, setPendingItemIds] = useState<Set<string>>(new Set());
   const [collectionsSearch, setCollectionsSearch] = useState('');
@@ -136,6 +152,9 @@ export default function Dashboard() {
   const [triumphsFilter, setTriumphsFilter] = useState<'all' | 'completed' | 'incomplete'>('all');
 
   useProfileTabSync();
+  useEffect(() => {
+    if (!isFetchingProfile && (!isAuthenticated || !destinyProfile)) navigate('/');
+  }, [isFetchingProfile, isAuthenticated, destinyProfile, navigate]);
 
   const characters = profileState?.characters || [];
   const vaultItems = profileState?.vaultItems || [];
@@ -147,7 +166,7 @@ export default function Dashboard() {
   const selectedCharacter = characters.find(c => c.characterId === selectedCharacterId) || null;
 
   useEffect(() => {
-    if (characters.length > 0 && !selectedCharacterId) {
+    if (characters.length > 0 && !characters.some(c => c.characterId === selectedCharacterId)) {
       setSelectedCharacterId(characters[0].characterId);
     }
   }, [characters, selectedCharacterId]);
@@ -304,9 +323,9 @@ export default function Dashboard() {
 
   const copyToClipboard = (code: string) => {
     const link = `${window.location.origin}/share/${code}`;
-    navigator.clipboard.writeText(link).then(() => {
-      toast({ title: t('toast.linkCopied') });
-    });
+    navigator.clipboard.writeText(link)
+      .then(() => toast({ title: t('toast.linkCopied') }))
+      .catch(() => toast({ title: t('error.generic'), description: link, variant: 'destructive' }));
   };
 
   const tabTitles: Record<TabType, string> = {
@@ -333,38 +352,40 @@ export default function Dashboard() {
     );
   }
 
-  if (!isAuthenticated || !destinyProfile) {
-    window.location.replace('/');
-    return null;
-  }
+  if (!isAuthenticated || !destinyProfile) return null;
 
   return (
-    <div className="h-screen bg-app text-gray-300 font-sans selection:bg-indigo-500/30 flex flex-col md:flex-row overflow-hidden relative">
+    <div className="gg-dashboard h-screen bg-app text-gray-300 font-sans selection:bg-indigo-500/30 flex flex-col md:flex-row overflow-hidden relative">
       <div className="fixed inset-0 pointer-events-none z-0 bg-app-overlay">
         <div className="absolute top-[-15%] left-[-5%] w-[45%] h-[45%] bg-indigo-900/10 blur-[150px] rounded-full" />
         <div className="absolute bottom-[-15%] right-[-5%] w-[40%] h-[40%] bg-purple-900/8 blur-[130px] rounded-full" />
       </div>
 
       {/* DESKTOP SIDEBAR */}
-      <aside className={`hidden md:flex flex-col ${sidebarCollapsed ? 'sidebar-collapsed' : 'sidebar-expanded'} bg-sidebar glass border-r border-white/[0.06] shrink-0 z-20 shadow-2xl relative overflow-hidden`}>
-        <div className={`${sidebarCollapsed ? 'p-3 pb-2' : 'p-6 pb-4'} relative`}>
-          <div className={`flex items-center ${sidebarCollapsed ? 'justify-center' : 'space-x-3'}`}>
-            <Hexagon className="w-7 h-7 text-indigo-400 shrink-0" strokeWidth={1.5} />
-            {!sidebarCollapsed && <span className="font-display font-light text-base tracking-destiny-wide text-white">GUARDIANGRID <span className="text-[var(--color-gold-accent)] text-sm">(Adept)</span></span>}
+      <aside className={`hidden md:flex flex-col ${sidebarCollapsed ? 'sidebar-collapsed' : 'sidebar-expanded'} gg-sidebar bg-sidebar glass border-r border-white/[0.06] shrink-0 z-20 shadow-2xl relative overflow-hidden`}>
+        <div className={`${sidebarCollapsed ? 'p-3 pb-2' : 'px-5 pt-6 pb-5'} relative`}>
+          <div className={`gg-brand-lockup ${sidebarCollapsed ? 'justify-center' : ''}`}>
+            <div className="gg-brand-symbol"><Hexagon className="w-5 h-5" strokeWidth={1.6} /></div>
+            {!sidebarCollapsed && (
+              <div className="min-w-0">
+                <span className="font-display text-[15px] leading-tight tracking-wide text-white block">GUARDIANGRID</span>
+                <span className="block font-mono text-[10px] mt-0.5 tracking-[.22em] text-[var(--gg-muted)] uppercase">Adept · Companion</span>
+              </div>
+            )}
           </div>
         </div>
 
-        <nav className={`flex-1 py-2 flex flex-col space-y-1.5 ${sidebarCollapsed ? 'px-1.5' : 'px-3'}`}>
+        <nav aria-label="GuardianGrid sections" className={`flex-1 min-h-0 overflow-y-auto scroll-container py-2 flex flex-col gap-0.5 ${sidebarCollapsed ? 'px-1.5' : 'px-3'}`}>
           <DesktopNavButton icon={Users} label="HÜTER" active={activeTab === 'characters'} onClick={() => setActiveTab('characters')} collapsed={sidebarCollapsed} />
           <DesktopNavButton icon={Package} label="TRESOR" active={activeTab === 'vault'} onClick={() => setActiveTab('vault')} collapsed={sidebarCollapsed} />
           <DesktopNavButton icon={Archive} label="LOADOUTS" active={activeTab === 'loadouts'} onClick={() => setActiveTab('loadouts')} collapsed={sidebarCollapsed} />
           <DesktopNavButton icon={Mail} label="POSTMEISTER" active={activeTab === 'postmaster'} onClick={() => setActiveTab('postmaster')} collapsed={sidebarCollapsed} />
-          <div className="h-px bg-white/[0.06] my-2" />
+          {sidebarCollapsed ? <div className="h-px bg-white/[0.06] my-2" /> : <span className="gg-sidebar-divider">DISCOVER</span>}
           <DesktopNavButton icon={BookOpen} label={t('nav.collections').toUpperCase()} active={activeTab === 'collections'} onClick={() => setActiveTab('collections')} collapsed={sidebarCollapsed} />
           <DesktopNavButton icon={Trophy} label={t('nav.triumphs').toUpperCase()} active={activeTab === 'triumphs'} onClick={() => setActiveTab('triumphs')} collapsed={sidebarCollapsed} />
           <DesktopNavButton icon={TrendingUp} label={t('nav.season').toUpperCase()} active={activeTab === 'season'} onClick={() => setActiveTab('season')} collapsed={sidebarCollapsed} />
           <DesktopNavButton icon={Swords} label={t('nav.activity').toUpperCase()} active={activeTab === 'activity'} onClick={() => setActiveTab('activity')} collapsed={sidebarCollapsed} />
-          <div className="h-px bg-white/[0.06] my-2" />
+          {sidebarCollapsed ? <div className="h-px bg-white/[0.06] my-2" /> : <span className="gg-sidebar-divider">INTELLIGENCE</span>}
           <DesktopNavButton icon={Brain} label={t('nav.playstyle').toUpperCase()} active={activeTab === 'ai'} onClick={() => setActiveTab('ai')} collapsed={sidebarCollapsed} />
           <DesktopNavButton icon={Newspaper} label={t('nav.news').toUpperCase()} active={activeTab === 'news'} onClick={() => setActiveTab('news')} collapsed={sidebarCollapsed} />
         </nav>
@@ -383,20 +404,24 @@ export default function Dashboard() {
             <PremiumSidebarBadge />
           </div>
         </Suspense>
-        {!sidebarCollapsed && <UserProfile profile={destinyProfile} onLogout={logout} />}
+        {sidebarCollapsed
+          ? <button onClick={logout} title={t('nav.logout')} aria-label={t('nav.logout')} className="mx-auto mb-4 p-3 rounded-lg hover:bg-red-500/10 text-gray-400 hover:text-red-400"><LogOut className="h-4 w-4" /></button>
+          : <UserProfile profile={destinyProfile} onLogout={logout} />}
       </aside>
 
       <main className="flex-1 flex flex-col h-full relative overflow-hidden z-10">
-        <header className="h-14 border-b border-white/[0.06] bg-header backdrop-blur-xl flex items-center justify-between px-4 md:px-6 shrink-0 z-10 header-border-glow">
+        <header className="gg-dashboard-header border-b border-white/[0.06] bg-header backdrop-blur-xl flex items-center justify-between px-4 md:px-7 shrink-0 z-10 header-border-glow">
           <div className="flex items-center gap-3">
             <div className="md:hidden flex items-center gap-2">
               <img src={ggLogoImg} alt="GG" className="h-5 mix-blend-screen" data-testid="img-gg-logo" />
             </div>
-            <h2 className="font-display font-light text-sm tracking-destiny-wide text-white/90 uppercase" data-testid="text-header-title">
-              {tabTitles[activeTab]}
-            </h2>
+            <div className="flex flex-col gap-0.5">
+              <span className="gg-page-eyebrow hidden sm:block">GUARDIANGRID / GUARDIAN OPERATIONS</span>
+              <h1 className="gg-page-title" data-testid="text-header-title">{tabTitles[activeTab]}</h1>
+            </div>
           </div>
           <div className="flex items-center gap-3">
+            <span className="gg-status-chip hidden lg:inline-flex">{isOnline ? 'Online' : 'Offline'}</span>
             {currencies.length > 0 && (
               <div className="hidden sm:flex items-center gap-3">
                 {currencies.slice(0, 3).map(c => (
@@ -436,12 +461,13 @@ export default function Dashboard() {
                 animate={{ x: 0 }}
                 exit={{ x: '-100%' }}
                 transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-                className="fixed top-0 left-0 bottom-0 w-72 bg-[#0a0e1a]/98 backdrop-blur-2xl border-r border-white/[0.08] z-40 flex flex-col"
+                role="dialog" aria-modal="true" aria-label="GuardianGrid navigation"
+                className="gg-mobile-sheet fixed top-0 left-0 bottom-0 w-72 bg-[#0a0e1a]/98 backdrop-blur-2xl border-r border-white/[0.08] z-40 flex flex-col"
               >
                 <div className="p-6 pb-4 border-b border-white/[0.06]">
                   <div className="flex items-center justify-between">
                     <span className="font-display text-lg tracking-destiny text-white">GUARDIANGRID <span className="text-[var(--color-gold-accent)] text-sm">(Adept)</span></span>
-                    <button onClick={() => setIsMenuOpen(false)} className="p-1.5 text-gray-500 hover:text-white transition-colors">
+                    <button onClick={() => setIsMenuOpen(false)} aria-label="Close navigation" className="p-1.5 text-gray-500 hover:text-white transition-colors">
                       <X className="w-5 h-5" />
                     </button>
                   </div>
@@ -803,7 +829,8 @@ export default function Dashboard() {
 
       {(activeTab === 'vault' || activeTab === 'characters') && (
         <button onClick={() => setShowMobileLoadout(true)}
-          className="lg:hidden fixed bottom-24 md:bottom-20 right-4 z-30 w-14 h-14 bg-indigo-600 hover:bg-indigo-500 text-white rounded-full flex items-center justify-center shadow-lg shadow-indigo-900/50 transition-all"
+          aria-label="Open active loadout"
+          className="gg-loadout-fab lg:hidden fixed bottom-24 md:bottom-20 right-4 z-30 w-14 h-14 bg-indigo-600 hover:bg-indigo-500 text-white rounded-full flex items-center justify-center shadow-lg shadow-indigo-900/50 transition-all"
           data-testid="button-mobile-loadout">
           <Sparkles className="w-5 h-5" />
           {Object.keys(loadout).length > 0 && (
@@ -820,7 +847,8 @@ export default function Dashboard() {
             className="lg:hidden fixed inset-0 z-[60] bg-black/80 backdrop-blur-sm" onClick={() => setShowMobileLoadout(false)}>
             <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
               transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-              className="absolute inset-0 sm:top-auto sm:max-h-[85vh] bg-[#0a0e18] border-t border-white/[0.08] sm:rounded-t-2xl flex flex-col"
+              role="dialog" aria-modal="true" aria-label="Active loadout"
+               className="absolute inset-0 sm:top-auto sm:max-h-[85vh] bg-[#0a0e18] border-t border-white/[0.08] sm:rounded-t-2xl flex flex-col"
               style={{ paddingTop: 'env(safe-area-inset-top, 0px)', paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
               onClick={(e) => e.stopPropagation()}>
               <div className="flex items-center justify-center pt-3 pb-1">
@@ -831,11 +859,11 @@ export default function Dashboard() {
                   <Sparkles className="w-4 h-4 text-[var(--color-gold-accent)]" /> AKTIVES LOADOUT
                 </h3>
                 <div className="flex items-center gap-2">
-                  <button onClick={() => setIsSaveModalOpen(true)} disabled={Object.keys(loadout).length === 0}
+                  <button onClick={() => { setShowMobileLoadout(false); setIsSaveModalOpen(true); }} disabled={Object.keys(loadout).length === 0}
                     className="px-4 py-2 bg-white/5 hover:bg-white text-white hover:text-black transition-all disabled:opacity-20 border border-white/10 text-[11px] font-bold tracking-destiny-wide destiny-clip-sm uppercase">
                     SPEICHERN
                   </button>
-                  <button onClick={() => setShowMobileLoadout(false)} className="p-2 text-gray-400 hover:text-white">
+                  <button onClick={() => setShowMobileLoadout(false)} aria-label="Close loadout" className="p-2 text-gray-400 hover:text-white">
                     <X className="w-5 h-5" />
                   </button>
                 </div>
@@ -852,7 +880,7 @@ export default function Dashboard() {
 
       <SaveLoadoutModal isOpen={isSaveModalOpen} onClose={() => setIsSaveModalOpen(false)} onSave={handleSaveLoadout} />
 
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-[#080b14]/95 backdrop-blur-xl border-t border-white/[0.08] mobile-bottom-tabs" data-testid="mobile-bottom-tabs">
+      <nav aria-label="Primary navigation" className="gg-mobile-bottom md:hidden fixed bottom-0 left-0 right-0 z-50 bg-[#080b14]/95 backdrop-blur-xl border-t border-white/[0.08] mobile-bottom-tabs" data-testid="mobile-bottom-tabs">
         <div className="flex items-stretch justify-around">
           {([
             { id: 'characters' as TabType, icon: Users, label: t('nav.characters').split('-')[0].split(' ')[0] },
@@ -890,7 +918,7 @@ export default function Dashboard() {
         </div>
       </nav>
 
-      <div className="hidden md:block fixed bottom-0 left-0 right-0 z-50 bg-[#080b14]/90 glass-subtle border-t border-white/[0.04] py-2 px-4">
+      <div className={`hidden md:block fixed bottom-0 right-0 z-40 bg-[#080b14]/90 glass-subtle border-t border-white/[0.04] py-2 px-4 ${sidebarCollapsed ? "left-[72px]" : "left-64"}`}>
         <div className="flex items-center justify-center gap-3">
           <Link href="/imprint"><span className="text-[11px] tracking-destiny uppercase text-gray-500 hover:text-gray-300 transition-colors cursor-pointer" data-testid="link-desktop-imprint">{t('footer.imprint')}</span></Link>
           <span className="text-gray-600 text-[11px]">|</span>

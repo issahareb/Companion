@@ -13,7 +13,7 @@ function Section({ title, children, delay = 0 }: { title: string; children: Reac
       className="mb-8"
     >
       <h2 className="font-display text-sm tracking-destiny-wide uppercase text-white mb-3">{title}</h2>
-      <div className="text-[11px] text-gray-400 leading-relaxed tracking-wide whitespace-pre-line">{children}</div>
+      <div className="text-[13px] text-gray-300 leading-[1.85] tracking-normal whitespace-pre-line">{children}</div>
     </motion.div>
   );
 }
@@ -22,7 +22,7 @@ export function ImprintPage() {
   const { t } = useI18n();
 
   return (
-    <div className="min-h-[100dvh] bg-[#080b14] text-gray-300" style={{ overscrollBehavior: 'none' }}>
+    <div className="gg-legal min-h-[100dvh] bg-[#080b14] text-gray-300" style={{ overscrollBehavior: 'none' }}>
       <div className="max-w-2xl mx-auto px-6 py-12">
         <motion.div
           initial={{ opacity: 0, x: -10 }}
@@ -77,7 +77,7 @@ export function PrivacyPage() {
   const { t } = useI18n();
 
   return (
-    <div className="min-h-[100dvh] bg-[#080b14] text-gray-300" style={{ overscrollBehavior: 'none' }}>
+    <div className="gg-legal min-h-[100dvh] bg-[#080b14] text-gray-300" style={{ overscrollBehavior: 'none' }}>
       <div className="max-w-2xl mx-auto px-6 py-12">
         <motion.div
           initial={{ opacity: 0, x: -10 }}

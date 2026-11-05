@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-labelledby="title desc">
+  <title id="title">GuardianGrid crest</title>
+  <desc id="desc">A luminous geometric emblem inspired by the orbital navigator</desc>
+  <defs>
+    <linearGradient id="steel" x1="0" x2="1" y1="0" y2="1">
+      <stop stop-color="#eff7ff"/><stop offset=".48" stop-color="#9bcaff"/><stop offset="1" stop-color="#6b92c8"/>
+    </linearGradient>
+    <linearGradient id="core" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#dcefff"/><stop offset="1" stop-color="#739bd4"/>
+    </linearGradient>
+    <radialGradient id="halo"><stop stop-color="#6bade8" stop-opacity=".23"/><stop offset="1" stop-color="#6bade8" stop-opacity="0"/></radialGradient>
+  </defs>
+  <circle cx="128" cy="128" r="120" fill="url(#halo)"/>
+  <g fill="none" stroke="url(#steel)" stroke-width="3.5" stroke-linejoin="bevel">
+    <path d="M128 18 158 77 238 128 158 179 128 238 98 179 18 128 98 77Z" opacity=".88"/>
+    <path d="m128 42 27 53 59 33-59 33-27 53-27-53-59-33 59-33Z" opacity=".4"/>
+    <path d="m128 18 0 58m0 104v58M18 128h59m102 0h59" opacity=".6"/>
+    <path d="m58 58 35 35m70 70 35 35M198 58l-35 35m-70 70-35 35" opacity=".35"/>
+  </g>
+  <g fill="#091321" stroke="url(#steel)" stroke-width="4">
+    <path d="m128 74 54 54-54 54-54-54Z"/>
+  </g>
+  <path d="m128 97 31 31-31 31-31-31Z" fill="url(#core)" />
+  <path d="m128 111 17 17-17 17-17-17Z" fill="#0c1a2c"/>
+  <circle cx="128" cy="128" r="7" fill="#e6d0a0"/>
+  <g fill="none" stroke="#c5ddf7" stroke-width="2" opacity=".35">
+    <circle cx="128" cy="128" r="92" stroke-dasharray="3 12"/>
+    <circle cx="128" cy="128" r="112" stroke-dasharray="1 18"/>
+  </g>
+</svg>

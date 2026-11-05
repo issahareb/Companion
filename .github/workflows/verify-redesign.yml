@@ -1,0 +1,87 @@
+name: GuardianGrid verification
+on:
+  push:
+    branches:
+      - feat/guardiangrid-2-audit-redesign-20261018
+    paths-ignore:
+      - client/public/guardian-ghost-animated.webp
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  typecheck-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 22
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: guardiangrid_test
+          POSTGRES_USER: guardian
+          POSTGRES_PASSWORD: guardian
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U guardian -d guardiangrid_test"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=8
+    env:
+      DATABASE_URL: postgresql://guardian:guardian@127.0.0.1:5432/guardiangrid_test
+      SESSION_SECRET: guardian-ci-isolated-test-secret
+      BUNGIE_API_KEY: isolated-ci-no-real-api
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install locked dependencies
+        run: npm ci --no-audit --no-fund
+      - name: TypeScript typecheck
+        run: npm run check
+      - name: Production bundling
+        run: npm run build
+      - name: Provision isolated integration database
+        run: npx drizzle-kit push --force
+      - name: Test real Express API with Postgres
+        run: |
+          set -euo pipefail
+          NODE_ENV=production PORT=4174 node dist/index.cjs > /tmp/gg-api-server.log 2>&1 &
+          api_pid=$!
+          trap 'kill $api_pid 2>/dev/null || true' EXIT
+          ready=0
+          for attempt in $(seq 1 25); do
+            if curl -fsS http://127.0.0.1:4174/healthz >/dev/null; then ready=1; break; fi
+            sleep 1
+          done
+          if [ "$ready" -ne 1 ]; then cat /tmp/gg-api-server.log; exit 1; fi
+          node script/api-integration-test.mjs || { tail -100 /tmp/gg-api-server.log; exit 1; }
+      - name: Install browser test runner
+        run: |
+          npm install --no-save --ignore-scripts playwright@1.56.1
+          npx playwright install --with-deps chromium
+      - name: Browser smoke tests (phone, tablet, desktop)
+        run: |
+          set -euo pipefail
+          npx vite preview --host 127.0.0.1 --port 4173 --strictPort > /tmp/gg-vite-preview.log 2>&1 &
+          preview_pid=$!
+          trap 'kill $preview_pid 2>/dev/null || true' EXIT
+          ready=0
+          for attempt in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:4173/ >/dev/null; then ready=1; break; fi
+            sleep 1
+          done
+          if [ "$ready" -ne 1 ]; then cat /tmp/gg-vite-preview.log; exit 1; fi
+          node script/ui-smoke.mjs
+          node script/ui-deep-test.mjs
+          node script/oauth-browser-test.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: guardiangrid-browser-screenshots
+          path: artifacts/guardian-e2e/
+          if-no-files-found: ignore
+          retention-days: 7

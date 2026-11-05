@@ -321,7 +321,7 @@ export default function SharePage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-[#080b14] flex items-center justify-center">
+      <div className="gg-share min-h-screen bg-[#080b14] flex items-center justify-center">
         <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
       </div>
     );
@@ -329,7 +329,7 @@ export default function SharePage() {
 
   if (error || !loadout) {
     return (
-      <div className="min-h-screen bg-[#080b14] flex flex-col items-center justify-center p-6 text-center">
+      <div className="gg-share min-h-screen bg-[#080b14] flex flex-col items-center justify-center p-6 text-center">
         <h1 className="text-2xl font-display font-light text-white mb-4 tracking-widest">{t('share.notFound')}</h1>
         <button onClick={() => setLocation('/')} className="text-indigo-400 hover:text-indigo-300 flex items-center gap-2 uppercase tracking-widest text-xs">
           <ArrowLeft className="w-4 h-4" /> {t('action.backToOrbit')}
@@ -341,7 +341,7 @@ export default function SharePage() {
   const loadoutItems = loadout.items as Record<string, Item>;
 
   return (
-    <div className="min-h-screen bg-[#080b14] text-gray-300 p-4 md:p-6 flex flex-col items-center relative overflow-hidden">
+    <div className="gg-share min-h-screen bg-[#080b14] text-gray-300 p-4 md:p-6 flex flex-col items-center relative overflow-hidden">
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,_rgba(40,40,60,0.3)_0%,_rgba(8,11,20,1)_100%)] z-0" />
 
       <div className="max-w-2xl w-full z-10 space-y-6">
@@ -351,7 +351,7 @@ export default function SharePage() {
           <p className="text-[11px] text-indigo-400 tracking-destiny-widest font-mono uppercase opacity-70">{t('share.config')}</p>
         </div>
 
-        <div className="bg-[#0A0A0C]/60 backdrop-blur-xl border border-white/10 p-5 md:p-8 destiny-clip-sm space-y-4 shadow-2xl">
+        <div className="gg-share-card bg-[#0A0A0C]/60 backdrop-blur-xl border border-white/10 p-5 md:p-8 destiny-clip-sm space-y-4 shadow-2xl">
           <div className="flex items-center gap-3 mb-4">
             <Sparkles className="w-4 h-4 text-[var(--color-gold-accent)]" />
             <h3 className="text-xs font-display font-light tracking-destiny-wide text-white">{t('section.equipment')}</h3>

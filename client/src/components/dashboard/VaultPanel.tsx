@@ -1,4 +1,4 @@
-import { useRef, useCallback } from 'react';
+import { useRef, useEffect, useState } from 'react';
 import { Search, Package, Sparkles } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useVirtualizer } from '@tanstack/react-virtual';
@@ -12,17 +12,13 @@ import { VaultItemCard } from './VaultItemCard';
 import { toItem , appleEase } from './shared';
 
 
-function useColumns() {
-  const ref = useRef<HTMLDivElement>(null);
-  const getColumns = useCallback(() => {
-    if (!ref.current) return 4;
-    const w = ref.current.clientWidth;
-    if (w >= 1536) return 7;
-    if (w >= 1280) return 5;
-    if (w >= 640) return 4;
-    return 3;
-  }, []);
-  return { ref, getColumns };
+function columnsForWidth(width: number): number {
+  if (width >= 1220) return 7;
+  if (width >= 980) return 6;
+  if (width >= 760) return 5;
+  if (width >= 580) return 4;
+  if (width >= 410) return 3;
+  return 2;
 }
 
 interface VaultPanelProps {
@@ -50,17 +46,38 @@ export function VaultPanel({
 }: VaultPanelProps) {
   const { t } = useI18n();
   const scrollRef = useRef<HTMLDivElement>(null);
-  const { ref: gridMeasureRef, getColumns } = useColumns();
+  const [cols, setCols] = useState(2);
 
-  const cols = getColumns();
+  // Keep virtualization row grouping synchronized with the actual container.
+  useEffect(() => {
+    const node = scrollRef.current;
+    if (!node) return;
+    const sync = () => setCols(previous => {
+      const next = columnsForWidth(node.clientWidth);
+      return previous === next ? previous : next;
+    });
+    sync();
+    if (typeof ResizeObserver === 'undefined') {
+      window.addEventListener('resize', sync);
+      return () => window.removeEventListener('resize', sync);
+    }
+    const observer = new ResizeObserver(sync);
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, []);
+
   const rowCount = Math.ceil(filteredVaultItems.length / cols);
 
   const virtualizer = useVirtualizer({
     count: rowCount,
     getScrollElement: () => scrollRef.current,
-    estimateSize: () => 200,
+    estimateSize: () => 205,
     overscan: 3,
   });
+
+  useEffect(() => {
+    virtualizer.measure();
+  }, [cols, virtualizer]);
 
   return (
     <motion.div key="vault" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.3, ease: appleEase }} className="h-full flex flex-col lg:flex-row">
@@ -78,10 +95,10 @@ export function VaultPanel({
             />
           </div>
           <FilterBar filters={vaultFilters} onChange={(f) => setVaultFilters(() => f)} slotFilters={SLOT_FILTERS} rarityFilters={RARITY_FILTERS} />
-          <p className="text-[11px] text-gray-600 tracking-destiny uppercase">{filteredVaultItems.length} Gegenstande</p>
+          <p aria-live="polite" className="text-[11px] text-gray-400 tracking-destiny uppercase">{filteredVaultItems.length} {t('postmaster.items')}</p>
         </div>
 
-        <div ref={(el) => { (scrollRef as any).current = el; (gridMeasureRef as any).current = el; }} className="flex-1 overflow-y-auto p-4 md:p-6 pt-2 scroll-container" data-scroll-container>
+        <div ref={scrollRef} className="flex-1 overflow-y-auto overflow-x-hidden p-4 md:p-6 pt-2 scroll-container" data-scroll-container>
           {filteredVaultItems.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-64 space-y-4">
               <Package className="w-12 h-12 text-gray-700" />
@@ -99,14 +116,17 @@ export function VaultPanel({
                 return (
                   <div
                     key={virtualRow.key}
+                    data-index={virtualRow.index}
+                    ref={virtualizer.measureElement}
                     style={{
                       position: 'absolute',
                       top: 0,
                       left: 0,
                       width: '100%',
                       transform: `translateY(${virtualRow.start}px)`,
+                      gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))`,
                     }}
-                    className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-7 gap-2 md:gap-3 pb-2 md:pb-3"
+                    className="grid gap-2 md:gap-3 pb-2 md:pb-3"
                   >
                     {rowItems.map((item) => (
                       <VaultItemCard

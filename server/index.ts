@@ -6,6 +6,7 @@ import helmet from "helmet";
 import cors from "cors";
 import rateLimit from "express-rate-limit";
 import cookieParser from "cookie-parser";
+import { randomUUID } from "crypto";
 
 const app = express();
 const httpServer = createServer(app);
@@ -21,7 +22,7 @@ app.use(
         defaultSrc: ["'self'"],
         scriptSrc: isDev
           ? ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://challenges.cloudflare.com"]
-          : ["'self'", "'unsafe-inline'", "https://challenges.cloudflare.com"],
+          : ["'self'", "https://challenges.cloudflare.com"],
         styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
         fontSrc: ["'self'", "https://fonts.gstatic.com", "data:"],
         imgSrc: ["'self'", "data:", "blob:", "https://www.bungie.net", "https://bungie.net", "https://images.contentstack.io"],
@@ -147,6 +148,24 @@ const writeLimiter = rateLimit({
 });
 
 app.use('/api/', globalLimiter);
+
+// API responses may contain account or inventory data. Never cache in shared proxies.
+app.use('/api/', (_req, res, next) => {
+  res.setHeader('Cache-Control', 'private, no-store');
+  next();
+});
+
+// Same-origin write guard complements SameSite cookies and disallows form-based
+// cross-site state changes. API clients without an Origin remain subject to auth.
+app.use('/api/', (req, res, next) => {
+  if (!['POST', 'PUT', 'PATCH', 'DELETE'].includes(req.method)) return next();
+  const origin = req.get('origin');
+  if (!origin) return next();
+  try {
+    if (new URL(origin).host === req.get('host')) return next();
+  } catch {}
+  return res.status(403).json({ message: 'Cross-origin changes are not allowed' });
+});
 const aiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 10,
@@ -195,27 +214,17 @@ export function log(message: string, source = "express") {
 }
 
 app.use((req, res, next) => {
-  const start = Date.now();
-  const path = req.path;
-  let capturedJsonResponse: Record<string, any> | undefined = undefined;
+  const startedAt = Date.now();
+  const requestId = randomUUID();
+  res.setHeader('X-Request-Id', requestId);
 
-  const originalResJson = res.json;
-  res.json = function (bodyJson, ...args) {
-    capturedJsonResponse = bodyJson;
-    return originalResJson.apply(res, [bodyJson, ...args]);
-  };
-
-  res.on("finish", () => {
-    const duration = Date.now() - start;
-    if (path.startsWith("/api")) {
-      let logLine = `${req.method} ${path} ${res.statusCode} in ${duration}ms`;
-      if (capturedJsonResponse) {
-        const body = JSON.stringify(capturedJsonResponse);
-        logLine += ` :: ${body.length > 120 ? body.slice(0, 119) + '…' : body}`;
-      }
-
-      log(logLine);
-    }
+  res.on('finish', () => {
+    if (!req.path.startsWith('/api')) return;
+    // Never log JSON response bodies, OAuth codes, access tokens or membership IDs.
+    // Express exposes the matched route template after nested routers have run.
+    const route = typeof req.route?.path === 'string' ? req.route.path : '[unmatched]';
+    const durationMs = Date.now() - startedAt;
+    log(`${req.method} ${route} ${res.statusCode} ${durationMs}ms request=${requestId}`);
   });
 
   next();

@@ -18,14 +18,19 @@ router.get(api.loadouts.list.path, requireAuth, async (req, res) => {
 
 router.post(api.loadouts.create.path, requireAuth, async (req, res) => {
   try {
-    const input = api.loadouts.create.input.parse(req.body);
-    input.bungieMembershipId = req.sessionMembershipId!;
+    // The Bungie membership identity comes from the verified signed session,
+    // not from a browser-supplied value that may be missing or spoofed.
+    const input = api.loadouts.create.input
+      .omit({ bungieMembershipId: true })
+      .extend({ name: z.string().trim().min(1).max(80) })
+      .parse(req.body);
+    const bungieMembershipId = req.sessionMembershipId!;
     const shareCode = input.shareCode || nanoid(10);
     const MAX_RETRIES = 3;
     for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
       const code = attempt === 0 ? shareCode : nanoid(10);
       try {
-        const loadout = await storage.createLoadout({ ...input, shareCode: code });
+        const loadout = await storage.createLoadout({ ...input, bungieMembershipId, shareCode: code });
         return res.status(201).json(loadout);
       } catch (dbErr: any) {
         const isUniqueViolation = dbErr?.code === '23505' || dbErr?.message?.includes('unique');

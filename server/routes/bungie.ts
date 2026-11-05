@@ -292,14 +292,22 @@ router.post('/api/bungie/clear-loadout', requireAuth, validateBody(clearLoadoutS
 router.get('/api/bungie/activity-history/:membershipType/:membershipId/:characterId', requireAuth, async (req, res) => {
   try {
     const { membershipType, membershipId, characterId } = req.params;
+    if (typeof membershipType !== 'string' || typeof membershipId !== 'string' || typeof characterId !== 'string') {
+      return res.status(400).json({ message: 'Invalid membership parameters' });
+    }
 
     if (!req.sessionMembershipId || req.sessionMembershipId !== membershipId) {
       return res.status(403).json({ message: 'Access denied: membership mismatch' });
     }
 
-    const mode = (req.query.mode as string) || 'raid';
-    const count = Math.min(parseInt(req.query.count as string) || 25, 50);
-    const page = parseInt(req.query.page as string) || 0;
+    const mode = typeof req.query.mode === 'string' ? req.query.mode : 'raid';
+    const rawCount = Number(req.query.count);
+    const rawPage = Number(req.query.page);
+    // Strict integer bounds prevent negative or non-finite pagination parameters.
+    const count = Number.isSafeInteger(rawCount) && rawCount > 0
+      ? Math.min(rawCount, 50) : 25;
+    const page = Number.isSafeInteger(rawPage) && rawPage >= 0
+      ? Math.min(rawPage, 100) : 0;
 
     const activities = await fetchActivityHistory(
       req.sessionAccessToken!,

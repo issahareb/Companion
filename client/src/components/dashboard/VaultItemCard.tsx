@@ -88,19 +88,17 @@ export function VaultItemCard({ item, characters, onTransferToChar, onEquipOnCha
             <TierStars rarity={item.rarity} />
           </div>
         </div>
-        <div className="px-1.5 py-1.5 bg-[#0a0e18]/90 rounded-b-lg">
-          <h4 className="text-[11px] font-bold truncate tracking-destiny" style={{ color: isExotic ? 'var(--color-gold-accent)' : 'white' }}>{item.name}</h4>
-          <div className="flex items-center justify-between mt-0.5">
-            <div className="flex items-center gap-1 min-w-0">
-              <p className="text-[11px] text-gray-500 truncate">{item.type}</p>
-              {rollResult && <RollRatingBadge result={rollResult} />}
-            </div>
+        <div className="px-2.5 py-2 bg-[#0d1725]/95 rounded-b-lg min-w-0">
+          <h4 className="text-[12px] font-semibold truncate tracking-[.015em]" style={{ color: isExotic ? 'var(--color-gold-accent)' : 'white' }}>{item.name}</h4>
+          <div className="flex items-center justify-between gap-2 mt-1">
+            <p className="text-[11px] text-[#b3c0d3] truncate min-w-0">{item.type}</p>
             {item.power > 0 && (
-              <p className="text-[11px] text-gray-400 flex items-center gap-0.5 shrink-0">
+              <p className="text-[11px] text-[#c0cfe1] flex items-center gap-0.5 shrink-0 font-mono">
                 <Sparkles className="w-2.5 h-2.5 text-[var(--color-gold-accent)]" /> {item.power}
               </p>
             )}
           </div>
+          {rollResult && <div className="flex mt-2 min-w-0 items-center overflow-hidden"><RollRatingBadge result={rollResult} /></div>}
         </div>
       </div>
 

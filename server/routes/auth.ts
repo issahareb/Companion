@@ -8,7 +8,7 @@ const router = Router();
 
 router.get('/api/config/turnstile', (_req, res) => {
   const siteKey = process.env.TURNSTILE_SITE_KEY || '';
-  res.json({ enabled: !!siteKey, siteKey });
+  res.json({ enabled: !!siteKey && !!process.env.TURNSTILE_SECRET_KEY, siteKey: process.env.TURNSTILE_SECRET_KEY ? siteKey : "" });
 });
 
 router.post('/api/verify-turnstile', async (req, res) => {
